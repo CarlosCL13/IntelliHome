@@ -1,0 +1,102 @@
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    >
+
+    <!-- LOGO -->
+    <ImageView
+        android:id="@+id/logoImage"
+        android:layout_width="150dp"
+        android:layout_height="150dp"
+        android:layout_marginTop="80dp"
+        android:src="@drawable/logotipo"
+        android:contentDescription="Logo"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <!-- USERNAME -->
+    <EditText
+        android:id="@+id/login_username"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="20dp"
+        android:layout_marginEnd="20dp"
+        android:layout_marginTop="40dp"
+        android:background="@drawable/edittext_border"
+        android:hint="Usuario, correo o teléfono"
+        android:padding="12dp"
+        app:layout_constraintTop_toBottomOf="@id/logoImage"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <!-- PASSWORD -->
+    <EditText
+        android:id="@+id/login_password"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="20dp"
+        android:layout_marginEnd="20dp"
+        android:layout_marginTop="16dp"
+        android:background="@drawable/edittext_border"
+        android:hint="Contraseña"
+        android:inputType="textPassword"
+        android:padding="12dp"
+        app:layout_constraintTop_toBottomOf="@id/login_username"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <!-- LOGIN BUTTON -->
+    <ImageButton
+        android:id="@+id/btnMenu"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_marginTop="16dp"
+        android:layout_marginEnd="16dp"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:contentDescription="Menú"
+        android:src="@drawable/baseline_settings_24"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <Button
+        android:id="@+id/login_button"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="20dp"
+        android:layout_marginEnd="20dp"
+        android:layout_marginTop="20dp"
+        android:text="Login"
+        android:backgroundTint="@color/black"
+        app:layout_constraintTop_toBottomOf="@id/login_password"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <!-- FINGERPRINT -->
+    <ImageButton
+    android:id="@+id/fingerprintLogin"
+    android:layout_width="60dp"
+    android:layout_height="60dp"
+    android:layout_marginTop="16dp"
+    android:src="@drawable/ic_fingerprint"
+    android:background="@android:color/transparent"
+    android:contentDescription="Acceso con huella"
+    app:layout_constraintTop_toBottomOf="@id/login_button"
+    app:layout_constraintStart_toStartOf="parent"
+    app:layout_constraintEnd_toEndOf="parent" />
+
+    <!-- SIGN UP REDIRECT -->
+    <TextView
+        android:id="@+id/signupRedirect"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="24dp"
+        android:text="¿No tienes una cuenta? Regístrate"
+        app:layout_constraintTop_toBottomOf="@id/fingerprintLogin"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>
