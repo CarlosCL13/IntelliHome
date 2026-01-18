@@ -1,0 +1,24 @@
+# Entorno virtual
+.venv/
+venv/
+env/
+
+# Archivos de base de datos
+*.db
+*.sqlite3
+
+# Archivos de migraciones
+db.sqlite3
+
+# Archivos de subida de usuarios
+uploads/
+
+# Archivos temporales y de caché
+__pycache__/
+*.pyc
+*.pyo
+
+# Archivos de configuración locales
+instance/
+.env
+*.env
