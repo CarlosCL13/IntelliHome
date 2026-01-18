@@ -6,7 +6,6 @@ env/
 # Archivos de base de datos
 *.db
 *.sqlite3
-Base_de_Datos/
 
 # Archivos de migraciones
 db.sqlite3
