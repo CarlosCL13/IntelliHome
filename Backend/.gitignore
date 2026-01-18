@@ -10,7 +10,6 @@ Base_de_Datos/
 
 # Archivos de migraciones
 db.sqlite3
-migrations/
 
 # Archivos de subida de usuarios
 uploads/
