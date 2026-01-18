@@ -204,11 +204,11 @@
                 <ImageButton
                     android:id="@+id/btn_mostrar_password"
                     android:layout_marginTop="10dp"
-                    android:layout_width="48dp"
-                    android:layout_height="48dp"
+                    android:layout_width="28dp"
+                    android:layout_height="28dp"
                     android:background="@android:color/transparent"
                     android:contentDescription="Mostrar/ocultar contraseña"
-                    android:src="@android:drawable/ic_menu_view" />
+                    android:src="@drawable/ic_close_eye" />
             </LinearLayout>
 
             <!-- Confirmar contraseña -->
@@ -241,11 +241,11 @@
                 <ImageButton
                     android:id="@+id/btn_mostrar_password2"
                     android:layout_marginTop="10dp"
-                    android:layout_width="48dp"
-                    android:layout_height="48dp"
+                    android:layout_width="28dp"
+                    android:layout_height="28dp"
                     android:background="@android:color/transparent"
                     android:contentDescription="Mostrar/ocultar contraseña"
-                    android:src="@android:drawable/ic_menu_view" />
+                    android:src="@drawable/ic_close_eye" />
             </LinearLayout>
 
             <!-- Pregunta de recuperación -->
@@ -267,17 +267,11 @@
                     android:textStyle="bold"
                     android:textSize="16sp"
                     android:layout_marginBottom="8dp" />
-                <EditText
-                    android:id="@+id/et_pregunta"
+                <Spinner
+                    android:id="@+id/sp_pregunta"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:hint="Selecciona una pregunta"
-                    android:textSize="14sp"
-                    android:focusable="false"
-                    android:clickable="true"
-                    android:inputType="none"
-                    android:minHeight="48dp"
-                    android:minWidth="48dp" />
+                    android:spinnerMode="dropdown" />
                 <EditText
                     android:id="@+id/et_respuesta"
                     android:layout_width="match_parent"
@@ -348,7 +342,7 @@
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:inputType="date"
-                    android:hint="dd/mm/yyyy"
+                    android:hint="yyyy-mm-dd"
                     android:textSize="14sp"
                     android:focusable="false" />
 
