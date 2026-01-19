@@ -119,43 +119,54 @@ class Usuario_Servicio:
         """
         Permite iniciar sesión usando nombre de usuario, correo o teléfono y contraseña.
         """
-        # Buscar usuario por nombre de usuario, correo o teléfono
-        usuario = Usuario_Servicio._validar_identificador_login(db, identificador, errores={})
+        errores = {}
+        usuario = None
 
-        # Si no se encuentra el usuario se retorna error
-        if not usuario:
-            return {"error": "Usuario no encontrado."}
-        
-        # si la cuenta está bloqueada se retorna error
-        if usuario.estado_cuenta == 'bloqueado':
-            return {"error": "La cuenta está bloqueada. Contacte al administrador."}
-        
-        validacion_contrasena = Usuario_Servicio._validar_contraseña_login(contraseña, usuario.contraseña)
+        try:
+            # Buscar usuario por nombre de usuario, correo o teléfono
+            usuario = Usuario_Servicio._validar_identificador_login(db, identificador, errores)
+            
+            if errores:
+                return {'errores': errores}
+            
+            # si la cuenta está bloqueada se retorna error
+            if usuario.estado_cuenta == 'bloqueado':
+                errores['cuenta'] = 'La cuenta está bloqueada. Contacte al administrador.'
+                return {'errores': errores}
+            
+            validacion_contrasena = Usuario_Servicio._validar_contraseña_login(contraseña, usuario.contraseña)
 
-        # validar si la contraseña es correcta
-        if not validacion_contrasena:
-            # Incrementar intentos fallidos
-            usuario.intentos_fallidos += 1
-            # Bloquear cuenta si supera 3 intentos
-            if usuario.intentos_fallidos >= 3:
-                usuario.estado_cuenta = 'bloqueado'
+            # validar si la contraseña es correcta
+            if not validacion_contrasena:
+                # Incrementar intentos fallidos
+                usuario.intentos_fallidos += 1
+                # Bloquear cuenta si supera 3 intentos
+                if usuario.intentos_fallidos >= 3:
+                    usuario.estado_cuenta = 'bloqueado'
+                db.commit()
+                errores['contraseña'] = 'Contraseña incorrecta.'
+
+                return {'errores': errores}
+            
+            # Resetear intentos fallidos si login exitoso
+            usuario.intentos_fallidos = 0
             db.commit()
-            return {"error": "Contraseña incorrecta."}
-        
-        # Resetear intentos fallidos si login exitoso
-        usuario.intentos_fallidos = 0
-        db.commit()
-        # Puedes retornar solo los datos necesarios
-        return {
-            "id": usuario.id,
-            "username": usuario.username,
-            "correo": usuario.correo,
-            "telefono": usuario.telefono,
-            "nombre": usuario.nombre,
-            "apellidos": usuario.apellidos,
-            "rol_id": usuario.rol_id,
-            "estado_cuenta": usuario.estado_cuenta
-        }
+            # Puedes retornar solo los datos necesarios
+            return {
+                "id": usuario.id,
+                "username": usuario.username,
+                "correo": usuario.correo,
+                "telefono": usuario.telefono,
+                "nombre": usuario.nombre,
+                "apellidos": usuario.apellidos,
+                "rol_id": usuario.rol_id,
+                "estado_cuenta": usuario.estado_cuenta
+            }
+        except Exception as e:
+            db.rollback()
+            return {'errores': {'internal': f'Error interno: {str(e)}'}}
+        finally:
+            db.close()
 
     #================================= VALIDACIONES ================================= #
 
@@ -306,7 +317,7 @@ class Usuario_Servicio:
         """
         usuario = db.query(Usuario).filter(Usuario.username == nombre_usuario).first()
         if not usuario:
-            errores['username'] = 'El nombre de usuario no está asociado a ningún usuario.'
+            errores['Nombre_usuario'] = 'El nombre de usuario no está asociado a ningún usuario.'
 
     #validación de identificador (correo, telefono o nombre de usuario)  (login)
     @staticmethod

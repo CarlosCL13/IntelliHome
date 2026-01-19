@@ -1,13 +1,4 @@
-@router.post("/login")
-def login_usuario(
-    identificador: str = Form(..., description="Username, correo o teléfono"),
-    contraseña: str = Form(..., description="Contraseña"),
-    db: Session = Depends(get_db)
-):
-    resultado = Usuario_Servicio.login_usuario(db, identificador, contraseña)
-    if "error" in resultado:
-        raise HTTPException(status_code=401, detail=resultado["error"])
-    return resultado
+
 from fastapi import APIRouter, Depends, UploadFile, File, Form, HTTPException
 from sqlalchemy.orm import Session
 from Servicios.Usuario_Servicio import Usuario_Servicio
@@ -36,7 +27,7 @@ def registrar_usuario(
     numero_tarjeta: str = Form(...),
     fecha_expiracion: str = Form(...),
     db: Session = Depends(get_db)
-):
+    ):
     # Convertir cadenas separadas por comas a listas de enteros
     hobbies_ids_list = [int(i) for i in hobbies_ids.split(",")] if hobbies_ids else []
     tipos_casa_ids_list = [int(i) for i in tipos_casa_ids.split(",")] if tipos_casa_ids else []
@@ -62,4 +53,15 @@ def registrar_usuario(
     )
     if 'errores' in resultado:
         raise HTTPException(status_code=422, detail=resultado['errores'])
+    return resultado
+
+@router.post("/login")
+def login_usuario(
+    identificador: str = Form(...),
+    contraseña: str = Form(...),
+    db: Session = Depends(get_db)
+    ):
+    resultado = Usuario_Servicio.login_usuario(db=db, identificador=identificador, contraseña=contraseña)
+    if "errores" in resultado:
+        raise HTTPException(status_code=401, detail=resultado["errores"])
     return resultado
