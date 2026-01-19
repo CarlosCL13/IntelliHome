@@ -1,9 +1,18 @@
 <resources>
     <string name="app_name">IntelliHome</string>
 
+    <!-- Login -->
     <string name="login">Iniciar sesión</string>
     <string name="username_hint">Usuario, correo o teléfono</string>
     <string name="password_hint">Contraseña</string>
+    <string name="login_failed">Inicio de sesión fallido</string>
+    <string name="enter_username_first">Ingrese el nombre de usuario primero</string>
+    <string name="fingerprint_not_enabled">La huella digital no está habilitada para este usuario</string>
+    <string name="authenticate_to_continue">Autentíquese para continuar</string>
+    <string name="rememberme">Recuérdame</string>
+    <string name="forgot_password">Olvidé mi contraseña</string>
+
+
     <string name="signup">¿No tienes una cuenta? Regístrate</string>
 
     <string name="settings">Configuración</string>
@@ -77,5 +86,17 @@
     <string name="main_user_id">ID</string>
     <string name="main_fingerprint">Huella</string>
     <string name="select_color">Selecciona un color</string>
+    <!-- Recovery -->
+    <string name="recovery_title">Recuperar Contraseña</string>
+    <string name="recovery_user_hint">Usuario, correo o teléfono</string>
+    <string name="recovery_btn_find">Buscar Pregunta</string>
+    <string name="recovery_question_placeholder">Aquí aparecerá tu pregunta...</string>
+    <string name="recovery_answer_hint">Tu respuesta</string>
+    <string name="recovery_new_pass_hint">Nueva contraseña</string>
+    <string name="recovery_confirm_pass_hint">Confirmar nueva contraseña</string>
+    <string name="recovery_btn_update">Actualizar Contraseña</string>
+    <string name="error_password_regex">Debe tener al menos 8 caracteres, letras y números</string>
+    <string name="error_password_match">Las contraseñas no coinciden</string>
+    <string name="password_updated">Contraseña actualizada exitosamente</string>
 
 </resources>

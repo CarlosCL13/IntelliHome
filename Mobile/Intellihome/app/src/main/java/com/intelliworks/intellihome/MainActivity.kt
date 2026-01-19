@@ -22,21 +22,38 @@ class MainActivity : BaseActivity() {
         val username = intent.getStringExtra("username")
 
         if (username != null) {
-            val user: User? = databaseHelper.getUserByUsername(username)
-
-            user?.let {
-                mostrarUsuario(it)
-            }
+            val user = databaseHelper.getUserByUsername(username)
+            user?.let { mostrarUsuario(it) }
         }
     }
 
     private fun mostrarUsuario(user: User) {
-        binding.txtUsername.text = "Usuario: ${user.username}"
         binding.txtUserId.text = "ID: ${user.id}"
+        binding.txtUsername.text = "Usuario: ${user.username}"
+        binding.txtNombre.text = "Nombre: ${user.nombre} ${user.apellidos}"
+        binding.txtCorreo.text = "Correo: ${user.correo}"
+        binding.txtTelefono.text = "Teléfono: ${user.telefono}"
+        binding.txtFechaNacimiento.text = "Fecha de nacimiento: ${user.fechaNacimiento}"
+        binding.txtDomicilio.text = "Domicilio: ${user.domicilio}"
+
+        // Aquí podrías usar tu arreglo de preguntas internacionalizado
+        val preguntas = resources.getStringArray(R.array.preguntas_recuperacion)
+        val pregunta = if (user.preguntaRecuperacionId in 1..preguntas.size)
+            preguntas[user.preguntaRecuperacionId - 1]
+        else
+            "Pregunta no definida"
+        binding.txtPreguntaRecuperacion.text = "Pregunta: $pregunta"
+
+        binding.txtRespuestaRecuperacion.text = "Respuesta: ${user.respuestaRecuperacion}"
         binding.txtFingerprint.text =
-            if (user.fingerprintEnabled)
-                "Huella: Activada"
-            else
-                "Huella: Desactivada"
+            "Huella: ${if (user.fingerprintEnabled) "Activada" else "Desactivada"}"
+        binding.txtEstadoCuenta.text = "Estado: ${user.estadoCuenta}"
+
+        binding.txtDatosTarjeta.text =
+            "Tarjeta: **** **** **** ${user.ultimos4} (${user.marca}) - Exp: ${user.fechaExpiracion}"
+    }
+    override fun onResume() {
+        super.onResume()
+        applyAppAppearance(binding.root)
     }
 }

@@ -15,11 +15,17 @@ class SettingsActivity : BaseActivity() {
     private lateinit var binding: ActivitySettingsBinding
     private lateinit var prefs: SharedPreferences
 
+    override fun onResume() {
+        super.onResume()
+        applyAppAppearance(binding.root)
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         binding = ActivitySettingsBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        showSettingsButton(false)
 
         prefs = getSharedPreferences("settings", MODE_PRIVATE)
 
