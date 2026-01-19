@@ -4,6 +4,7 @@ import android.content.ContentValues
 import android.content.Context
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
+import com.intelliworks.intellihome.model.User
 
 class DatabaseHelper(private val context: Context):
     SQLiteOpenHelper(context, DATABASE_NAME, null, DATABASE_VERSION) {
@@ -86,6 +87,35 @@ class DatabaseHelper(private val context: Context):
         cursor.close()
         return userExists
     }
+    fun getUserByUsername(username: String): User? {
+        val db = readableDatabase
+
+        val cursor = db.query(
+            TABLE_NAME,
+            null,
+            "$COLUMN_USERNAME = ?",
+            arrayOf(username),
+            null,
+            null,
+            null
+        )
+
+        var user: User? = null
+
+        if (cursor.moveToFirst()) {
+            user = User(
+                id = cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_ID)),
+                username = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_USERNAME)),
+                fingerprintEnabled = cursor.getInt(
+                    cursor.getColumnIndexOrThrow(COLUMN_FINGERPRINT)
+                ) == 1
+            )
+        }
+
+        cursor.close()
+        return user
+    }
+
 
 
 

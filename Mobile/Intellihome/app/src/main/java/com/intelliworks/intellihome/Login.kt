@@ -20,10 +20,8 @@ class Login : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // 🔹 Preferences
         val prefs = getSharedPreferences("settings", MODE_PRIVATE)
 
-        // 🔹 Tema oscuro
         val darkMode = prefs.getBoolean("dark_mode", false)
         AppCompatDelegate.setDefaultNightMode(
             if (darkMode)
@@ -32,11 +30,9 @@ class Login : AppCompatActivity() {
                 AppCompatDelegate.MODE_NIGHT_NO
         )
 
-        // 🔹 ViewBinding
         binding = ActivityLoginBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        // 🔹 Color de fondo
         val bgColor = prefs.getInt("bg_color", Color.TRANSPARENT)
         if (bgColor != Color.TRANSPARENT) {
             binding.root.setBackgroundColor(bgColor)
@@ -44,7 +40,6 @@ class Login : AppCompatActivity() {
 
         databaseHelper = DatabaseHelper(this)
 
-        // 🔹 Login normal
         binding.loginButton.setOnClickListener {
             val username = binding.loginUsername.text.toString()
             val password = binding.loginPassword.text.toString()
@@ -56,12 +51,10 @@ class Login : AppCompatActivity() {
             }
         }
 
-        // 🔹 Menú ajustes
         binding.btnMenu.setOnClickListener {
             showMenu(it)
         }
 
-        // 🔹 Login con huella
         binding.fingerprintLogin.setOnClickListener {
             val username = binding.loginUsername.text.toString()
 
@@ -104,10 +97,14 @@ class Login : AppCompatActivity() {
     }
 
     private fun loginSuccess() {
-        Toast.makeText(this, "Login successful", Toast.LENGTH_SHORT).show()
-        startActivity(Intent(this, MainActivity::class.java))
+        val username = binding.loginUsername.text.toString()
+
+        val intent = Intent(this, MainActivity::class.java)
+        intent.putExtra("username", username)
+        startActivity(intent)
         finish()
     }
+
 
     private fun showBiometricPrompt(onSuccess: () -> Unit) {
         val executor = ContextCompat.getMainExecutor(this)
