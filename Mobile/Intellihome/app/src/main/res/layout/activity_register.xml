@@ -54,7 +54,7 @@
                     android:layout_width="100dp"
                     android:layout_height="100dp"
                     android:layout_gravity="center_vertical"
-                    android:contentDescription="@string/register_user_photo_desc"
+                    android:contentDescription="Foto de usuario"
                     android:scaleType="centerCrop"
                     android:background="@drawable/circle_bg"
                     android:clipToOutline="true"
@@ -208,10 +208,10 @@
                 <ImageButton
                     android:id="@+id/btn_mostrar_password"
                     android:layout_marginTop="10dp"
-                    android:layout_width="48dp"
-                    android:layout_height="48dp"
+                    android:layout_width="28dp"
+                    android:layout_height="28dp"
                     android:background="@android:color/transparent"
-                    android:contentDescription="@string/register_show_password"
+                    android:contentDescription="Mostrar/ocultar contraseña"
                     android:src="@drawable/ic_close_eye" />
             </LinearLayout>
 
@@ -245,10 +245,10 @@
                 <ImageButton
                     android:id="@+id/btn_mostrar_password2"
                     android:layout_marginTop="10dp"
-                    android:layout_width="48dp"
-                    android:layout_height="48dp"
+                    android:layout_width="28dp"
+                    android:layout_height="28dp"
                     android:background="@android:color/transparent"
-                    android:contentDescription="@string/register_show_password"
+                    android:contentDescription="Mostrar/ocultar contraseña"
                     android:src="@drawable/ic_close_eye" />
             </LinearLayout>
 
@@ -346,7 +346,7 @@
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:inputType="date"
-                    android:hint="@string/register_birthdate_hint"
+                    android:hint="yyyy-mm-dd"
                     android:textSize="14sp"
                     android:focusable="false" />
 
@@ -592,6 +592,7 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toEndOf="parent" />
 
+
             <!-- Términos y condiciones: CheckBox deshabilitado y TextView alineados horizontalmente -->
             <LinearLayout
                 android:id="@+id/ll_terminos"
@@ -611,7 +612,7 @@
                     android:id="@+id/tv_ver_terminos"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@string/register_terms"
+                    android:text="Ver términos y condiciones"
                     android:textColor="@color/black"
                     android:textStyle="bold"
                     android:paddingStart="8dp"
