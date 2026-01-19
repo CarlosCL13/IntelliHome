@@ -5,117 +5,119 @@ import android.view.View
 import android.widget.EditText
 import android.widget.ImageButton
 import android.widget.Toast
-import androidx.activity.enableEdgeToEdge
-import androidx.appcompat.app.AppCompatActivity
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
 import com.intelliworks.intellihome.databinding.ActivityPasswordRecoveryBinding
 import com.intelliworks.intellihome.utils.BaseActivity
 
+/**
+ * Controlador para el proceso de recuperación de credenciales.
+ * Implementa un flujo de dos pasos: identificación del perfil mediante pregunta de seguridad
+ * y validación de nueva clave bajo estándares de complejidad alfanumérica.
+ */
 class PasswordRecoveryActivity : BaseActivity() {
 
-    private lateinit var binding: ActivityPasswordRecoveryBinding
-    private lateinit var db: DatabaseHelper
+    private lateinit var enlace: ActivityPasswordRecoveryBinding
+    private lateinit var baseDatos: DatabaseHelper
 
     override fun onResume() {
         super.onResume()
-        applyAppAppearance(binding.root)
+        applyAppAppearance(enlace.root)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        binding = ActivityPasswordRecoveryBinding.inflate(layoutInflater)
-        setContentView(binding.root)
+        enlace = ActivityPasswordRecoveryBinding.inflate(layoutInflater)
+        setContentView(enlace.root)
 
-        db = DatabaseHelper(this)
+        baseDatos = DatabaseHelper(this)
 
-        // Y en el onCreate las activas:
-        setupPasswordVisibility(binding.etNewPassword, binding.btnShowNewPass)
-        setupPasswordVisibility(binding.etConfirmNewPassword, binding.btnShowConfirmPass)
+        configurarVisibilidadContrasena(enlace.etNewPassword, enlace.btnShowNewPass)
+        configurarVisibilidadContrasena(enlace.etConfirmNewPassword, enlace.btnShowConfirmPass)
 
-        // PASO 1: Buscar la pregunta del usuario
-        binding.btnGetQuestion.setOnClickListener {
-            val user = binding.etRecoveryUser.text.toString()
-            val pregunta = db.getRecoveryQuestion(user)
+        // Fase 1: Identificación y recuperación de pregunta de desafío
+        enlace.btnGetQuestion.setOnClickListener {
+            val identificador = enlace.etRecoveryUser.text.toString()
+            val preguntaEscrita = baseDatos.getRecoveryQuestion(identificador)
 
-            if (pregunta != null) {
-                binding.tvQuestionText.text = pregunta
-                binding.tvQuestionText.visibility = View.VISIBLE
-                binding.etRecoveryAnswer.visibility = View.VISIBLE
-                binding.layoutNewPassword.visibility = View.VISIBLE
-                binding.btnGetQuestion.isEnabled = false // Evitar cambios accidentales
+            if (preguntaEscrita != null) {
+                enlace.tvQuestionText.text = preguntaEscrita
+                enlace.tvQuestionText.visibility = View.VISIBLE
+                enlace.etRecoveryAnswer.visibility = View.VISIBLE
+                enlace.layoutNewPassword.visibility = View.VISIBLE
+                enlace.btnGetQuestion.isEnabled = false
             } else {
-                Toast.makeText(this, "Usuario no encontrado", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, "Perfil de usuario no identificado", Toast.LENGTH_SHORT).show()
             }
         }
 
-        // PASO 2: Validar respuesta y actualizar
-        binding.btnResetPassword.setOnClickListener {
-            val user = binding.etRecoveryUser.text.toString().trim()
-            val answer = binding.etRecoveryAnswer.text.toString().trim()
-            val newPass = binding.etNewPassword.text.toString().trim()
-            val confirmPass = binding.etConfirmNewPassword.text.toString().trim()
+        // Fase 2: Validación de respuesta y actualización de credenciales
+        enlace.btnResetPassword.setOnClickListener {
+            val usuario = enlace.etRecoveryUser.text.toString().trim()
+            val respuesta = enlace.etRecoveryAnswer.text.toString().trim()
+            val nuevaClave = enlace.etNewPassword.text.toString().trim()
+            val confirmacionClave = enlace.etConfirmNewPassword.text.toString().trim()
 
-            // 1. Validar que no haya campos vacíos
-            if (newPass.isEmpty()) {
-                binding.etNewPassword.error = "Escribe una nueva contraseña"
+            if (nuevaClave.isEmpty()) {
+                enlace.etNewPassword.error = "Campo requerido"
                 return@setOnClickListener
             }
 
-            // 2. VALIDACIÓN ALFANUMÉRICA Y LONGITUD
-            if (!validatePassword(newPass)) {
-                binding.etNewPassword.error = "Debe tener al menos 8 caracteres, letras y números"
-                binding.etNewPassword.requestFocus()
+            // Cumplimiento de políticas de seguridad alfanumérica
+            if (!validarFormatoClave(nuevaClave)) {
+                enlace.etNewPassword.error = "Mínimo 8 caracteres, incluyendo letras y números"
+                enlace.etNewPassword.requestFocus()
                 return@setOnClickListener
             }
 
-            // 3. Validar coincidencia
-            if (newPass != confirmPass) {
-                binding.etConfirmNewPassword.error = "Las contraseñas no coinciden"
+            if (nuevaClave != confirmacionClave) {
+                enlace.etConfirmNewPassword.error = "La confirmación no coincide"
                 return@setOnClickListener
             }
 
-            // 4. Procesar en Base de Datos
-            if (db.verifyRecoveryAnswer(user, answer)) {
-                if (db.updatePassword(user, newPass)) {
+            // Ejecución de cambios en persistencia tras validación de desafío
+            if (baseDatos.verifyRecoveryAnswer(usuario, respuesta)) {
+                if (baseDatos.updatePassword(usuario, nuevaClave)) {
 
-                    // OPCIONAL: Limpiar el "Recuérdame" del Login ya que la clave cambió
-                    val prefs = getSharedPreferences("login_prefs", MODE_PRIVATE)
-                    prefs.edit().clear().apply()
+                    // Invalida sesiones recordadas para forzar re-autenticación
+                    val preferencias = getSharedPreferences("login_prefs", MODE_PRIVATE)
+                    preferencias.edit().clear().apply()
 
-                    Toast.makeText(this, "Contraseña actualizada exitosamente", Toast.LENGTH_LONG).show()
+                    Toast.makeText(this, "Cambio de credenciales exitoso", Toast.LENGTH_LONG).show()
                     finish()
                 }
             } else {
-                Toast.makeText(this, "Respuesta de seguridad incorrecta", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, "Validación de seguridad fallida", Toast.LENGTH_SHORT).show()
             }
         }
     }
-    private fun validatePassword(password: String): Boolean {
-        // Explicación del Regex:
-        // ^(?=.*[a-zA-Z]) -> Debe contener al menos una letra
-        // (?=.*[0-9])     -> Debe contener al menos un número
-        // .{8,}           -> Debe tener mínimo 8 caracteres
-        val passwordPattern = "^(?=.*[a-zA-Z])(?=.*[0-9]).{8,}$".toRegex()
-        return password.matches(passwordPattern)
+
+    /**
+     * Valida la integridad de la contraseña mediante expresiones regulares.
+     * Requisitos: Longitud mínima de 8 caracteres y composición alfanumérica.
+     */
+    private fun validarFormatoClave(clave: String): Boolean {
+        val patronClave = "^(?=.*[a-zA-Z])(?=.*[0-9]).{8,}$".toRegex()
+        return clave.matches(patronClave)
     }
-    // Función reutilizable para alternar visibilidad
-    private fun setupPasswordVisibility(editText: EditText, button: ImageButton) {
-        var isVisible = false
-        button.setOnClickListener {
-            isVisible = !isVisible
-            val tf = editText.typeface
-            if (isVisible) {
-                editText.inputType = android.text.InputType.TYPE_CLASS_TEXT or
+
+    /**
+     * Gestiona el cambio dinámico del tipo de entrada para los campos de contraseña.
+     */
+    private fun configurarVisibilidadContrasena(campoTexto: EditText, botonAccion: ImageButton) {
+        var visible = false
+        botonAccion.setOnClickListener {
+            visible = !visible
+            val tipografia = campoTexto.typeface
+            if (visible) {
+                campoTexto.inputType = android.text.InputType.TYPE_CLASS_TEXT or
                         android.text.InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD
-                button.setImageResource(R.drawable.ic_open_eye)
+                botonAccion.setImageResource(R.drawable.ic_open_eye)
             } else {
-                editText.inputType = android.text.InputType.TYPE_CLASS_TEXT or
+                campoTexto.inputType = android.text.InputType.TYPE_CLASS_TEXT or
                         android.text.InputType.TYPE_TEXT_VARIATION_PASSWORD
-                button.setImageResource(R.drawable.ic_close_eye)
+                botonAccion.setImageResource(R.drawable.ic_close_eye)
             }
-            editText.typeface = tf
-            editText.setSelection(editText.text.length)
+            campoTexto.typeface = tipografia
+            campoTexto.setSelection(campoTexto.text.length)
         }
     }
 }

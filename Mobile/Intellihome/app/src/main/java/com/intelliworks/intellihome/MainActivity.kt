@@ -2,58 +2,71 @@ package com.intelliworks.intellihome
 
 import com.intelliworks.intellihome.utils.BaseActivity
 import android.os.Bundle
-import androidx.appcompat.app.AppCompatActivity
 import com.intelliworks.intellihome.databinding.ActivityMainBinding
 import com.intelliworks.intellihome.model.User
 
+/**
+ * Controlador principal de la aplicación que gestiona el panel de perfil de usuario.
+ * Se encarga de la recuperación de la entidad completa desde persistencia y su
+ * representación en la interfaz de usuario.
+ */
 class MainActivity : BaseActivity() {
 
-    private lateinit var binding: ActivityMainBinding
-    private lateinit var databaseHelper: DatabaseHelper
+    private lateinit var enlace: ActivityMainBinding
+    private lateinit var baseDatos: DatabaseHelper
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        binding = ActivityMainBinding.inflate(layoutInflater)
-        setContentView(binding.root)
+        enlace = ActivityMainBinding.inflate(layoutInflater)
+        setContentView(enlace.root)
 
-        databaseHelper = DatabaseHelper(this)
+        baseDatos = DatabaseHelper(this)
 
-        val username = intent.getStringExtra("username")
+        // Recuperación del identificador único transferido desde el flujo de autenticación
+        val nombreUsuario = intent.getStringExtra("username")
 
-        if (username != null) {
-            val user = databaseHelper.getUserByUsername(username)
-            user?.let { mostrarUsuario(it) }
+        if (nombreUsuario != null) {
+            val usuario = baseDatos.getUserByUsername(nombreUsuario)
+            usuario?.let { desplegarInformacionUsuario(it) }
         }
     }
 
-    private fun mostrarUsuario(user: User) {
-        binding.txtUserId.text = "ID: ${user.id}"
-        binding.txtUsername.text = "Usuario: ${user.username}"
-        binding.txtNombre.text = "Nombre: ${user.nombre} ${user.apellidos}"
-        binding.txtCorreo.text = "Correo: ${user.correo}"
-        binding.txtTelefono.text = "Teléfono: ${user.telefono}"
-        binding.txtFechaNacimiento.text = "Fecha de nacimiento: ${user.fechaNacimiento}"
-        binding.txtDomicilio.text = "Domicilio: ${user.domicilio}"
+    /**
+     * Vincula los atributos del modelo de usuario con los componentes de la vista.
+     * Implementa lógica de mapeo para recursos internacionalizados y datos encriptados.
+     */
+    private fun desplegarInformacionUsuario(usuario: User) {
+        enlace.txtUserId.text = "ID: ${usuario.id}"
+        enlace.txtUsername.text = "Usuario: ${usuario.username}"
+        enlace.txtNombre.text = "Nombre: ${usuario.nombre} ${usuario.apellidos}"
+        enlace.txtCorreo.text = "Correo: ${usuario.correo}"
+        enlace.txtTelefono.text = "Teléfono: ${usuario.telefono}"
+        enlace.txtFechaNacimiento.text = "Fecha de nacimiento: ${usuario.fechaNacimiento}"
+        enlace.txtDomicilio.text = "Domicilio: ${usuario.domicilio}"
 
-        // Aquí podrías usar tu arreglo de preguntas internacionalizado
-        val preguntas = resources.getStringArray(R.array.preguntas_recuperacion)
-        val pregunta = if (user.preguntaRecuperacionId in 1..preguntas.size)
-            preguntas[user.preguntaRecuperacionId - 1]
+        // Resolución dinámica de la pregunta de seguridad basada en el índice de recursos
+        val catalogoPreguntas = resources.getStringArray(R.array.preguntas_recuperacion)
+        val preguntaDesplegada = if (usuario.preguntaRecuperacionId in 1..catalogoPreguntas.size)
+            catalogoPreguntas[usuario.preguntaRecuperacionId - 1]
         else
             "Pregunta no definida"
-        binding.txtPreguntaRecuperacion.text = "Pregunta: $pregunta"
 
-        binding.txtRespuestaRecuperacion.text = "Respuesta: ${user.respuestaRecuperacion}"
-        binding.txtFingerprint.text =
-            "Huella: ${if (user.fingerprintEnabled) "Activada" else "Desactivada"}"
-        binding.txtEstadoCuenta.text = "Estado: ${user.estadoCuenta}"
+        enlace.txtPreguntaRecuperacion.text = "Pregunta: $preguntaDesplegada"
 
-        binding.txtDatosTarjeta.text =
-            "Tarjeta: **** **** **** ${user.ultimos4} (${user.marca}) - Exp: ${user.fechaExpiracion}"
+        enlace.txtRespuestaRecuperacion.text = "Respuesta: ${usuario.respuestaRecuperacion}"
+        enlace.txtFingerprint.text =
+            "Huella: ${if (usuario.fingerprintEnabled) "Activada" else "Desactivada"}"
+        enlace.txtEstadoCuenta.text = "Estado: ${usuario.estadoCuenta}"
+
+        // Representación de información financiera enmascarada para protección de datos
+        enlace.txtDatosTarjeta.text =
+            "Tarjeta: **** **** **** ${usuario.ultimos4} (${usuario.marca}) - Exp: ${usuario.fechaExpiracion}"
     }
+
     override fun onResume() {
         super.onResume()
-        applyAppAppearance(binding.root)
+        // Sincronización de la apariencia visual con las preferencias globales
+        applyAppAppearance(enlace.root)
     }
 }

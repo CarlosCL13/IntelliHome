@@ -11,100 +11,118 @@ import android.widget.ImageButton
 import android.widget.PopupMenu
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
-import com.intelliworks.intellihome.R // Asegúrate de importar tu R
-import com.intelliworks.intellihome.SettingsActivity // Importa tu SettingsActivity
+import com.intelliworks.intellihome.R
+import com.intelliworks.intellihome.SettingsActivity
 
+/**
+ * Clase base abstracta para centralizar la gestión de configuración global,
+ * persistencia de temas, localización y lógica de navegación compartida.
+ */
 abstract class BaseActivity : AppCompatActivity() {
 
-    // Variable para rastrear el idioma actual de esta instancia
-    protected var lastLanguage: String? = null
+    // Seguimiento del estado del lenguaje para validación en el ciclo de vida
+    protected var ultimoIdioma: String? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        // Aplicamos el tema ANTES de super.onCreate y setContentView
-        val prefs = getSharedPreferences("settings", MODE_PRIVATE)
-        val darkMode = prefs.getBoolean("dark_mode", false)
+        // Inicialización del modo nocturno previa a la creación de la instancia
+        val preferencias = getSharedPreferences("settings", MODE_PRIVATE)
+        val modoOscuroActivo = preferencias.getBoolean("dark_mode", false)
 
         AppCompatDelegate.setDefaultNightMode(
-            if (darkMode) AppCompatDelegate.MODE_NIGHT_YES
+            if (modoOscuroActivo) AppCompatDelegate.MODE_NIGHT_YES
             else AppCompatDelegate.MODE_NIGHT_NO
         )
 
         super.onCreate(savedInstanceState)
     }
-    // Crea esta función para que Login, Register y Settings la usen
-    fun applyAppAppearance(rootView: View) {
-        val prefs = getSharedPreferences("settings", MODE_PRIVATE)
-        val darkMode = prefs.getBoolean("dark_mode", false)
-        val bgColor = prefs.getInt("bg_color", Color.WHITE)
 
-        val adaptedColor = if (darkMode) {
-            // Oscurecemos el color un 40% si es modo noche
+    /**
+     * Aplica los parámetros estéticos definidos en las preferencias al fondo de la vista.
+     * Calcula la reducción de luminosidad necesaria si el modo nocturno está habilitado.
+     */
+    fun applyAppAppearance(vistaRaiz: View) {
+        val preferencias = getSharedPreferences("settings", MODE_PRIVATE)
+        val modoOscuroActivo = preferencias.getBoolean("dark_mode", false)
+        val colorFondoBase = preferencias.getInt("bg_color", Color.WHITE)
+
+        val colorAdaptado = if (modoOscuroActivo) {
+            // Ajuste de luminancia al 60% para cumplimiento de accesibilidad en modo oscuro
             Color.argb(
-                Color.alpha(bgColor),
-                (Color.red(bgColor) * 0.6f).toInt(),
-                (Color.green(bgColor) * 0.6f).toInt(),
-                (Color.blue(bgColor) * 0.6f).toInt()
+                Color.alpha(colorFondoBase),
+                (Color.red(colorFondoBase) * 0.6f).toInt(),
+                (Color.green(colorFondoBase) * 0.6f).toInt(),
+                (Color.blue(colorFondoBase) * 0.6f).toInt()
             )
         } else {
-            bgColor
+            colorFondoBase
         }
-        rootView.setBackgroundColor(adaptedColor)
+        vistaRaiz.setBackgroundColor(colorAdaptado)
     }
 
     override fun onResume() {
         super.onResume()
 
-        val prefs = getSharedPreferences("settings", MODE_PRIVATE)
-        val currentLanguage = prefs.getString("language", "es")
+        val preferencias = getSharedPreferences("settings", MODE_PRIVATE)
+        val idiomaActual = preferencias.getString("language", "es")
 
-        // Si el idioma cambió mientras la actividad estaba en pausa, recreamos
-        if (lastLanguage != null && lastLanguage != currentLanguage) {
+        // Verificación de integridad de localización: recrea la actividad si hubo cambios externos
+        if (ultimoIdioma != null && ultimoIdioma != idiomaActual) {
             recreate()
         }
 
-        // Actualizamos el registro del idioma actual
-        lastLanguage = currentLanguage
-    }
-    override fun attachBaseContext(newBase: Context) {
-        val prefs = newBase.getSharedPreferences("settings", MODE_PRIVATE)
-        val language = prefs.getString("language", "es") ?: "es"
-        val context = LocaleHelper.setLocale(newBase, language)
-        super.attachBaseContext(context)
+        ultimoIdioma = idiomaActual
     }
 
-    // Usamos esta firma que es la que usa ViewBinding
-    override fun setContentView(view: View?) {
-        // 1. Inflamos el layout base (el que tiene el botón)
-        val rootLayout = layoutInflater.inflate(R.layout.activity_base, null) as ViewGroup
-        val container = rootLayout.findViewById<FrameLayout>(R.id.activity_content_container)
+    override fun attachBaseContext(nuevoContextoBase: Context) {
+        // Inyección de configuración de idioma en el contexto base antes de la inicialización
+        val preferencias = nuevoContextoBase.getSharedPreferences("settings", MODE_PRIVATE)
+        val idioma = preferencias.getString("language", "es") ?: "es"
+        val contexto = LocaleHelper.setLocale(nuevoContextoBase, idioma)
+        super.attachBaseContext(contexto)
+    }
 
-        // 2. Añadimos la vista de la Activity (Login, etc) al contenedor
-        view?.let {
-            container.addView(it)
+    /**
+     * Implementación de patrón decorador para inyectar layouts secundarios
+     * dentro de un contenedor persistente definido en la actividad base.
+     */
+    override fun setContentView(vista: View?) {
+        val layoutRaiz = layoutInflater.inflate(R.layout.activity_base, null) as ViewGroup
+        val contenedorContenido = layoutRaiz.findViewById<FrameLayout>(R.id.activity_content_container)
+
+        vista?.let {
+            contenedorContenido.addView(it)
         }
 
-        // 3. LLAMADA CRUCIAL: Usamos super.setContentView para evitar bucles
-        super.setContentView(rootLayout)
-
-        // 4. Configuramos el botón una vez que la vista ya está en pantalla
-        setupBaseMenu()
+        // Delegación del layout final al sistema operativo evitando recursividad
+        super.setContentView(layoutRaiz)
+        configurarMenuBase()
     }
 
-    private fun setupBaseMenu() {
-        val btnMenu = findViewById<ImageButton>(R.id.btnBaseMenu)
-        btnMenu?.setOnClickListener {
-            showMenu(it)
+    /**
+     * Inicializa los componentes de navegación global de la interfaz.
+     */
+    private fun configurarMenuBase() {
+        val botonMenu = findViewById<ImageButton>(R.id.btnBaseMenu)
+        botonMenu?.setOnClickListener {
+            mostrarMenuOpciones(it)
         }
     }
-    fun showSettingsButton(show: Boolean) {
-        val btnMenu = findViewById<ImageButton>(R.id.btnBaseMenu)
-        btnMenu?.visibility = if (show) View.VISIBLE else View.GONE
+
+    /**
+     * Controla la visibilidad del acceso a configuraciones generales.
+     */
+    fun showSettingsButton(mostrar: Boolean) {
+        val botonMenu = findViewById<ImageButton>(R.id.btnBaseMenu)
+        botonMenu?.visibility = if (mostrar) View.VISIBLE else View.GONE
     }
 
-    private fun showMenu(anchor: View) {
-        val popup = PopupMenu(this, anchor)
-        popup.menuInflater.inflate(R.menu.menu_settings, popup.menu)
-        popup.setOnMenuItemClickListener { item ->
+    /**
+     * Despliega el menú contextual de acciones rápidas del sistema.
+     */
+    private fun mostrarMenuOpciones(ancla: View) {
+        val popupMenu = PopupMenu(this, ancla)
+        popupMenu.menuInflater.inflate(R.menu.menu_settings, popupMenu.menu)
+        popupMenu.setOnMenuItemClickListener { item ->
             when (item.itemId) {
                 R.id.menu_settings -> {
                     startActivity(Intent(this, SettingsActivity::class.java))
@@ -113,6 +131,6 @@ abstract class BaseActivity : AppCompatActivity() {
                 else -> false
             }
         }
-        popup.show()
+        popupMenu.show()
     }
 }

@@ -12,170 +12,175 @@ import androidx.biometric.BiometricPrompt
 import androidx.core.content.ContextCompat
 import com.intelliworks.intellihome.databinding.ActivityLoginBinding
 
+/**
+ * Controlador para la interfaz de acceso de usuarios.
+ * Gestiona autenticación estándar, biométrica y persistencia de sesión local.
+ */
 class Login : BaseActivity() {
 
-    private lateinit var binding: ActivityLoginBinding
-    private lateinit var databaseHelper: DatabaseHelper
+    private lateinit var enlace: ActivityLoginBinding
+    private lateinit var baseDatos: DatabaseHelper
 
-    private var isPasswordLoadedFromPrefs = false
+    // Estado para controlar la integridad de la contraseña recuperada de preferencias
+    private var contrasenaCargadaDesdePreferencias = false
 
     override fun onResume() {
         super.onResume()
-        applyAppAppearance(binding.root)
+        applyAppAppearance(enlace.root)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        binding = ActivityLoginBinding.inflate(layoutInflater)
-        setContentView(binding.root)
-        applyAppAppearance(binding.root)
+        enlace = ActivityLoginBinding.inflate(layoutInflater)
+        setContentView(enlace.root)
+        applyAppAppearance(enlace.root)
 
-        databaseHelper = DatabaseHelper(this)
+        baseDatos = DatabaseHelper(this)
 
-        // --- LÓGICA DE RECUÉRDAME (LECTURA) ---
-        val prefs = getSharedPreferences("login_prefs", MODE_PRIVATE)
-        val isRemembered = prefs.getBoolean("is_remembered", false)
+        // Inicialización de la funcionalidad "Recordarme"
+        val preferenciasLogin = getSharedPreferences("login_prefs", MODE_PRIVATE)
+        val sesionRecordada = preferenciasLogin.getBoolean("is_remembered", false)
 
-        if (isRemembered) {
-            val savedUser = prefs.getString("saved_user", "")
-            val savedPass = prefs.getString("saved_pass", "")
+        if (sesionRecordada) {
+            val usuarioGuardado = preferenciasLogin.getString("saved_user", "")
+            val claveGuardada = preferenciasLogin.getString("saved_pass", "")
 
-            binding.loginUsername.setText(savedUser)
-            binding.loginPassword.setText(savedPass)
-            binding.cbRememberMe.isChecked = true
+            enlace.loginUsername.setText(usuarioGuardado)
+            enlace.loginPassword.setText(claveGuardada)
+            enlace.cbRememberMe.isChecked = true
 
-            // Marcamos que la contraseña actual es la guardada
-            isPasswordLoadedFromPrefs = true
+            contrasenaCargadaDesdePreferencias = true
         }
 
-        binding.loginButton.setOnClickListener {
-            val identifier = binding.loginUsername.text.toString()
-            val password = binding.loginPassword.text.toString()
+        enlace.loginButton.setOnClickListener {
+            val identificador = enlace.loginUsername.text.toString()
+            val clave = enlace.loginPassword.text.toString()
 
-            if (databaseHelper.readUser(identifier, password)) {
-                // --- LÓGICA DE RECUÉRDAME (ESCRITURA) ---
-                val editor = prefs.edit()
-                if (binding.cbRememberMe.isChecked) {
-                    editor.putString("saved_user", identifier)
-                    editor.putString("saved_pass", password)
-                    editor.putBoolean("is_remembered", true)
+            if (baseDatos.readUser(identificador, clave)) {
+                // Persistencia de credenciales según preferencia del usuario
+                val editorPreferencias = preferenciasLogin.edit()
+                if (enlace.cbRememberMe.isChecked) {
+                    editorPreferencias.putString("saved_user", identificador)
+                    editorPreferencias.putString("saved_pass", clave)
+                    editorPreferencias.putBoolean("is_remembered", true)
                 } else {
-                    editor.clear() // Borra todo si se desmarca
+                    editorPreferencias.clear()
                 }
-                editor.apply()
+                editorPreferencias.apply()
 
-                val realUsername = databaseHelper.getActualUsername(identifier)
-                loginSuccess(realUsername)
+                val nombreUsuarioReal = baseDatos.getActualUsername(identificador)
+                procesarIngresoExitoso(nombreUsuarioReal)
             } else {
-                Toast.makeText(this, "Login failed", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, "Error de autenticación", Toast.LENGTH_SHORT).show()
             }
         }
 
-        // --- LÓGICA DE OLVIDÉ MI CONTRASEÑA ---
-        binding.tvForgotPassword.setOnClickListener {
-            val intent = Intent(this, PasswordRecoveryActivity::class.java)
-            startActivity(intent)
+        enlace.tvForgotPassword.setOnClickListener {
+            startActivity(Intent(this, PasswordRecoveryActivity::class.java))
         }
 
-        // --- PROTECCIÓN DE CONTRASEÑA RECORDADA ---
-        binding.loginPassword.addTextChangedListener(object : android.text.TextWatcher {
+        /**
+         * Monitor de cambios en el campo de contraseña.
+         * Implementa una política de borrado total si se intenta modificar una clave recordada.
+         */
+        enlace.loginPassword.addTextChangedListener(object : android.text.TextWatcher {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
 
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-                // Si el usuario intenta borrar un solo carácter (before > count)
-                // y la contraseña es la cargada de los prefs:
-                if (isPasswordLoadedFromPrefs && before > count) {
-                    isPasswordLoadedFromPrefs = false // Ya no es la de los prefs
-                    binding.loginPassword.setText("") // Borramos todo
+                // Si se detecta borrado en una contraseña cargada por el sistema, se limpia el campo
+                if (contrasenaCargadaDesdePreferencias && before > count) {
+                    contrasenaCargadaDesdePreferencias = false
+                    enlace.loginPassword.setText("")
                 }
             }
 
             override fun afterTextChanged(s: android.text.Editable?) {
-                // Si el usuario empieza a escribir algo nuevo, ya no es la de los prefs
-                if (isPasswordLoadedFromPrefs && s?.length ?: 0 > 0 && s.toString() != prefs.getString("saved_pass", "")) {
-                    isPasswordLoadedFromPrefs = false
+                // Valida si el contenido actual difiere del almacenado en preferencias
+                if (contrasenaCargadaDesdePreferencias && s?.length ?: 0 > 0 &&
+                    s.toString() != preferenciasLogin.getString("saved_pass", "")) {
+                    contrasenaCargadaDesdePreferencias = false
                 }
             }
         })
 
-        // --- TU LÓGICA DEL OJITO ---
-        var passwordVisible = false
-        // --- LÓGICA DEL OJITO (MODIFICADA) ---
-        binding.btnMostrarPasswordLogin.setOnClickListener {
-            // Si la contraseña es la recordada, NO permitimos verla
-            if (isPasswordLoadedFromPrefs) {
-                Toast.makeText(this, "Por seguridad, escriba la contraseña de nuevo para verla", Toast.LENGTH_SHORT).show()
+        var claveVisible = false
+        enlace.btnMostrarPasswordLogin.setOnClickListener {
+            // Restricción de visibilidad para contraseñas automáticas por seguridad del usuario
+            if (contrasenaCargadaDesdePreferencias) {
+                Toast.makeText(this, "Por seguridad, reescriba su clave para visualizarla", Toast.LENGTH_SHORT).show()
             } else {
-                // Lógica normal del ojito que ya tienes
-                passwordVisible = !passwordVisible
-                val tf = binding.loginPassword.typeface
-                if (passwordVisible) {
-                    binding.loginPassword.inputType = android.text.InputType.TYPE_CLASS_TEXT or
+                claveVisible = !claveVisible
+                val tipografia = enlace.loginPassword.typeface
+                if (claveVisible) {
+                    enlace.loginPassword.inputType = android.text.InputType.TYPE_CLASS_TEXT or
                             android.text.InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD
-                    binding.btnMostrarPasswordLogin.setImageResource(R.drawable.ic_open_eye)
+                    enlace.btnMostrarPasswordLogin.setImageResource(R.drawable.ic_open_eye)
                 } else {
-                    binding.loginPassword.inputType = android.text.InputType.TYPE_CLASS_TEXT or
+                    enlace.loginPassword.inputType = android.text.InputType.TYPE_CLASS_TEXT or
                             android.text.InputType.TYPE_TEXT_VARIATION_PASSWORD
-                    binding.btnMostrarPasswordLogin.setImageResource(R.drawable.ic_close_eye)
+                    enlace.btnMostrarPasswordLogin.setImageResource(R.drawable.ic_close_eye)
                 }
-                binding.loginPassword.typeface = tf
-                binding.loginPassword.setSelection(binding.loginPassword.text?.length ?: 0)
+                enlace.loginPassword.typeface = tipografia
+                enlace.loginPassword.setSelection(enlace.loginPassword.text?.length ?: 0)
             }
         }
 
-        // --- TU LÓGICA DE HUELLA Y REDIRECT ---
-        binding.fingerprintLogin.setOnClickListener {
-            val input = binding.loginUsername.text.toString()
-            if (input.isEmpty()) {
-                Toast.makeText(this, "Ingresa tu usuario, correo o teléfono primero", Toast.LENGTH_SHORT).show()
+        // Gestión de autenticación biométrica
+        enlace.fingerprintLogin.setOnClickListener {
+            val entrada = enlace.loginUsername.text.toString()
+            if (entrada.isEmpty()) {
+                Toast.makeText(this, "Ingrese identificador de usuario", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
 
-            if (databaseHelper.isFingerprintEnabled(input)) {
-                showBiometricPrompt {
-                    val realUsername = databaseHelper.getActualUsername(input)
-                    loginSuccess(realUsername)
+            if (baseDatos.isFingerprintEnabled(entrada)) {
+                desplegarAutenticacionBiometrica {
+                    val nombreUsuarioReal = baseDatos.getActualUsername(entrada)
+                    procesarIngresoExitoso(nombreUsuarioReal)
                 }
             } else {
-                Toast.makeText(this, "La huella no está habilitada para este usuario", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, "Autenticación biométrica no habilitada", Toast.LENGTH_SHORT).show()
             }
         }
 
-        binding.signupRedirect.setOnClickListener {
+        enlace.signupRedirect.setOnClickListener {
             startActivity(Intent(this, Register::class.java))
         }
     }
 
-    private fun loginSuccess(username: String) {
+    /**
+     * Finaliza el flujo de login y transiciona a la actividad principal.
+     */
+    private fun procesarIngresoExitoso(nombreUsuario: String) {
         val intent = Intent(this, MainActivity::class.java)
-        intent.putExtra("username", username)
+        intent.putExtra("username", nombreUsuario)
         startActivity(intent)
         finish()
     }
 
+    /**
+     * Inicializa y despliega el diálogo de hardware para validación de huella digital.
+     */
+    private fun desplegarAutenticacionBiometrica(alExito: () -> Unit) {
+        val ejecutor = ContextCompat.getMainExecutor(this)
 
-    private fun showBiometricPrompt(onSuccess: () -> Unit) {
-        val executor = ContextCompat.getMainExecutor(this)
-
-        val biometricPrompt = BiometricPrompt(
+        val avisoBiometrico = BiometricPrompt(
             this,
-            executor,
+            ejecutor,
             object : BiometricPrompt.AuthenticationCallback() {
-                override fun onAuthenticationSucceeded(
-                    result: BiometricPrompt.AuthenticationResult
-                ) {
-                    super.onAuthenticationSucceeded(result)
-                    onSuccess()
+                override fun onAuthenticationSucceeded(resultado: BiometricPrompt.AuthenticationResult) {
+                    super.onAuthenticationSucceeded(resultado)
+                    alExito()
                 }
             })
 
-        val promptInfo = BiometricPrompt.PromptInfo.Builder()
-            .setTitle("Fingerprint Login")
-            .setSubtitle("Authenticate to continue")
-            .setNegativeButtonText("Cancel")
+        val configuracionAviso = BiometricPrompt.PromptInfo.Builder()
+            .setTitle("Acceso mediante huella")
+            .setSubtitle("Autentíquese para continuar")
+            .setNegativeButtonText("Cancelar")
             .build()
 
-        biometricPrompt.authenticate(promptInfo)
+        avisoBiometrico.authenticate(configuracionAviso)
     }
 }

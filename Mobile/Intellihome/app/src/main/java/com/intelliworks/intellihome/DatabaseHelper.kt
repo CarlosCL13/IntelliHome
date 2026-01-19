@@ -6,261 +6,248 @@ import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
 import com.intelliworks.intellihome.model.User
 
-class DatabaseHelper(private val context: Context):
-    SQLiteOpenHelper(context, DATABASE_NAME, null, DATABASE_VERSION) {
+/**
+ * Gestiona el ciclo de vida de la base de datos y provee interfaces de acceso
+ * para las operaciones de persistencia de la entidad usuario.
+ */
+class DatabaseHelper(private val contexto: Context):
+    SQLiteOpenHelper(contexto, NOMBRE_BASE_DATOS, null, VERSION_BASE_DATOS) {
 
     companion object {
-        private const val DATABASE_NAME = "UserDatabase.db"
-        private const val DATABASE_VERSION = 3 // Incrementado para forzar recreación
-        // Tabla usuario
-        private const val TABLE_USUARIO = "usuario"
-        private const val COLUMN_ID = "id"
-        private const val COLUMN_ROL_ID = "rol_id"
-        private const val COLUMN_IMAGEN_PERFIL = "imagen_perfil"
-        private const val COLUMN_NOMBRE = "nombre"
-        private const val COLUMN_APELLIDOS = "apellidos"
-        private const val COLUMN_CORREO = "correo"
-        private const val COLUMN_USERNAME = "username"
-        private const val COLUMN_CONTRASENA = "contrasena"
-        private const val COLUMN_TELEFONO = "telefono"
-        private const val COLUMN_FECHA_NACIMIENTO = "fecha_nacimiento"
-        private const val COLUMN_DOMICILIO = "domicilio"
-        private const val COLUMN_PREGUNTA_RECUPERACION_ID = "pregunta_recuperacion_id"
-        private const val COLUMN_RESPUESTA_RECUPERACION = "respuesta_recuperacion"
-        private const val COLUMN_FINGERPRINT = "fingerprintEnabled"
-        private const val COLUMN_INTENTOS_FALLIDOS = "intentos_fallidos"
-        private const val COLUMN_ESTADO_CUENTA = "estado_cuenta"
-        private const val COLUMN_NOMBRE_TITULAR = "nombre_titular"
-        private const val COLUMN_NUMERO_ENCRIPTADO = "numero_encriptado"
-        private const val COLUMN_FECHA_EXPIRACION = "fecha_expiracion"
-        private const val COLUMN_MARCA = "marca"
-        private const val COLUMN_ULTIMOS_4 = "ultimos_4"
+        private const val NOMBRE_BASE_DATOS = "UserDatabase.db"
+        private const val VERSION_BASE_DATOS = 3
+
+        // Estructura de la tabla usuario
+        private const val TABLA_USUARIO = "usuario"
+        private const val COLUMNA_ID = "id"
+        private const val COLUMNA_ROL_ID = "rol_id"
+        private const val COLUMNA_IMAGEN_PERFIL = "imagen_perfil"
+        private const val COLUMNA_NOMBRE = "nombre"
+        private const val COLUMNA_APELLIDOS = "apellidos"
+        private const val COLUMNA_CORREO = "correo"
+        private const val COLUMNA_USERNAME = "username"
+        private const val COLUMNA_CONTRASENA = "contrasena"
+        private const val COLUMNA_TELEFONO = "telefono"
+        private const val COLUMNA_FECHA_NACIMIENTO = "fecha_nacimiento"
+        private const val COLUMNA_DOMICILIO = "domicilio"
+        private const val COLUMNA_PREGUNTA_RECUPERACION_ID = "pregunta_recuperacion_id"
+        private const val COLUMNA_RESPUESTA_RECUPERACION = "respuesta_recuperacion"
+        private const val COLUMNA_HUELLA_DIGITAL = "fingerprintEnabled"
+        private const val COLUMNA_INTENTOS_FALLIDOS = "intentos_fallidos"
+        private const val COLUMNA_ESTADO_CUENTA = "estado_cuenta"
+        private const val COLUMNA_NOMBRE_TITULAR = "nombre_titular"
+        private const val COLUMNA_NUMERO_ENCRIPTADO = "numero_encriptado"
+        private const val COLUMNA_FECHA_EXPIRACION = "fecha_expiracion"
+        private const val COLUMNA_MARCA = "marca"
+        private const val COLUMNA_ULTIMOS_4 = "ultimos_4"
     }
 
     override fun onCreate(db: SQLiteDatabase?) {
-        // Solo tabla de usuario
-        val createUsuarioTable = """
-        CREATE TABLE usuario (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            rol_id INTEGER NOT NULL,
-            imagen_perfil TEXT NOT NULL,
-            nombre TEXT NOT NULL,
-            apellidos TEXT NOT NULL,
-            correo TEXT NOT NULL UNIQUE,
-            username TEXT NOT NULL UNIQUE,
-            contrasena TEXT NOT NULL,
-            telefono TEXT NOT NULL,
-            fecha_nacimiento TEXT NOT NULL,
-            domicilio TEXT NOT NULL,
-            pregunta_recuperacion_id INTEGER NOT NULL,
-            respuesta_recuperacion TEXT NOT NULL,
-            fingerprintEnabled INTEGER NOT NULL,
-            intentos_fallidos INTEGER NOT NULL,
-            estado_cuenta TEXT NOT NULL,
-            nombre_titular TEXT NOT NULL,
-            numero_encriptado TEXT NOT NULL,
-            fecha_expiracion TEXT NOT NULL,
-            marca TEXT NOT NULL,
-            ultimos_4 TEXT NOT NULL
+        // Definición de esquema para la tabla de usuarios
+        val crearTablaUsuario = """
+        CREATE TABLE $TABLA_USUARIO (
+            $COLUMNA_ID INTEGER PRIMARY KEY AUTOINCREMENT,
+            $COLUMNA_ROL_ID INTEGER NOT NULL,
+            $COLUMNA_IMAGEN_PERFIL TEXT NOT NULL,
+            $COLUMNA_NOMBRE TEXT NOT NULL,
+            $COLUMNA_APELLIDOS TEXT NOT NULL,
+            $COLUMNA_CORREO TEXT NOT NULL UNIQUE,
+            $COLUMNA_USERNAME TEXT NOT NULL UNIQUE,
+            $COLUMNA_CONTRASENA TEXT NOT NULL,
+            $COLUMNA_TELEFONO TEXT NOT NULL,
+            $COLUMNA_FECHA_NACIMIENTO TEXT NOT NULL,
+            $COLUMNA_DOMICILIO TEXT NOT NULL,
+            $COLUMNA_PREGUNTA_RECUPERACION_ID INTEGER NOT NULL,
+            $COLUMNA_RESPUESTA_RECUPERACION TEXT NOT NULL,
+            $COLUMNA_HUELLA_DIGITAL INTEGER NOT NULL,
+            $COLUMNA_INTENTOS_FALLIDOS INTEGER NOT NULL,
+            $COLUMNA_ESTADO_CUENTA TEXT NOT NULL,
+            $COLUMNA_NOMBRE_TITULAR TEXT NOT NULL,
+            $COLUMNA_NUMERO_ENCRIPTADO TEXT NOT NULL,
+            $COLUMNA_FECHA_EXPIRACION TEXT NOT NULL,
+            $COLUMNA_MARCA TEXT NOT NULL,
+            $COLUMNA_ULTIMOS_4 TEXT NOT NULL
         )
         """.trimIndent()
-        db?.execSQL(createUsuarioTable)
+        db?.execSQL(crearTablaUsuario)
     }
 
-    override fun onUpgrade(db: SQLiteDatabase?, oldVersion: Int, newVersion: Int) {
-        db?.execSQL("DROP TABLE IF EXISTS $TABLE_USUARIO")
+    override fun onUpgrade(db: SQLiteDatabase?, versionAnterior: Int, versionNueva: Int) {
+        db?.execSQL("DROP TABLE IF EXISTS $TABLA_USUARIO")
         onCreate(db)
     }
 
+    /**
+     * Registra un nuevo perfil de usuario en el sistema.
+     */
     fun insertUser(
-        rol_id: Int,
-        imagen_perfil: String,
-        nombre: String,
-        apellidos: String,
-        correo: String,
-        username: String,
-        contrasena: String,
-        telefono: String,
-        fecha_nacimiento: String,
-        domicilio: String,
-        pregunta_recuperacion_id: Int,
-        respuesta_recuperacion: String,
-        fingerprintEnabled: Boolean,
-        intentos_fallidos: Int,
-        estado_cuenta: String,
-        nombre_titular: String,
-        numero_encriptado: String,
-        fecha_expiracion: String,
-        marca: String,
-        ultimos_4: String
+        rolId: Int, imagenPerfil: String, nombre: String, apellidos: String,
+        correo: String, username: String, contrasena: String, telefono: String,
+        fechaNacimiento: String, domicilio: String, preguntaId: Int,
+        respuesta: String, huellaActiva: Boolean, intentos: Int,
+        estado: String, titular: String, numeroEnc: String,
+        expiracion: String, marca: String, ultimos4: String
     ): Long {
-        val values = ContentValues().apply {
-            put(COLUMN_ROL_ID, rol_id)
-            put(COLUMN_IMAGEN_PERFIL, imagen_perfil)
-            put(COLUMN_NOMBRE, nombre)
-            put(COLUMN_APELLIDOS, apellidos)
-            put(COLUMN_CORREO, correo)
-            put(COLUMN_USERNAME, username)
-            put(COLUMN_CONTRASENA, contrasena)
-            put(COLUMN_TELEFONO, telefono)
-            put(COLUMN_FECHA_NACIMIENTO, fecha_nacimiento)
-            put(COLUMN_DOMICILIO, domicilio)
-            put(COLUMN_PREGUNTA_RECUPERACION_ID, pregunta_recuperacion_id)
-            put(COLUMN_RESPUESTA_RECUPERACION, respuesta_recuperacion)
-            put(COLUMN_FINGERPRINT, if (fingerprintEnabled) 1 else 0)
-            put(COLUMN_INTENTOS_FALLIDOS, intentos_fallidos)
-            put(COLUMN_ESTADO_CUENTA, estado_cuenta)
-            put(COLUMN_NOMBRE_TITULAR, nombre_titular)
-            put(COLUMN_NUMERO_ENCRIPTADO, numero_encriptado)
-            put(COLUMN_FECHA_EXPIRACION, fecha_expiracion)
-            put(COLUMN_MARCA, marca)
-            put(COLUMN_ULTIMOS_4, ultimos_4)
+        val valores = ContentValues().apply {
+            put(COLUMNA_ROL_ID, rolId)
+            put(COLUMNA_IMAGEN_PERFIL, imagenPerfil)
+            put(COLUMNA_NOMBRE, nombre)
+            put(COLUMNA_APELLIDOS, apellidos)
+            put(COLUMNA_CORREO, correo)
+            put(COLUMNA_USERNAME, username)
+            put(COLUMNA_CONTRASENA, contrasena)
+            put(COLUMNA_TELEFONO, telefono)
+            put(COLUMNA_FECHA_NACIMIENTO, fechaNacimiento)
+            put(COLUMNA_DOMICILIO, domicilio)
+            put(COLUMNA_PREGUNTA_RECUPERACION_ID, preguntaId)
+            put(COLUMNA_RESPUESTA_RECUPERACION, respuesta)
+            put(COLUMNA_HUELLA_DIGITAL, if (huellaActiva) 1 else 0)
+            put(COLUMNA_INTENTOS_FALLIDOS, intentos)
+            put(COLUMNA_ESTADO_CUENTA, estado)
+            put(COLUMNA_NOMBRE_TITULAR, titular)
+            put(COLUMNA_NUMERO_ENCRIPTADO, numeroEnc)
+            put(COLUMNA_FECHA_EXPIRACION, expiracion)
+            put(COLUMNA_MARCA, marca)
+            put(COLUMNA_ULTIMOS_4, ultimos4)
         }
         val db = writableDatabase
-        return db.insert(TABLE_USUARIO, null, values)
+        return db.insert(TABLA_USUARIO, null, valores)
     }
 
+    /**
+     * Verifica si el usuario tiene habilitada la autenticación biométrica.
+     */
     fun isFingerprintEnabled(identificador: String): Boolean {
         val db = this.readableDatabase
-        // Buscamos en las tres columnas si la huella está activa (1)
-        val selection = "($COLUMN_USERNAME = ? OR correo = ? OR telefono = ?) AND fingerprint_enabled = 1"
-        val selectionArgs = arrayOf(identificador, identificador, identificador)
+        val seleccion = "($COLUMNA_USERNAME = ? OR $COLUMNA_CORREO = ? OR $COLUMNA_TELEFONO = ?) AND $COLUMNA_HUELLA_DIGITAL = 1"
+        val argumentos = arrayOf(identificador, identificador, identificador)
 
-        val cursor = db.query(TABLE_USUARIO, null, selection, selectionArgs, null, null, null)
-        val enabled = cursor.count > 0
+        val cursor = db.query(TABLA_USUARIO, null, seleccion, argumentos, null, null, null)
+        val estaActivo = cursor.count > 0
         cursor.close()
-        return enabled
+        return estaActivo
     }
 
+    /**
+     * Valida las credenciales de acceso comparando identificador y contraseña.
+     */
     fun readUser(identificador: String, contrasena: String): Boolean {
         val db = this.readableDatabase
+        val seleccion = "($COLUMNA_USERNAME = ? OR $COLUMNA_CORREO = ? OR $COLUMNA_TELEFONO = ?) AND $COLUMNA_CONTRASENA = ?"
+        val argumentos = arrayOf(identificador, identificador, identificador, contrasena)
 
-        // Usamos OR para verificar si el identificador coincide con cualquiera de los tres campos
-        val selection = "($COLUMN_USERNAME = ? OR correo = ? OR telefono = ?) AND $COLUMN_CONTRASENA = ?"
-
-        // El identificador se repite tres veces en los argumentos para cubrir las tres columnas
-        val selectionArgs = arrayOf(identificador, identificador, identificador, contrasena)
-
-        val cursor = db.query(TABLE_USUARIO, null, selection, selectionArgs, null, null, null)
-        val userExists = cursor.count > 0
+        val cursor = db.query(TABLA_USUARIO, null, seleccion, argumentos, null, null, null)
+        val existeUsuario = cursor.count > 0
         cursor.close()
-        return userExists
+        return existeUsuario
     }
-    fun getUserByUsername(username: String): User? {
-        val db = readableDatabase
-        val cursor = db.query(
-            TABLE_USUARIO,
-            null, // selecciona todas las columnas
-            "$COLUMN_USERNAME = ?",
-            arrayOf(username),
-            null,
-            null,
-            null
-        )
 
-        var user: User? = null
+    /**
+     * Recupera un objeto User completo basado en el nombre de usuario único.
+     */
+    fun getUserByUsername(nombreUsuario: String): User? {
+        val db = readableDatabase
+        val cursor = db.query(TABLA_USUARIO, null, "$COLUMNA_USERNAME = ?", arrayOf(nombreUsuario), null, null, null)
+
+        var usuario: User? = null
         if (cursor.moveToFirst()) {
-            user = User(
-                id = cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_ID)),
-                rolId = cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_ROL_ID)),
-                imagenPerfil = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_IMAGEN_PERFIL)),
-                nombre = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_NOMBRE)),
-                apellidos = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_APELLIDOS)),
-                correo = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_CORREO)),
-                username = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_USERNAME)),
-                contrasena = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_CONTRASENA)),
-                telefono = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_TELEFONO)),
-                fechaNacimiento = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_FECHA_NACIMIENTO)),
-                domicilio = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_DOMICILIO)),
-                preguntaRecuperacionId = cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_PREGUNTA_RECUPERACION_ID)),
-                respuestaRecuperacion = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_RESPUESTA_RECUPERACION)),
-                fingerprintEnabled = cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_FINGERPRINT)) == 1,
-                intentosFallidos = cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_INTENTOS_FALLIDOS)),
-                estadoCuenta = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_ESTADO_CUENTA)),
-                nombreTitular = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_NOMBRE_TITULAR)),
-                numeroEncriptado = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_NUMERO_ENCRIPTADO)),
-                fechaExpiracion = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_FECHA_EXPIRACION)),
-                marca = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_MARCA)),
-                ultimos4 = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_ULTIMOS_4))
+            usuario = User(
+                id = cursor.getInt(cursor.getColumnIndexOrThrow(COLUMNA_ID)),
+                rolId = cursor.getInt(cursor.getColumnIndexOrThrow(COLUMNA_ROL_ID)),
+                imagenPerfil = cursor.getString(cursor.getColumnIndexOrThrow(COLUMNA_IMAGEN_PERFIL)),
+                nombre = cursor.getString(cursor.getColumnIndexOrThrow(COLUMNA_NOMBRE)),
+                apellidos = cursor.getString(cursor.getColumnIndexOrThrow(COLUMNA_APELLIDOS)),
+                correo = cursor.getString(cursor.getColumnIndexOrThrow(COLUMNA_CORREO)),
+                username = cursor.getString(cursor.getColumnIndexOrThrow(COLUMNA_USERNAME)),
+                contrasena = cursor.getString(cursor.getColumnIndexOrThrow(COLUMNA_CONTRASENA)),
+                telefono = cursor.getString(cursor.getColumnIndexOrThrow(COLUMNA_TELEFONO)),
+                fechaNacimiento = cursor.getString(cursor.getColumnIndexOrThrow(COLUMNA_FECHA_NACIMIENTO)),
+                domicilio = cursor.getString(cursor.getColumnIndexOrThrow(COLUMNA_DOMICILIO)),
+                preguntaRecuperacionId = cursor.getInt(cursor.getColumnIndexOrThrow(COLUMNA_PREGUNTA_RECUPERACION_ID)),
+                respuestaRecuperacion = cursor.getString(cursor.getColumnIndexOrThrow(COLUMNA_RESPUESTA_RECUPERACION)),
+                fingerprintEnabled = cursor.getInt(cursor.getColumnIndexOrThrow(COLUMNA_HUELLA_DIGITAL)) == 1,
+                intentosFallidos = cursor.getInt(cursor.getColumnIndexOrThrow(COLUMNA_INTENTOS_FALLIDOS)),
+                estadoCuenta = cursor.getString(cursor.getColumnIndexOrThrow(COLUMNA_ESTADO_CUENTA)),
+                nombreTitular = cursor.getString(cursor.getColumnIndexOrThrow(COLUMNA_NOMBRE_TITULAR)),
+                numeroEncriptado = cursor.getString(cursor.getColumnIndexOrThrow(COLUMNA_NUMERO_ENCRIPTADO)),
+                fechaExpiracion = cursor.getString(cursor.getColumnIndexOrThrow(COLUMNA_FECHA_EXPIRACION)),
+                marca = cursor.getString(cursor.getColumnIndexOrThrow(COLUMNA_MARCA)),
+                ultimos4 = cursor.getString(cursor.getColumnIndexOrThrow(COLUMNA_ULTIMOS_4))
             )
         }
         cursor.close()
-        return user
+        return usuario
     }
+
+    /**
+     * Resuelve el nombre de usuario asociado a un correo, teléfono o nombre de usuario.
+     */
     fun getActualUsername(identificador: String): String {
         val db = this.readableDatabase
-        val selection = "$COLUMN_USERNAME = ? OR correo = ? OR telefono = ?"
-        val selectionArgs = arrayOf(identificador, identificador, identificador)
+        val seleccion = "$COLUMNA_USERNAME = ? OR $COLUMNA_CORREO = ? OR $COLUMNA_TELEFONO = ?"
+        val argumentos = arrayOf(identificador, identificador, identificador)
 
-        val cursor = db.query(TABLE_USUARIO, arrayOf(COLUMN_USERNAME), selection, selectionArgs, null, null, null)
-
-        var usernameReal = identificador
+        val cursor = db.query(TABLA_USUARIO, arrayOf(COLUMNA_USERNAME), seleccion, argumentos, null, null, null)
+        var nombreUsuarioReal = identificador
         if (cursor.moveToFirst()) {
-            usernameReal = cursor.getString(0)
+            nombreUsuarioReal = cursor.getString(0)
         }
         cursor.close()
-        return usernameReal
+        return nombreUsuarioReal
     }
-    // Obtener el texto de la pregunta de seguridad asignada al usuario
+
+    /**
+     * Recupera el texto de la pregunta de seguridad desde recursos mediante su identificador numérico.
+     */
     fun getRecoveryQuestion(identificador: String): String? {
         val db = this.readableDatabase
         var preguntaId: Int = -1
 
-        val query = "SELECT $COLUMN_PREGUNTA_RECUPERACION_ID FROM $TABLE_USUARIO WHERE $COLUMN_USERNAME = ? OR $COLUMN_CORREO = ? OR $COLUMN_TELEFONO = ?"
+        val seleccionSql = "SELECT $COLUMNA_PREGUNTA_RECUPERACION_ID FROM $TABLA_USUARIO WHERE $COLUMNA_USERNAME = ? OR $COLUMNA_CORREO = ? OR $COLUMNA_TELEFONO = ?"
 
         try {
-            val cursor = db.rawQuery(query, arrayOf(identificador, identificador, identificador))
+            val cursor = db.rawQuery(seleccionSql, arrayOf(identificador, identificador, identificador))
             if (cursor.moveToFirst()) {
                 preguntaId = cursor.getInt(0)
             }
             cursor.close()
         } catch (e: Exception) {
-            e.printStackTrace()
             return null
         }
 
-        // Si no se encontró el usuario o el ID es inválido
         if (preguntaId == -1) return null
 
-        // CARGAR DESDE ARRAYS.XML
-        // Nota: Si en el Spinner el ID 1 es la primera pregunta, en el array es el índice 0.
         return try {
-            val preguntasArray = context.resources.getStringArray(R.array.preguntas_recuperacion)
-
-            // Ajuste de índice: Si tus IDs empiezan en 1, restamos 1.
-            // Si el ID 0 era un mensaje tipo "Seleccione una pregunta", ajusta según tu lógica.
+            val listaPreguntas = contexto.resources.getStringArray(R.array.preguntas_recuperacion)
             val indice = preguntaId - 1
-
-            if (indice in preguntasArray.indices) {
-                preguntasArray[indice]
-            } else {
-                null
-            }
+            if (indice in listaPreguntas.indices) listaPreguntas[indice] else null
         } catch (e: Exception) {
             null
         }
     }
 
-    // Validar si la respuesta es correcta
+    /**
+     * Valida la respuesta de seguridad ignorando discrepancias de mayúsculas y minúsculas.
+     */
     fun verifyRecoveryAnswer(identificador: String, respuesta: String): Boolean {
         val db = this.readableDatabase
-        // Usamos LOWER() en SQL para comparar sin importar mayúsculas
-        val selection = "($COLUMN_USERNAME = ? OR $COLUMN_CORREO = ? OR $COLUMN_TELEFONO = ?) AND LOWER($COLUMN_RESPUESTA_RECUPERACION) = LOWER(?)"
-        val cursor = db.query(TABLE_USUARIO, null, selection, arrayOf(identificador, identificador, identificador, respuesta.trim()), null, null, null)
-        val success = cursor.count > 0
+        val seleccion = "($COLUMNA_USERNAME = ? OR $COLUMNA_CORREO = ? OR $COLUMNA_TELEFONO = ?) AND LOWER($COLUMNA_RESPUESTA_RECUPERACION) = LOWER(?)"
+        val cursor = db.query(TABLA_USUARIO, null, seleccion, arrayOf(identificador, identificador, identificador, respuesta.trim()), null, null, null)
+        val esCorrecta = cursor.count > 0
         cursor.close()
-        return success
+        return esCorrecta
     }
 
-    // Actualizar la contraseña
+    /**
+     * Realiza la actualización de la contraseña del usuario.
+     */
     fun updatePassword(identificador: String, nuevaContrasena: String): Boolean {
         val db = this.writableDatabase
-        val values = android.content.ContentValues().apply {
-            put(COLUMN_CONTRASENA, nuevaContrasena)
+        val valores = ContentValues().apply {
+            put(COLUMNA_CONTRASENA, nuevaContrasena)
         }
-        val whereClause = "$COLUMN_USERNAME = ? OR correo = ? OR telefono = ?"
-        val rows = db.update(TABLE_USUARIO, values, whereClause, arrayOf(identificador, identificador, identificador))
-        return rows > 0
+        val clausulaDonde = "$COLUMNA_USERNAME = ? OR $COLUMNA_CORREO = ? OR $COLUMNA_TELEFONO = ?"
+        val filasAfectadas = db.update(TABLA_USUARIO, valores, clausulaDonde, arrayOf(identificador, identificador, identificador))
+        return filasAfectadas > 0
     }
-
 }
