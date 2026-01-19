@@ -17,6 +17,7 @@ import android.text.InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD
 
 import java.text.SimpleDateFormat
 import java.util.Calendar
+import android.util.Patterns
 
 import com.intelliworks.intellihome.databinding.ActivityRegisterBinding
 
@@ -28,10 +29,76 @@ class Register : AppCompatActivity() {
     private lateinit var binding: ActivityRegisterBinding
     private lateinit var databaseHelper: DatabaseHelper
 
+    // Variable para almacenar la URI de la imagen de usuario
+    private var imagenUsuarioUri: android.net.Uri? = null
+
+    companion object {
+        // Constante para el código de solicitud de selección de imagen
+        private const val REQUEST_CODE_PICK_IMAGE = 1001
+    }
+
+    // Crea un archivo temporal a partir de una URI
+    private fun crearArchivoTemp(uri: android.net.Uri): java.io.File? {
+        return try {
+
+            // Obtiene el nombre del archivo original (si existe)
+            var nombreArchivo = "imagen_temp.jpg"
+            val cursor = contentResolver.query(uri, null, null, null, null)
+            cursor?.use {
+                val nameIndex = it.getColumnIndex(android.provider.OpenableColumns.DISPLAY_NAME)
+                if (it.moveToFirst() && nameIndex != -1) {
+                    nombreArchivo = it.getString(nameIndex)
+                }
+            }
+
+            // Crea el archivo temporal en el directorio de la caché
+            val archivoTemp = java.io.File.createTempFile(
+                nombreArchivo.substringBeforeLast('.'),
+                "." + nombreArchivo.substringAfterLast('.', "jpg"),
+                cacheDir
+            )
+            archivoTemp.deleteOnExit()
+
+            // Copia el contenido de la URI al archivo temporal
+            contentResolver.openInputStream(uri)?.use { inputStream ->
+                archivoTemp.outputStream().use { outputStream ->
+                    inputStream.copyTo(outputStream)
+                }
+            }
+            archivoTemp
+        } catch (e: Exception) {
+            e.printStackTrace()
+            null
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityRegisterBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        // Inicializar CheckBox de términos deshabilitado
+        binding.cbTerminos.isEnabled = false
+        binding.cbTerminos.isChecked = false
+
+        // Mostrar AlertDialog de términos y condiciones al tocar el texto
+        binding.tvVerTerminos.setOnClickListener {
+            mostrarDialogoTerminos()
+        }
+
+
+        // Base de datos de prueba
+        databaseHelper = DatabaseHelper(this)
+
+
+        // Selección de imagen de usuario
+        binding.imgUsuario.setOnClickListener {
+            val intent = android.content.Intent(android.content.Intent.ACTION_OPEN_DOCUMENT)
+            intent.addCategory(android.content.Intent.CATEGORY_OPENABLE)
+            intent.type = "image/*"
+            intent.putExtra(android.content.Intent.EXTRA_MIME_TYPES, arrayOf("image/png", "image/jpg", "image/jpeg", "image/gif"))
+            startActivityForResult(intent, REQUEST_CODE_PICK_IMAGE)
+        }
 
 
         var passwordVisible = false
@@ -75,11 +142,6 @@ class Register : AppCompatActivity() {
         }
 
 
-        // Base de datos de prueba
-        databaseHelper = DatabaseHelper(this)
-
-
-        // Asignar fecha de nacimiento
         val calendario = Calendar.getInstance()
         val formatoFecha = SimpleDateFormat("yyyy-MM-dd")
         val asignarFecha = DatePickerDialog.OnDateSetListener {_, anio, mes, dia ->
@@ -88,6 +150,7 @@ class Register : AppCompatActivity() {
             calendario.set(Calendar.DAY_OF_MONTH, dia)
             binding.etFechaNacimiento.setText(formatoFecha.format(calendario.time))
         }
+
         // Mostrar calendario al tocar el campo de fecha de nacimiento
         binding.etFechaNacimiento.apply {
             isFocusable = false
@@ -112,6 +175,7 @@ class Register : AppCompatActivity() {
                 calendario.get(Calendar.DAY_OF_MONTH)
             ).show()
         }
+
         // Mostrar selector al tocar el campo de fecha de vencimiento de la tarjeta
         binding.etFechaVencimiento.apply {
             isFocusable = false
@@ -130,10 +194,9 @@ class Register : AppCompatActivity() {
         }
 
 
-        // Obtener preguntas de recuperación
+        // Obtener preguntas de recuperación y asignarlas al spinner
         val preguntas = resources.getStringArray(R.array.preguntas_recuperacion)
         val adapterPreguntas = android.widget.ArrayAdapter(this, android.R.layout.simple_spinner_dropdown_item, preguntas)
-        // Configurar Spinner de pregunta de recuperación
         binding.spPregunta.adapter = adapterPreguntas
 
 
@@ -158,8 +221,21 @@ class Register : AppCompatActivity() {
             val fechaExpiracion = binding.etFechaVencimiento.text.toString()
             val marca = "Mastercard"
             val ultimos4 = if (numeroEncriptado.length >= 4) numeroEncriptado.takeLast(4) else "0000"
-            val imagenPerfil = ""
+            val imagenPerfil = imagenUsuarioUri?.toString() ?: ""
             val rolId = 2
+
+
+            // Se valida si el usuario aceptó los términos y condiciones
+            if (!binding.cbTerminos.isChecked) {
+                Toast.makeText(this, "Debes aceptar los términos y condiciones", Toast.LENGTH_LONG).show()
+                return@setOnClickListener
+            }
+
+            // Se valida el formato de correo electrónico
+            if (!Patterns.EMAIL_ADDRESS.matcher(correo).matches()) {
+                Toast.makeText(this, "Ingresa un correo electrónico válido", Toast.LENGTH_LONG).show()
+                return@setOnClickListener
+            }
 
             // Se valida que los campos del formulario no esten vacios
             if (username.isEmpty() || password.isEmpty() || confirmPassword.isEmpty() || nombre.isEmpty() || apellidos.isEmpty() || correo.isEmpty() || telefono.isEmpty() || fechaNacimiento.isEmpty() || domicilio.isEmpty() || respuestaRecuperacion.isEmpty() || nombreTitular.isEmpty() || numeroEncriptado.isEmpty() || fechaExpiracion.isEmpty()) {
@@ -167,7 +243,7 @@ class Register : AppCompatActivity() {
                 return@setOnClickListener
             }
 
-            // Compara contraseña y confirmar contraseña
+            // Se valida que la contraseña y confirmar contraseña sean iguales
             if (password != confirmPassword) {
                 Toast.makeText(this, "Las contraseñas no coinciden", Toast.LENGTH_LONG).show()
                 return@setOnClickListener
@@ -200,7 +276,6 @@ class Register : AppCompatActivity() {
 
 
     // Selector de mes/año para fecha de vencimiento de la tarjeta
-    public
     fun selectorMesAnio(onDateSelected: (month: Int, year: Int) -> Unit) {
         val diagoloEmergente = layoutInflater.inflate(R.layout.dialog_month_year_picker, null)
         val selectorMes = diagoloEmergente.findViewById<NumberPicker>(R.id.monthPicker)
@@ -268,22 +343,94 @@ class Register : AppCompatActivity() {
         biometricPrompt.authenticate(promptInfo)
     }
 
+    // Función para mostrar el diálogo de términos y condiciones
+    private fun mostrarDialogoTerminos() {
+        val builder = AlertDialog.Builder(this)
+
+        // Cargar el texto de términos desde res/raw/terms.txt
+        val inputStream = resources.openRawResource(R.raw.terms)
+        val terminos = inputStream.bufferedReader().use { it.readText() }
+
+        // Crear ScrollView y TextView para los términos
+        val scrollView = android.widget.ScrollView(this)
+        val textView = android.widget.TextView(this)
+        textView.text = terminos
+        textView.setPadding(32, 32, 32, 32)
+        textView.textSize = 16f
+        scrollView.addView(textView)
+
+        // Botón aceptar (se habilita al llegar al final)
+        builder.setView(scrollView)
+        builder.setNegativeButton("Cancelar", null)
+
+        builder.setPositiveButton("Aceptar") { dialog, _ ->
+            binding.cbTerminos.isEnabled = true
+            binding.cbTerminos.isChecked = true
+            dialog.dismiss()
+        }
+
+        val dialog = builder.create()
+        dialog.show()
+
+        // Deshabilita el botón aceptar hasta que se llegue al final del ScrollView
+        val btnAceptar = dialog.getButton(AlertDialog.BUTTON_POSITIVE)
+        btnAceptar.isEnabled = false
+        scrollView.viewTreeObserver.addOnScrollChangedListener {
+            val view = scrollView.getChildAt(0)
+            if (view != null) {
+                val diff = view.bottom - (scrollView.height + scrollView.scrollY)
+                btnAceptar.isEnabled = diff <= 0
+            }
+        }
+    }
+
     // Función para registrar el usuario en la base de datos
     private fun registerUser(rolId: Int, imagenPerfil: String, nombre: String, apellidos: String, correo: String, username: String, password: String, telefono: String, fechaNacimiento: String, domicilio: String, preguntaRecuperacionId: Int, respuestaRecuperacion: String, fingerprintEnabled: Boolean, intentosFallidos: Int, estadoCuenta: String, nombreTitular: String, numeroEncriptado: String, fechaExpiracion: String, marca: String, ultimos4: String) {
-
         // Se llama a la función insertUser del DatabaseHelper para insertar el usuario en la base de datos
         val result = databaseHelper.insertUser(rolId, imagenPerfil, nombre, apellidos, correo, username, password, telefono, fechaNacimiento, domicilio, preguntaRecuperacionId, respuestaRecuperacion, fingerprintEnabled, intentosFallidos, estadoCuenta, nombreTitular, numeroEncriptado, fechaExpiracion, marca, ultimos4)
 
         // Si el registro fue exitoso, se redirige al inicio de sesión, sino se muestra un mensaje de error
         if (result != -1L) {
-            // Muestra mensaje de éxito
             Toast.makeText(this, "Registro exitoso", Toast.LENGTH_LONG).show()
-            // Redirige al inicio de sesión
             startActivity(Intent(this, Login::class.java))
             finish()
         } else {
-            // Muestra mensaje de error
             Toast.makeText(this, "El registro falló", Toast.LENGTH_LONG).show()
+        }
+    }
+
+    // Manejar el resultado de la selección de imagen
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: android.content.Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+
+        // Si el usuario seleccionó una imagen, se guarda su URI en la variable
+        if (requestCode == REQUEST_CODE_PICK_IMAGE && resultCode == RESULT_OK) {
+
+            // Obtiene la URI de la imagen seleccionada
+            val uri = data?.data
+
+            // Si la URI no es nula, se guarda en la variable y se muestra en el ImageView
+            if (uri != null) {
+
+                // Valida tamaño máximo de 1MB
+                val inputStream = contentResolver.openInputStream(uri)
+                val size = inputStream?.available() ?: 0
+                inputStream?.close()
+                if (size > 1048576) { // 1MB en bytes
+                    Toast.makeText(this, "La imagen debe ser menor a 1MB", Toast.LENGTH_LONG).show()
+                    return
+                }
+
+                // Persiste permisos de lectura
+                contentResolver.takePersistableUriPermission(uri, android.content.Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                imagenUsuarioUri = uri
+                binding.imgUsuario.setImageURI(uri)
+
+                // Crea el archivo temporal
+                val archivoTemp = crearArchivoTemp(uri)
+
+
+            }
         }
     }
 

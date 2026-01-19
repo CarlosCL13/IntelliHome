@@ -54,7 +54,10 @@
                     android:layout_height="100dp"
                     android:layout_gravity="center_vertical"
                     android:contentDescription="Foto de usuario"
-                    tools:srcCompat="@tools:sample/avatars" />
+                    android:scaleType="centerCrop"
+                    android:background="@drawable/circle_bg"
+                    android:clipToOutline="true"
+                    android:src="@drawable/ic_add_photo" />
 
                 <LinearLayout
                     android:layout_width="0dp"
@@ -588,17 +591,33 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toEndOf="parent" />
 
-            <!-- Botón para ver términos y condiciones -->
-            <TextView
-                android:id="@+id/btn_terminos"
+
+            <!-- Términos y condiciones: CheckBox deshabilitado y TextView alineados horizontalmente -->
+            <LinearLayout
+                android:id="@+id/ll_terminos"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Ver términos y condiciones"
-                android:textSize="16sp"
+                android:orientation="horizontal"
                 android:layout_marginTop="16dp"
                 app:layout_constraintTop_toBottomOf="@id/cb_huella_digital"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintEnd_toEndOf="parent" />
+                app:layout_constraintEnd_toEndOf="parent">
+                <CheckBox
+                    android:id="@+id/cb_terminos"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:enabled="false" />
+                <TextView
+                    android:id="@+id/tv_ver_terminos"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Ver términos y condiciones"
+                    android:textColor="@color/black"
+                    android:textStyle="bold"
+                    android:paddingStart="8dp"
+                    android:clickable="true"
+                    android:focusable="true"/>
+            </LinearLayout>
 
         </androidx.constraintlayout.widget.ConstraintLayout>
     </ScrollView>
