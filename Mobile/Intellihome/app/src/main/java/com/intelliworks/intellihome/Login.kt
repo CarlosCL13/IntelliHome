@@ -1,21 +1,35 @@
 package com.intelliworks.intellihome
 
+import com.intelliworks.intellihome.utils.BaseActivity
 import android.content.Intent
 import android.graphics.Color
 import android.os.Bundle
 import android.view.View
 import android.widget.PopupMenu
 import android.widget.Toast
-import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.biometric.BiometricPrompt
 import androidx.core.content.ContextCompat
 import com.intelliworks.intellihome.databinding.ActivityLoginBinding
 
-class Login : AppCompatActivity() {
+class Login : BaseActivity() {
 
     private lateinit var binding: ActivityLoginBinding
     private lateinit var databaseHelper: DatabaseHelper
+    private var lastLanguage: String? = null
+
+    override fun onResume() {
+        super.onResume()
+
+        val prefs = getSharedPreferences("settings", MODE_PRIVATE)
+        val currentLanguage = prefs.getString("language", "es")
+
+        if (lastLanguage != null && lastLanguage != currentLanguage) {
+            recreate()
+        }
+
+        lastLanguage = currentLanguage
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

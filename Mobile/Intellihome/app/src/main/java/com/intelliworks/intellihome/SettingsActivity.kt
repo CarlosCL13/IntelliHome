@@ -1,16 +1,16 @@
 package com.intelliworks.intellihome
 
+import com.intelliworks.intellihome.utils.BaseActivity
 import android.content.SharedPreferences
 import android.graphics.Color
 import android.os.Bundle
-import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import com.intelliworks.intellihome.databinding.ActivitySettingsBinding
 import com.skydoves.colorpickerview.ColorEnvelope
 import com.skydoves.colorpickerview.ColorPickerDialog
 import com.skydoves.colorpickerview.listeners.ColorEnvelopeListener
 
-class SettingsActivity : AppCompatActivity() {
+class SettingsActivity : BaseActivity() {
 
     private lateinit var binding: ActivitySettingsBinding
     private lateinit var prefs: SharedPreferences
@@ -21,19 +21,23 @@ class SettingsActivity : AppCompatActivity() {
         binding = ActivitySettingsBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-
         prefs = getSharedPreferences("settings", MODE_PRIVATE)
 
-
+        // ===============================
+        // CARGAR PREFERENCIAS
+        // ===============================
         val darkMode = prefs.getBoolean("dark_mode", false)
-        val savedColor = prefs.getInt("bg_color", Color.WHITE)
+        val bgColor = prefs.getInt("bg_color", Color.WHITE)
+        val language = prefs.getString("language", "es") ?: "es"
 
         applyTheme(darkMode)
-        applyBackgroundColor(savedColor, darkMode)
+        applyBackgroundColor(bgColor, darkMode)
+        updateLanguageBorder(language)
 
-
+        // ===============================
+        // TEMA OSCURO
+        // ===============================
         binding.switchTheme.isChecked = darkMode
-
         binding.switchTheme.setOnCheckedChangeListener { _, isChecked ->
             prefs.edit().putBoolean("dark_mode", isChecked).apply()
             applyTheme(isChecked)
@@ -42,40 +46,59 @@ class SettingsActivity : AppCompatActivity() {
             applyBackgroundColor(color, isChecked)
         }
 
+        // ===============================
+        // COLOR PICKER
+        // ===============================
         binding.btnColorPicker.setOnClickListener {
             ColorPickerDialog.Builder(this)
-                .setTitle("Selecciona un color")
-                .setPositiveButton("OK", object : ColorEnvelopeListener {
-                    override fun onColorSelected(
-                        envelope: ColorEnvelope,
-                        fromUser: Boolean
-                    ) {
-                        val color = envelope.color
-                        prefs.edit().putInt("bg_color", color).apply()
+                .setTitle(getString(R.string.select_color))
+                .setPositiveButton(
+                    getString(android.R.string.ok),
+                    object : ColorEnvelopeListener {
+                        override fun onColorSelected(
+                            envelope: ColorEnvelope,
+                            fromUser: Boolean
+                        ) {
+                            val color = envelope.color
+                            prefs.edit().putInt("bg_color", color).apply()
 
-                        val dark = prefs.getBoolean("dark_mode", false)
-                        applyBackgroundColor(color, dark)
+                            val dark = prefs.getBoolean("dark_mode", false)
+                            applyBackgroundColor(color, dark)
+                        }
                     }
-                })
-                .setNegativeButton("Cancelar") { dialog, _ ->
+                )
+                .setNegativeButton(getString(android.R.string.cancel)) { dialog, _ ->
                     dialog.dismiss()
                 }
                 .show()
         }
 
-
-        binding.btnSpanish.setOnClickListener {
-            setLanguage("es")
+        // ===============================
+        // IDIOMA
+        // ===============================
+        binding.cardSpanish.setOnClickListener {
+            changeLanguage("es")
         }
 
-        binding.btnEnglish.setOnClickListener {
-            setLanguage("en")
+        binding.cardEnglish.setOnClickListener {
+            changeLanguage("en")
         }
     }
 
     // ===============================
     // FUNCIONES AUXILIARES
     // ===============================
+
+    private fun changeLanguage(lang: String) {
+        prefs.edit().putString("language", lang).apply()
+        restartActivity()
+    }
+
+    private fun restartActivity() {
+        val intent = intent
+        finish()
+        startActivity(intent)
+    }
 
     private fun applyTheme(darkMode: Boolean) {
         AppCompatDelegate.setDefaultNightMode(
@@ -95,17 +118,27 @@ class SettingsActivity : AppCompatActivity() {
         return if (darkMode) {
             Color.argb(
                 Color.alpha(color),
-                (Color.red(color) * 0.6).toInt(),
-                (Color.green(color) * 0.6).toInt(),
-                (Color.blue(color) * 0.6).toInt()
+                (Color.red(color) * 0.6f).toInt(),
+                (Color.green(color) * 0.6f).toInt(),
+                (Color.blue(color) * 0.6f).toInt()
             )
         } else {
             color
         }
     }
 
-    private fun setLanguage(langCode: String) {
-        prefs.edit().putString("language", langCode).apply()
-        recreate()
+    private fun updateLanguageBorder(lang: String) {
+        val borderColor = getColor(R.color.green)
+        val strokePx = resources.getDimensionPixelSize(R.dimen.language_border)
+
+        if (lang == "es") {
+            binding.cardSpanish.strokeColor = borderColor
+            binding.cardSpanish.strokeWidth = strokePx
+            binding.cardEnglish.strokeWidth = 0
+        } else {
+            binding.cardEnglish.strokeColor = borderColor
+            binding.cardEnglish.strokeWidth = strokePx
+            binding.cardSpanish.strokeWidth = 0
+        }
     }
 }

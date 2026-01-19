@@ -1,10 +1,10 @@
 package com.intelliworks.intellihome
 
+import com.intelliworks.intellihome.utils.BaseActivity
 import androidx.biometric.BiometricManager
 import android.content.Intent
 import android.os.Bundle
 import android.widget.Toast
-import androidx.appcompat.app.AppCompatActivity
 import androidx.biometric.BiometricPrompt
 import androidx.core.content.ContextCompat
 import com.intelliworks.intellihome.databinding.ActivityRegisterBinding
@@ -12,7 +12,7 @@ import com.intelliworks.intellihome.databinding.ActivityRegisterBinding
 /**
  * Clase para la pantalla de registro de usuario.
  */
-class Register : AppCompatActivity() {
+class Register : BaseActivity() {
 
     private lateinit var binding: ActivityRegisterBinding
     private lateinit var databaseHelper: DatabaseHelper

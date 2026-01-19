@@ -11,7 +11,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="285dp"
-        android:text="Usuario"
+        android:text="@string/main_username"
         android:textSize="18sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -23,7 +23,7 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="24dp"
         android:layout_marginBottom="14dp"
-        android:text="ID"
+        android:text="@string/main_user_id"
         app:layout_constraintBottom_toTopOf="@+id/txtUsername"
         app:layout_constraintStart_toStartOf="@+id/txtUsername" />
 
@@ -33,9 +33,8 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="10dp"
         android:layout_marginTop="18dp"
-        android:text="Huella"
+        android:text="@string/main_fingerprint"
         app:layout_constraintStart_toStartOf="@+id/txtUsername"
         app:layout_constraintTop_toBottomOf="@+id/txtUsername" />
-
 
 </androidx.constraintlayout.widget.ConstraintLayout>

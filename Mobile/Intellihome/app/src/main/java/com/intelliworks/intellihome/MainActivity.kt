@@ -1,11 +1,12 @@
 package com.intelliworks.intellihome
 
+import com.intelliworks.intellihome.utils.BaseActivity
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import com.intelliworks.intellihome.databinding.ActivityMainBinding
 import com.intelliworks.intellihome.model.User
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : BaseActivity() {
 
     private lateinit var binding: ActivityMainBinding
     private lateinit var databaseHelper: DatabaseHelper

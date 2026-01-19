@@ -1,45 +1,81 @@
 <resources>
-    <string name="app_name">Intellihome</string>
-    <!-- Strings used for fragments for navigation -->
-    <string name="first_fragment_label">First Fragment</string>
-    <string name="second_fragment_label">Second Fragment</string>
-    <string name="next">Next</string>
-    <string name="previous">Previous</string>
+    <string name="app_name">IntelliHome</string>
 
-    <string name="lorem_ipsum">
-        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam in scelerisque sem. Mauris
-        volutpat, dolor id interdum ullamcorper, risus dolor egestas lectus, sit amet mattis purus
-        dui nec risus. Maecenas non sodales nisi, vel dictum dolor. Class aptent taciti sociosqu ad
-        litora torquent per conubia nostra, per inceptos himenaeos. Suspendisse blandit eleifend
-        diam, vel rutrum tellus vulputate quis. Aliquam eget libero aliquet, imperdiet nisl a,
-        ornare ex. Sed rhoncus est ut libero porta lobortis. Fusce in dictum tellus.\n\n
-        Suspendisse interdum ornare ante. Aliquam nec cursus lorem. Morbi id magna felis. Vivamus
-        egestas, est a condimentum egestas, turpis nisl iaculis ipsum, in dictum tellus dolor sed
-        neque. Morbi tellus erat, dapibus ut sem a, iaculis tincidunt dui. Interdum et malesuada
-        fames ac ante ipsum primis in faucibus. Curabitur et eros porttitor, ultricies urna vitae,
-        molestie nibh. Phasellus at commodo eros, non aliquet metus. Sed maximus nisl nec dolor
-        bibendum, vel congue leo egestas.\n\n
-        Sed interdum tortor nibh, in sagittis risus mollis quis. Curabitur mi odio, condimentum sit
-        amet auctor at, mollis non turpis. Nullam pretium libero vestibulum, finibus orci vel,
-        molestie quam. Fusce blandit tincidunt nulla, quis sollicitudin libero facilisis et. Integer
-        interdum nunc ligula, et fermentum metus hendrerit id. Vestibulum lectus felis, dictum at
-        lacinia sit amet, tristique id quam. Cras eu consequat dui. Suspendisse sodales nunc ligula,
-        in lobortis sem porta sed. Integer id ultrices magna, in luctus elit. Sed a pellentesque
-        est.\n\n
-        Aenean nunc velit, lacinia sed dolor sed, ultrices viverra nulla. Etiam a venenatis nibh.
-        Morbi laoreet, tortor sed facilisis varius, nibh orci rhoncus nulla, id elementum leo dui
-        non lorem. Nam mollis ipsum quis auctor varius. Quisque elementum eu libero sed commodo. In
-        eros nisl, imperdiet vel imperdiet et, scelerisque a mauris. Pellentesque varius ex nunc,
-        quis imperdiet eros placerat ac. Duis finibus orci et est auctor tincidunt. Sed non viverra
-        ipsum. Nunc quis augue egestas, cursus lorem at, molestie sem. Morbi a consectetur ipsum, a
-        placerat diam. Etiam vulputate dignissim convallis. Integer faucibus mauris sit amet finibus
-        convallis.\n\n
-        Phasellus in aliquet mi. Pellentesque habitant morbi tristique senectus et netus et
-        malesuada fames ac turpis egestas. In volutpat arcu ut felis sagittis, in finibus massa
-        gravida. Pellentesque id tellus orci. Integer dictum, lorem sed efficitur ullamcorper,
-        libero justo consectetur ipsum, in mollis nisl ex sed nisl. Donec maximus ullamcorper
-        sodales. Praesent bibendum rhoncus tellus nec feugiat. In a ornare nulla. Donec rhoncus
-        libero vel nunc consequat, quis tincidunt nisl eleifend. Cras bibendum enim a justo luctus
-        vestibulum. Fusce dictum libero quis erat maximus, vitae volutpat diam dignissim.
-    </string>
+    <string name="login">Iniciar sesión</string>
+    <string name="username_hint">Usuario, correo o teléfono</string>
+    <string name="password_hint">Contraseña</string>
+    <string name="signup">¿No tienes una cuenta? Regístrate</string>
+
+    <string name="settings">Configuración</string>
+    <string name="fingerprint_login">Acceso con huella</string>
+    <string name="logo_desc">Logotipo de la aplicación</string>
+
+    <string name="register_logo_desc">Logotipo de aplicación</string>
+    <string name="register_user_photo_desc">Foto de usuario</string>
+
+    <string name="register_name">Nombre:</string>
+    <string name="register_lastname">Apellidos:</string>
+    <string name="register_email">Correo:</string>
+    <string name="register_username">Nombre de usuario:</string>
+
+    <string name="register_password">Contraseña:</string>
+    <string name="register_password_hint">(min 8 caracteres)</string>
+    <string name="register_confirm_password">Confirmar contraseña:</string>
+
+    <string name="register_show_password">Mostrar u ocultar contraseña</string>
+
+    <string name="register_recovery_question">Pregunta de recuperación:</string>
+    <string name="register_select_question">Selecciona una pregunta</string>
+    <string name="register_answer">Respuesta</string>
+
+    <string name="register_phone">Teléfono:</string>
+
+    <string name="register_birthdate">Fecha de nacimiento:</string>
+    <string name="register_birthdate_hint">dd/mm/yyyy</string>
+    <string name="register_open_calendar">Abrir calendario</string>
+
+    <string name="register_hobbies">Hobbies:</string>
+    <string name="hobby_tv">Ver TV</string>
+    <string name="hobby_hiking">Hiking (senderismo)</string>
+    <string name="hobby_boardgames">Juegos de mesa</string>
+    <string name="hobby_snorkel">Esnórquel</string>
+    <string name="hobby_sports">Deportes</string>
+
+    <string name="register_address">Domicilio:</string>
+
+    <string name="register_house_preference">Casa de preferencia:</string>
+    <string name="house_minimalist">Minimalista</string>
+    <string name="house_adventurous">Aventurera</string>
+    <string name="house_contemporary">Contemporánea</string>
+
+    <string name="register_payment_data">Datos de tarjeta de pago:</string>
+    <string name="register_card_holder">Titular de tarjeta:</string>
+    <string name="register_card_number">Número de tarjeta:</string>
+    <string name="register_card_expiration">Fecha de vencimiento:</string>
+    <string name="register_card_expiration_hint">mm/yyyy</string>
+
+    <string name="register_fingerprint">Habilitar inicio de sesión con huella</string>
+
+    <string name="register_terms">Ver términos y condiciones</string>
+
+    <string name="register_button">Registrarme</string>
+    <string name="register_login_redirect">¿Ya estás registrado? Iniciar sesión</string>
+
+    <!-- SETTINGS -->
+    <string name="settings_title">Configuración</string>
+    <string name="settings_theme">Tema</string>
+    <string name="settings_dark_mode">Tema oscuro</string>
+    <string name="settings_background_color">Color del fondo</string>
+    <string name="settings_select_color">Seleccionar color</string>
+    <string name="settings_language">Idioma</string>
+
+    <string name="lang_spanish">Español</string>
+    <string name="lang_english">Inglés</string>
+
+    <!-- MAIN -->
+    <string name="main_username">Usuario</string>
+    <string name="main_user_id">ID</string>
+    <string name="main_fingerprint">Huella</string>
+    <string name="select_color">Selecciona un color</string>
+
 </resources>
