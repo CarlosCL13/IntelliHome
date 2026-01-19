@@ -1,3 +1,13 @@
+@router.post("/login")
+def login_usuario(
+    identificador: str = Form(..., description="Username, correo o teléfono"),
+    contraseña: str = Form(..., description="Contraseña"),
+    db: Session = Depends(get_db)
+):
+    resultado = Usuario_Servicio.login_usuario(db, identificador, contraseña)
+    if "error" in resultado:
+        raise HTTPException(status_code=401, detail=resultado["error"])
+    return resultado
 from fastapi import APIRouter, Depends, UploadFile, File, Form, HTTPException
 from sqlalchemy.orm import Session
 from Servicios.Usuario_Servicio import Usuario_Servicio
