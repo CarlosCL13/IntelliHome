@@ -2,7 +2,6 @@ package com.intelliworks.intellihome.data.model
 
 import com.google.gson.annotations.SerializedName
 
-// Esta clase ahora representa la respuesta completa del servidor
 data class LoginResponseDto(
     val id: Int?,
     val username: String?,
