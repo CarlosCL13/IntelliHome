@@ -88,5 +88,20 @@
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnCerrarSesion"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="52dp"
+            android:text="@string/logout"
+            android:textAllCaps="false"
+            android:textColor="@android:color/white"
+            app:backgroundTint="@color/design_default_color_error"
+            app:cornerRadius="12dp"
+            app:icon="@drawable/outline_arrow_menu_close_24"
+            app:iconTint="@android:color/white"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/cardInfo" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 </ScrollView>

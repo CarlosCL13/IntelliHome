@@ -68,7 +68,7 @@ class Login : BaseActivity() {
 
         // 5. REDIRECCIÓN A REGISTRO
         enlace.signupRedirect.setOnClickListener {
-            startActivity(Intent(this, Register::class.java))
+            verificarServidorYIrARegistro()
         }
 
         configurarVisibilidadContrasena()
@@ -100,6 +100,36 @@ class Login : BaseActivity() {
             }
         }
     }
+
+    private fun verificarServidorYIrARegistro() {
+        val catalogosApi = RetrofitInstance.retrofit.create(
+            com.intelliworks.intellihome.data.api.CatalogosApi::class.java
+        )
+        val catalogosRepo = com.intelliworks.intellihome.data.repository.CatalogosRepository(catalogosApi)
+
+        lifecycleScope.launch {
+            try {
+                val response = catalogosRepo.getHobbies()
+                if (response.isSuccessful) {
+                    // ✅ Servidor disponible → navegar
+                    startActivity(Intent(this@Login, Register::class.java))
+                } else {
+                    Toast.makeText(
+                        this@Login,
+                        getString(R.string.error_network),
+                        Toast.LENGTH_LONG
+                    ).show()
+                }
+            } catch (e: Exception) {
+                Toast.makeText(
+                    this@Login,
+                    getString(R.string.error_network),
+                    Toast.LENGTH_LONG
+                ).show()
+            }
+        }
+    }
+
 
     private fun navegarAMain(loginData: LoginResponseDto) {
         val intent = Intent(this, MainActivity::class.java)

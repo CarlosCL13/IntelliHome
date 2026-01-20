@@ -1,5 +1,6 @@
 package com.intelliworks.intellihome
 
+import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import com.intelliworks.intellihome.utils.BaseActivity
@@ -15,6 +16,10 @@ class MainActivity : BaseActivity() {
         super.onCreate(savedInstanceState)
         enlace = ActivityMainBinding.inflate(layoutInflater)
         setContentView(enlace.root)
+
+        enlace.btnCerrarSesion.setOnClickListener {
+            cerrarSesion()
+        }
 
         // Recuperar datos del Intent (enviados desde Login)
         val datosUsuarioJson = intent.getStringExtra("user_data")
@@ -66,6 +71,19 @@ class MainActivity : BaseActivity() {
             txtRol.text = getString(R.string.label_role, nombreRol)
         }
     }
+    private fun cerrarSesion() {
+        // Limpiar preferencias de login (remember me)
+        val prefs = getSharedPreferences("login_prefs", MODE_PRIVATE)
+        prefs.edit().clear().apply()
+
+        // Ir a Login y limpiar back stack
+        val intent = Intent(this, Login::class.java).apply {
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+        }
+        startActivity(intent)
+        finish()
+    }
+
 
     override fun onResume() {
         super.onResume()

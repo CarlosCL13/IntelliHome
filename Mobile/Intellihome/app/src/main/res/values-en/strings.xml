@@ -26,6 +26,8 @@
     <!-- REGISTER -->
     <string name="register_logo_desc">App logo</string>
     <string name="register_user_photo_desc">User photo</string>
+    <string name="logout">Cerrar sesión</string>
+
 
     <string name="register_name">Name:</string>
     <string name="register_lastname">Last name:</string>
