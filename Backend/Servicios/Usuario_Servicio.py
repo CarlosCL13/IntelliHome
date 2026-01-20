@@ -115,7 +115,7 @@ class Usuario_Servicio:
     
     # Login de usuario
     @staticmethod
-    def login_usuario(db: Session, identificador: str, contraseña: str):
+    def login_usuario(db: Session, identificador: str, contrasena: str):
         """
         Permite iniciar sesión usando nombre de usuario, correo o teléfono y contraseña.
         """
@@ -134,7 +134,7 @@ class Usuario_Servicio:
                 errores['cuenta'] = 'La cuenta está bloqueada. Contacte al administrador.'
                 return {'errores': errores}
             
-            validacion_contrasena = Usuario_Servicio._validar_contraseña_login(contraseña, usuario.contraseña)
+            validacion_contrasena = Usuario_Servicio._validar_contraseña_login(contrasena, usuario.contraseña)
 
             # validar si la contraseña es correcta
             if not validacion_contrasena:
@@ -192,6 +192,50 @@ class Usuario_Servicio:
                 "pregunta_id": PreguntaRecuperacion_inf.id,
                 "pregunta": PreguntaRecuperacion_inf.texto
             }
+        except Exception as e:
+            db.rollback()
+            return {'errores': {'internal': f'Error interno: {str(e)}'}}
+        finally:
+            db.close()
+
+    # Restablecimiento de contraseña
+    @staticmethod
+    def restablecer_contrasena(db: Session, identificador: str, nueva_contrasena: str, respuesta_recuperacion: str):
+        """
+        Permite restablecer la contraseña si la respuesta de recuperación es correcta.
+        """
+
+        errores = {}
+        usuario = None
+
+        try:
+            # Buscar usuario por nombre de usuario, correo o teléfono
+            usuario = Usuario_Servicio._validar_identificador(db, identificador, errores)
+            
+            if errores:
+                return {'errores': errores}
+            
+            # Validar respuesta de recuperación
+            if usuario.respuesta_recuperacion.lower() != respuesta_recuperacion.lower():
+                errores['respuesta_recuperacion'] = 'Respuesta de recuperación incorrecta.'
+                return {'errores': errores}
+            
+            # Validar nueva contraseña
+            Usuario_Servicio._validar_contraseña_registro(nueva_contrasena, errores)
+            if errores:
+                return {'errores': errores}
+            
+            # Se encripta la nueva contraseña y se actualiza
+            hashed_password = Usuario_Servicio.pwd_context.hash(nueva_contrasena)
+            usuario.contraseña = hashed_password
+
+            # Resetear intentos fallidos y estado de cuenta
+            usuario.intentos_fallidos = 0
+            usuario.estado_cuenta = 'activo'
+
+            db.commit()
+            return {'mensaje': 'Contraseña restablecida exitosamente'}
+        
         except Exception as e:
             db.rollback()
             return {'errores': {'internal': f'Error interno: {str(e)}'}}
