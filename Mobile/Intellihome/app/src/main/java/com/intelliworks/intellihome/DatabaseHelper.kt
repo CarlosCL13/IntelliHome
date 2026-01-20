@@ -4,9 +4,14 @@ import android.content.ContentValues
 import android.content.Context
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
+import com.intelliworks.intellihome.model.User
 
-class DatabaseHelper(private val context: Context):
-    SQLiteOpenHelper(context, DATABASE_NAME, null, DATABASE_VERSION) {
+/**
+ * Gestiona el ciclo de vida de la base de datos y provee interfaces de acceso
+ * para las operaciones de persistencia de la entidad usuario.
+ */
+class DatabaseHelper(private val contexto: Context):
+    SQLiteOpenHelper(contexto, NOMBRE_BASE_DATOS, null, VERSION_BASE_DATOS) {
 
     companion object {
         private const val DATABASE_NAME = "UserDatabase.db"
@@ -71,6 +76,9 @@ class DatabaseHelper(private val context: Context):
         onCreate(db)
     }
 
+    /**
+     * Registra un nuevo perfil de usuario en el sistema.
+     */
     fun insertUser(
         rol_id: Int,
         imagen_perfil: String,
@@ -132,10 +140,32 @@ class DatabaseHelper(private val context: Context):
         )
         var enabled = false
         if (cursor.moveToFirst()) {
-            enabled = cursor.getInt(0) == 1
+            usuario = User(
+                id = cursor.getInt(cursor.getColumnIndexOrThrow(COLUMNA_ID)),
+                rolId = cursor.getInt(cursor.getColumnIndexOrThrow(COLUMNA_ROL_ID)),
+                imagenPerfil = cursor.getString(cursor.getColumnIndexOrThrow(COLUMNA_IMAGEN_PERFIL)),
+                nombre = cursor.getString(cursor.getColumnIndexOrThrow(COLUMNA_NOMBRE)),
+                apellidos = cursor.getString(cursor.getColumnIndexOrThrow(COLUMNA_APELLIDOS)),
+                correo = cursor.getString(cursor.getColumnIndexOrThrow(COLUMNA_CORREO)),
+                username = cursor.getString(cursor.getColumnIndexOrThrow(COLUMNA_USERNAME)),
+                contrasena = cursor.getString(cursor.getColumnIndexOrThrow(COLUMNA_CONTRASENA)),
+                telefono = cursor.getString(cursor.getColumnIndexOrThrow(COLUMNA_TELEFONO)),
+                fechaNacimiento = cursor.getString(cursor.getColumnIndexOrThrow(COLUMNA_FECHA_NACIMIENTO)),
+                domicilio = cursor.getString(cursor.getColumnIndexOrThrow(COLUMNA_DOMICILIO)),
+                preguntaRecuperacionId = cursor.getInt(cursor.getColumnIndexOrThrow(COLUMNA_PREGUNTA_RECUPERACION_ID)),
+                respuestaRecuperacion = cursor.getString(cursor.getColumnIndexOrThrow(COLUMNA_RESPUESTA_RECUPERACION)),
+                fingerprintEnabled = cursor.getInt(cursor.getColumnIndexOrThrow(COLUMNA_HUELLA_DIGITAL)) == 1,
+                intentosFallidos = cursor.getInt(cursor.getColumnIndexOrThrow(COLUMNA_INTENTOS_FALLIDOS)),
+                estadoCuenta = cursor.getString(cursor.getColumnIndexOrThrow(COLUMNA_ESTADO_CUENTA)),
+                nombreTitular = cursor.getString(cursor.getColumnIndexOrThrow(COLUMNA_NOMBRE_TITULAR)),
+                numeroEncriptado = cursor.getString(cursor.getColumnIndexOrThrow(COLUMNA_NUMERO_ENCRIPTADO)),
+                fechaExpiracion = cursor.getString(cursor.getColumnIndexOrThrow(COLUMNA_FECHA_EXPIRACION)),
+                marca = cursor.getString(cursor.getColumnIndexOrThrow(COLUMNA_MARCA)),
+                ultimos4 = cursor.getString(cursor.getColumnIndexOrThrow(COLUMNA_ULTIMOS_4))
+            )
         }
         cursor.close()
-        return enabled
+        return usuario
     }
 
     fun readUser(username: String, contrasena: String): Boolean {
@@ -145,6 +175,6 @@ class DatabaseHelper(private val context: Context):
         val cursor = db.query(TABLE_USUARIO, null, selection, selectionArgs, null, null, null)
         val userExists = cursor.count > 0
         cursor.close()
-        return userExists
+        return nombreUsuarioReal
     }
 }
