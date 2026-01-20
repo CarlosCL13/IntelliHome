@@ -1,111 +1,176 @@
 package com.intelliworks.intellihome
 
+import com.intelliworks.intellihome.utils.BaseActivity
 import android.content.SharedPreferences
 import android.graphics.Color
 import android.os.Bundle
-import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import com.intelliworks.intellihome.databinding.ActivitySettingsBinding
 import com.skydoves.colorpickerview.ColorEnvelope
 import com.skydoves.colorpickerview.ColorPickerDialog
 import com.skydoves.colorpickerview.listeners.ColorEnvelopeListener
 
-class SettingsActivity : AppCompatActivity() {
+/**
+ * Actividad encargada de la gestión de preferencias del sistema.
+ * Permite al usuario personalizar el tema visual, el color de fondo de la interfaz
+ * y la localización (idioma) de la aplicación.
+ */
+class SettingsActivity : BaseActivity() {
 
-    private lateinit var binding: ActivitySettingsBinding
-    private lateinit var prefs: SharedPreferences
+    private lateinit var enlace: ActivitySettingsBinding
+    private lateinit var preferencias: SharedPreferences
+
+    override fun onResume() {
+        super.onResume()
+        // Sincroniza la apariencia visual con el estado actual de las preferencias
+        applyAppAppearance(enlace.root)
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        binding = ActivitySettingsBinding.inflate(layoutInflater)
-        setContentView(binding.root)
+        enlace = ActivitySettingsBinding.inflate(layoutInflater)
+        setContentView(enlace.root)
 
+        // Oculta el botón de ajustes dentro de su propia pantalla para evitar redundancia
+        showSettingsButton(false)
 
-        prefs = getSharedPreferences("settings", MODE_PRIVATE)
+        preferencias = getSharedPreferences("settings", MODE_PRIVATE)
 
+        // ==========================================
+        // CARGA INICIAL DE PREFERENCIAS
+        // ==========================================
+        val modoOscuroActivo = preferencias.getBoolean("dark_mode", false)
+        val colorFondoBase = preferencias.getInt("bg_color", Color.WHITE)
+        val codigoIdioma = preferencias.getString("language", "es") ?: "es"
 
-        val darkMode = prefs.getBoolean("dark_mode", false)
-        val savedColor = prefs.getInt("bg_color", Color.WHITE)
+        aplicarModoVisual(modoOscuroActivo)
+        aplicarColorDeFondo(colorFondoBase, modoOscuroActivo)
+        actualizarIndicadorIdioma(codigoIdioma)
 
-        applyTheme(darkMode)
-        applyBackgroundColor(savedColor, darkMode)
+        // ==========================================
+        // GESTIÓN DE TEMA OSCURO
+        // ==========================================
+        enlace.switchTheme.isChecked = modoOscuroActivo
+        enlace.switchTheme.setOnCheckedChangeListener { _, estaChequeado ->
+            preferencias.edit().putBoolean("dark_mode", estaChequeado).apply()
+            aplicarModoVisual(estaChequeado)
 
-
-        binding.switchTheme.isChecked = darkMode
-
-        binding.switchTheme.setOnCheckedChangeListener { _, isChecked ->
-            prefs.edit().putBoolean("dark_mode", isChecked).apply()
-            applyTheme(isChecked)
-
-            val color = prefs.getInt("bg_color", Color.WHITE)
-            applyBackgroundColor(color, isChecked)
+            // Re-calcula la adaptación del color de fondo ante el cambio de tema
+            val colorActual = preferencias.getInt("bg_color", Color.WHITE)
+            aplicarColorDeFondo(colorActual, estaChequeado)
         }
 
-        binding.btnColorPicker.setOnClickListener {
+        // ==========================================
+        // SELECTOR DE COLOR PERSONALIZADO
+        // ==========================================
+        enlace.btnColorPicker.setOnClickListener {
             ColorPickerDialog.Builder(this)
-                .setTitle("Selecciona un color")
-                .setPositiveButton("OK", object : ColorEnvelopeListener {
-                    override fun onColorSelected(
-                        envelope: ColorEnvelope,
-                        fromUser: Boolean
-                    ) {
-                        val color = envelope.color
-                        prefs.edit().putInt("bg_color", color).apply()
+                .setTitle(getString(R.string.select_color))
+                .setPositiveButton(
+                    getString(android.R.string.ok),
+                    object : ColorEnvelopeListener {
+                        override fun onColorSelected(
+                            sobre: ColorEnvelope,
+                            desdeUsuario: Boolean
+                        ) {
+                            val colorSeleccionado = sobre.color
+                            preferencias.edit().putInt("bg_color", colorSeleccionado).apply()
 
-                        val dark = prefs.getBoolean("dark_mode", false)
-                        applyBackgroundColor(color, dark)
+                            val esOscuro = preferencias.getBoolean("dark_mode", false)
+                            aplicarColorDeFondo(colorSeleccionado, esOscuro)
+                        }
                     }
-                })
-                .setNegativeButton("Cancelar") { dialog, _ ->
-                    dialog.dismiss()
+                )
+                .setNegativeButton(getString(android.R.string.cancel)) { dialogo, _ ->
+                    dialogo.dismiss()
                 }
                 .show()
         }
 
-
-        binding.btnSpanish.setOnClickListener {
-            setLanguage("es")
+        // ==========================================
+        // CAMBIO DE LOCALIZACIÓN
+        // ==========================================
+        enlace.cardSpanish.setOnClickListener {
+            cambiarIdiomaSistema("es")
         }
 
-        binding.btnEnglish.setOnClickListener {
-            setLanguage("en")
+        enlace.cardEnglish.setOnClickListener {
+            cambiarIdiomaSistema("en")
         }
     }
 
-    // ===============================
-    // FUNCIONES AUXILIARES
-    // ===============================
+    // ==========================================
+    // MÉTODOS DE SOPORTE Y LÓGICA DE NEGOCIO
+    // ==========================================
 
-    private fun applyTheme(darkMode: Boolean) {
+    /**
+     * Actualiza la preferencia de idioma y reinicia la actividad para aplicar cambios.
+     */
+    private fun cambiarIdiomaSistema(codigoIso: String) {
+        preferencias.edit().putString("language", codigoIso).apply()
+        reiniciarActividadActual()
+    }
+
+    /**
+     * Realiza un refresco de la instancia actual para aplicar configuraciones de recursos.
+     */
+    private fun reiniciarActividadActual() {
+        val intentoReinicio = intent
+        finish()
+        startActivity(intentoReinicio)
+    }
+
+    /**
+     * Delega al delegado de compatibilidad el cambio de modo noche a nivel sistema.
+     */
+    private fun aplicarModoVisual(modoOscuro: Boolean) {
         AppCompatDelegate.setDefaultNightMode(
-            if (darkMode)
-                AppCompatDelegate.MODE_NIGHT_YES
-            else
-                AppCompatDelegate.MODE_NIGHT_NO
+            if (modoOscuro) AppCompatDelegate.MODE_NIGHT_YES
+            else AppCompatDelegate.MODE_NIGHT_NO
         )
     }
 
-    private fun applyBackgroundColor(color: Int, darkMode: Boolean) {
-        val adaptedColor = adaptColorForTheme(color, darkMode)
-        binding.root.setBackgroundColor(adaptedColor)
+    /**
+     * Aplica el color procesado al fondo de la vista raíz.
+     */
+    private fun aplicarColorDeFondo(color: Int, modoOscuro: Boolean) {
+        val colorAdaptado = adaptarColorSegunTema(color, modoOscuro)
+        enlace.root.setBackgroundColor(colorAdaptado)
     }
 
-    private fun adaptColorForTheme(color: Int, darkMode: Boolean): Int {
-        return if (darkMode) {
+    /**
+     * Algoritmo de ajuste de luminancia: reduce el brillo del color un 40% si
+     * el modo oscuro está activo para evitar fatiga visual y mantener contraste.
+     */
+    private fun adaptarColorSegunTema(color: Int, modoOscuro: Boolean): Int {
+        return if (modoOscuro) {
             Color.argb(
                 Color.alpha(color),
-                (Color.red(color) * 0.6).toInt(),
-                (Color.green(color) * 0.6).toInt(),
-                (Color.blue(color) * 0.6).toInt()
+                (Color.red(color) * 0.6f).toInt(),
+                (Color.green(color) * 0.6f).toInt(),
+                (Color.blue(color) * 0.6f).toInt()
             )
         } else {
             color
         }
     }
 
-    private fun setLanguage(langCode: String) {
-        prefs.edit().putString("language", langCode).apply()
-        recreate()
+    /**
+     * Actualiza la retroalimentación visual (borde) de las tarjetas de selección de idioma.
+     */
+    private fun actualizarIndicadorIdioma(codigoIso: String) {
+        val colorBorde = getColor(R.color.green)
+        val grosorBorde = resources.getDimensionPixelSize(R.dimen.language_border)
+
+        if (codigoIso == "es") {
+            enlace.cardSpanish.strokeColor = colorBorde
+            enlace.cardSpanish.strokeWidth = grosorBorde
+            enlace.cardEnglish.strokeWidth = 0
+        } else {
+            enlace.cardEnglish.strokeColor = colorBorde
+            enlace.cardEnglish.strokeWidth = grosorBorde
+            enlace.cardSpanish.strokeWidth = 0
+        }
     }
 }

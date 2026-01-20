@@ -10,12 +10,13 @@
         android:id="@+id/img_logotipo"
         android:layout_width="150dp"
         android:layout_height="150dp"
-        android:contentDescription="Logotipo de aplicación"
+        android:contentDescription="@string/register_logo_desc"
         android:src="@drawable/logotipo"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.498"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"/>
+
 
     <!-- Scroll de formulario -->
     <ScrollView
@@ -77,7 +78,7 @@
                             android:layout_width="89dp"
                             android:layout_height="wrap_content"
                             android:layout_gravity="center_vertical"
-                            android:text="Nombre: "
+                            android:text="@string/register_name"
                             android:textSize="16sp" />
                         <EditText
                             android:minHeight="48dp"
@@ -101,7 +102,7 @@
                             android:layout_width="89dp"
                             android:layout_height="wrap_content"
                             android:layout_gravity="center_vertical"
-                            android:text="Apellidos: "
+                            android:text="@string/register_lastname"
                             android:textSize="16sp" />
                         <EditText
                             android:minHeight="48dp"
@@ -134,7 +135,7 @@
                     android:layout_width="89dp"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center_vertical"
-                    android:text="Correo: "
+                    android:text="@string/register_email"
                     android:textSize="16sp" />
                 <EditText
                     android:minHeight="48dp"
@@ -163,7 +164,7 @@
                     android:layout_width="89dp"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center_vertical"
-                    android:text="Nombre de usuario: "
+                    android:text="@string/register_username"
                     android:textSize="16sp" />
                 <EditText
                     android:minHeight="48dp"
@@ -191,11 +192,11 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Contraseña: "
+                    android:text="@string/register_password"
                     android:textSize="16sp"
                     android:layout_gravity="center_vertical" />
                 <EditText
-                    android:hint="(min 8 caracteres)"
+                    android:hint="@string/register_password_hint"
                     android:minHeight="48dp"
                     android:minWidth="48dp"
                     android:id="@+id/et_contrasena"
@@ -230,7 +231,7 @@
                     android:layout_width="89dp"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center_vertical"
-                    android:text="Confirmar contraseña: "
+                    android:text="@string/register_confirm_password"
                     android:textSize="16sp" />
                 <EditText
                     android:minHeight="48dp"
@@ -266,7 +267,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Pregunta de recuperación:"
+                    android:text="@string/register_recovery_question"
                     android:textStyle="bold"
                     android:textSize="16sp"
                     android:layout_marginBottom="8dp" />
@@ -279,7 +280,7 @@
                     android:id="@+id/et_respuesta"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:hint="Respuesta"
+                    android:hint="@string/register_answer"
                     android:textSize="14sp"
                     android:inputType="text"
                     android:minHeight="48dp"
@@ -304,7 +305,7 @@
                     android:layout_width="89dp"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center_vertical"
-                    android:text="Teléfono: "
+                    android:text="@string/register_phone"
                     android:textSize="16sp" />
                 <EditText
                     android:minHeight="48dp"
@@ -335,7 +336,7 @@
                     android:layout_width="89dp"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center_vertical"
-                    android:text="Fecha de nacimiento: "
+                    android:text="@string/register_birthdate"
                     android:textSize="16sp" />
                 <EditText
                     android:minHeight="48dp"
@@ -354,7 +355,7 @@
                     android:layout_width="48dp"
                     android:layout_height="48dp"
                     android:background="@android:color/transparent"
-                    android:contentDescription="Abrir calendario"
+                    android:contentDescription="@string/register_open_calendar"
                     android:minWidth="48dp"
                     android:minHeight="48dp"
                     android:src="@android:drawable/ic_menu_today" />
@@ -375,7 +376,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Hobbies:"
+                    android:text="@string/register_hobbies"
                     android:textSize="16sp"
                     android:textStyle="bold"
                     android:layout_marginBottom="8dp" />
@@ -383,31 +384,31 @@
                     android:id="@+id/hobby_tv"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Ver TV"
+                    android:text="@string/hobby_tv"
                     android:textSize="14sp" />
                 <CheckBox
                     android:id="@+id/hobby_hiking"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Hiking (senderismo)"
+                    android:text="@string/hobby_hiking"
                     android:textSize="14sp"/>
                 <CheckBox
                     android:id="@+id/hobby_boardgames"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Juegos de mesa"
+                    android:text="@string/hobby_boardgames"
                     android:textSize="14sp" />
                 <CheckBox
                     android:id="@+id/hobby_snorkel"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Esnórquel"
+                    android:text="@string/hobby_snorkel"
                     android:textSize="14sp" />
                 <CheckBox
                     android:id="@+id/hobby_sports"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Deportes"
+                    android:text="@string/hobby_sports"
                     android:textSize="14sp" />
             </LinearLayout>
 
@@ -427,7 +428,7 @@
                     android:layout_width="89dp"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center_vertical"
-                    android:text="Domicilio: "
+                    android:text="@string/register_address"
                     android:textStyle="bold"
                     android:textSize="16sp" />
                 <EditText
@@ -456,7 +457,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Casa de preferencia:"
+                    android:text="@string/register_house_preference"
                     android:textSize="16sp"
                     android:textStyle="bold"
                     android:layout_marginBottom="8dp" />
@@ -464,19 +465,19 @@
                     android:id="@+id/casa_minimalista"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Minimalista"
+                    android:text="@string/house_minimalist"
                     android:textSize="14sp" />
                 <CheckBox
                     android:id="@+id/casa_aventurera"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Aventurera"
+                    android:text="@string/house_adventurous"
                     android:textSize="14sp" />
                 <CheckBox
                     android:id="@+id/casa_contemporanea"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Contemporanea"
+                    android:text="@string/house_contemporary"
                     android:textSize="14sp" />
             </LinearLayout>
 
@@ -495,7 +496,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Datos de tarjeta de pago:"
+                    android:text="@string/register_payment_data"
                     android:textSize="16sp"
                     android:textStyle="bold"
                     android:layout_marginBottom="8dp" />
@@ -509,7 +510,7 @@
                     <TextView
                         android:layout_width="120dp"
                         android:layout_height="wrap_content"
-                        android:text="Titular de tarjeta: "
+                        android:text="@string/register_card_holder"
                         android:textSize="14sp" />
                     <EditText
                         android:id="@+id/et_titular_tarjeta"
@@ -531,7 +532,7 @@
                     <TextView
                         android:layout_width="120dp"
                         android:layout_height="wrap_content"
-                        android:text="Número de tarjeta: "
+                        android:text="@string/register_card_number"
                         android:textSize="14sp" />
                     <EditText
                         android:id="@+id/et_numero_tarjeta"
@@ -552,7 +553,7 @@
                     <TextView
                         android:layout_width="120dp"
                         android:layout_height="wrap_content"
-                        android:text="Fecha de vencimiento: "
+                        android:text="@string/register_card_expiration"
                         android:textSize="14sp" />
                     <EditText
                         android:id="@+id/et_fecha_vencimiento"
@@ -562,7 +563,7 @@
                         android:minHeight="48dp"
                         android:minWidth="48dp"
                         android:inputType="date"
-                        android:hint="mm/yyyy"
+                        android:hint="@string/register_card_expiration_hint"
                         android:textSize="14sp"
                         android:focusable="false" />
 
@@ -571,7 +572,7 @@
                         android:layout_width="48dp"
                         android:layout_height="48dp"
                         android:background="@android:color/transparent"
-                        android:contentDescription="Abrir calendario"
+                        android:contentDescription="@string/register_open_calendar"
                         android:minWidth="48dp"
                         android:minHeight="48dp"
                         android:src="@android:drawable/ic_menu_today" />
@@ -584,7 +585,7 @@
                 android:id="@+id/cb_huella_digital"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Habilitar inicio de sesión con huella"
+                android:text="@string/register_fingerprint"
                 android:textSize="16sp"
                 android:layout_marginTop="20dp"
                 app:layout_constraintTop_toBottomOf="@id/ll_tarjeta_pago"
@@ -630,7 +631,7 @@
         android:layout_marginTop="15dp"
         android:layout_marginBottom="50dp"
         android:backgroundTint="@color/black"
-        android:text="Registrarme"
+        android:text="@string/register_button"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -643,7 +644,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
         android:layout_marginBottom="32dp"
-        android:text="¿Ya estás registrado? Iniciar sesión"
+        android:text="@string/register_login_redirect"
         app:layout_constraintTop_toBottomOf="@id/btn_registrar"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
