@@ -26,7 +26,7 @@
     <string name="settings">Configuración</string>
     <string name="fingerprint_login">Acceso con huella</string>
     <string name="logo_desc">Logotipo de la aplicación</string>
-    <string name="logout">Log out</string>
+    <string name="logout">Cerrar sesión</string>
 
     <!-- REGISTER -->
     <string name="register_logo_desc">Logotipo de aplicación</string>

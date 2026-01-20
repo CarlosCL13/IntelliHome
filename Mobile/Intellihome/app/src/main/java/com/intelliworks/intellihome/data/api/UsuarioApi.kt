@@ -62,4 +62,14 @@ interface UsuarioApi {
         @Field("nueva_contrasena") nuevaContrasena: String,
         @Field("respuesta_recuperacion") respuestaRecuperacion: String
     ): Response<RecoveryResultDto>
+
+    /**
+     * Busca un usuario por su token público.
+     * Sincronizado con @router.post("/buscar-por-token") en Python.
+     */
+    @FormUrlEncoded
+    @POST("usuarios/buscar-por-token")
+    suspend fun buscarPorToken(
+        @Field("token_publico") tokenPublico: String
+    ): Response<LoginResponseDto>
 }
