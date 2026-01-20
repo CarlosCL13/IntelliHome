@@ -30,13 +30,14 @@ import okhttp3.MediaType.Companion.toMediaType
 import android.widget.CheckBox
 import android.view.ViewGroup
 import android.widget.ArrayAdapter
+import com.intelliworks.intellihome.utils.BaseActivity
 import okhttp3.RequestBody.Companion.asRequestBody
 import okhttp3.RequestBody.Companion.toRequestBody
 
 /**
  * Clase para la pantalla de registro de usuario.
  */
-class Register : AppCompatActivity() {
+class Register : BaseActivity() {
 
     private lateinit var binding: ActivityRegisterBinding
     private lateinit var databaseHelper: DatabaseHelper
@@ -83,6 +84,11 @@ class Register : AppCompatActivity() {
             e.printStackTrace()
             null
         }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        applyAppAppearance(binding.root)
     }
 
     // Método onCreate de la actividad

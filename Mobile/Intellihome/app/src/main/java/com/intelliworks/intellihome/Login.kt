@@ -1,27 +1,23 @@
 package com.intelliworks.intellihome
 
-import com.intelliworks.intellihome.utils.BaseActivity
 import android.content.Intent
-import android.graphics.Color
 import android.os.Bundle
-import android.view.View
-import android.widget.PopupMenu
 import android.widget.Toast
-import androidx.appcompat.app.AppCompatDelegate
 import androidx.biometric.BiometricPrompt
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.lifecycleScope
+import com.google.gson.Gson
+import com.intelliworks.intellihome.data.api.RetrofitInstance
+import com.intelliworks.intellihome.data.api.UsuarioApi
+import com.intelliworks.intellihome.data.model.LoginResponseDto
+import com.intelliworks.intellihome.data.repository.UsuarioRepository
 import com.intelliworks.intellihome.databinding.ActivityLoginBinding
+import com.intelliworks.intellihome.utils.BaseActivity
+import kotlinx.coroutines.launch
 
-/**
- * Controlador para la interfaz de acceso de usuarios.
- * Gestiona autenticación estándar, biométrica y persistencia de sesión local.
- */
 class Login : BaseActivity() {
 
     private lateinit var enlace: ActivityLoginBinding
-    private lateinit var baseDatos: DatabaseHelper
-
-    // Estado para controlar la integridad de la contraseña recuperada de preferencias
     private var contrasenaCargadaDesdePreferencias = false
 
     override fun onResume() {
@@ -31,154 +27,126 @@ class Login : BaseActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
         enlace = ActivityLoginBinding.inflate(layoutInflater)
         setContentView(enlace.root)
-        applyAppAppearance(enlace.root)
 
-        baseDatos = DatabaseHelper(this)
-
-        // Inicialización de la funcionalidad "Recordarme"
         val preferenciasLogin = getSharedPreferences("login_prefs", MODE_PRIVATE)
-        val sesionRecordada = preferenciasLogin.getBoolean("is_remembered", false)
 
-        if (sesionRecordada) {
-            val usuarioGuardado = preferenciasLogin.getString("saved_user", "")
-            val claveGuardada = preferenciasLogin.getString("saved_pass", "")
-
-            enlace.loginUsername.setText(usuarioGuardado)
-            enlace.loginPassword.setText(claveGuardada)
+        // 1. CARGAR CREDENCIALES RECORDADAS
+        if (preferenciasLogin.getBoolean("is_remembered", false)) {
+            enlace.loginUsername.setText(preferenciasLogin.getString("saved_user", ""))
+            enlace.loginPassword.setText(preferenciasLogin.getString("saved_pass", ""))
             enlace.cbRememberMe.isChecked = true
-
             contrasenaCargadaDesdePreferencias = true
         }
 
+        // 2. BOTÓN LOGIN (API)
         enlace.loginButton.setOnClickListener {
-            val identificador = enlace.loginUsername.text.toString()
-            val clave = enlace.loginPassword.text.toString()
+            val identificador = enlace.loginUsername.text.toString().trim()
+            val clave = enlace.loginPassword.text.toString().trim()
 
-            if (baseDatos.readUser(identificador, clave)) {
-                // Persistencia de credenciales según preferencia del usuario
-                val editorPreferencias = preferenciasLogin.edit()
-                if (enlace.cbRememberMe.isChecked) {
-                    editorPreferencias.putString("saved_user", identificador)
-                    editorPreferencias.putString("saved_pass", clave)
-                    editorPreferencias.putBoolean("is_remembered", true)
-                } else {
-                    editorPreferencias.clear()
-                }
-                editorPreferencias.apply()
-
-                val nombreUsuarioReal = baseDatos.getActualUsername(identificador)
-                procesarIngresoExitoso(nombreUsuarioReal)
+            if (identificador.isNotEmpty() && clave.isNotEmpty()) {
+                ejecutarLoginApi(identificador, clave)
             } else {
-                Toast.makeText(this, "Error de autenticación", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, getString(R.string.error_empty_fields), Toast.LENGTH_SHORT).show()
             }
         }
 
+        // 3. RECUPERAR CONTRASEÑA
         enlace.tvForgotPassword.setOnClickListener {
             startActivity(Intent(this, PasswordRecoveryActivity::class.java))
         }
 
-        /**
-         * Monitor de cambios en el campo de contraseña.
-         * Implementa una política de borrado total si se intenta modificar una clave recordada.
-         */
-        enlace.loginPassword.addTextChangedListener(object : android.text.TextWatcher {
-            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
-
-            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-                // Si se detecta borrado en una contraseña cargada por el sistema, se limpia el campo
-                if (contrasenaCargadaDesdePreferencias && before > count) {
-                    contrasenaCargadaDesdePreferencias = false
-                    enlace.loginPassword.setText("")
-                }
-            }
-
-            override fun afterTextChanged(s: android.text.Editable?) {
-                // Valida si el contenido actual difiere del almacenado en preferencias
-                if (contrasenaCargadaDesdePreferencias && s?.length ?: 0 > 0 &&
-                    s.toString() != preferenciasLogin.getString("saved_pass", "")) {
-                    contrasenaCargadaDesdePreferencias = false
-                }
-            }
-        })
-
-        var claveVisible = false
-        enlace.btnMostrarPasswordLogin.setOnClickListener {
-            // Restricción de visibilidad para contraseñas automáticas por seguridad del usuario
-            if (contrasenaCargadaDesdePreferencias) {
-                Toast.makeText(this, "Por seguridad, reescriba su clave para visualizarla", Toast.LENGTH_SHORT).show()
-            } else {
-                claveVisible = !claveVisible
-                val tipografia = enlace.loginPassword.typeface
-                if (claveVisible) {
-                    enlace.loginPassword.inputType = android.text.InputType.TYPE_CLASS_TEXT or
-                            android.text.InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD
-                    enlace.btnMostrarPasswordLogin.setImageResource(R.drawable.ic_open_eye)
-                } else {
-                    enlace.loginPassword.inputType = android.text.InputType.TYPE_CLASS_TEXT or
-                            android.text.InputType.TYPE_TEXT_VARIATION_PASSWORD
-                    enlace.btnMostrarPasswordLogin.setImageResource(R.drawable.ic_close_eye)
-                }
-                enlace.loginPassword.typeface = tipografia
-                enlace.loginPassword.setSelection(enlace.loginPassword.text?.length ?: 0)
-            }
-        }
-
-        // Gestión de autenticación biométrica
+        // 4. HUELLA DIGITAL
         enlace.fingerprintLogin.setOnClickListener {
-            val entrada = enlace.loginUsername.text.toString()
-            if (entrada.isEmpty()) {
-                Toast.makeText(this, "Ingrese identificador de usuario", Toast.LENGTH_SHORT).show()
-                return@setOnClickListener
-            }
-
-            if (baseDatos.isFingerprintEnabled(entrada)) {
-                desplegarAutenticacionBiometrica {
-                    val nombreUsuarioReal = baseDatos.getActualUsername(entrada)
-                    procesarIngresoExitoso(nombreUsuarioReal)
-                }
-            } else {
-                Toast.makeText(this, "Autenticación biométrica no habilitada", Toast.LENGTH_SHORT).show()
+            desplegarAutenticacionBiometrica {
+                // Si la huella es válida, podrías intentar un login automático
+                // o mostrar un mensaje. Por ahora, lanzamos el aviso de éxito:
+                Toast.makeText(this, "Autenticación biométrica exitosa", Toast.LENGTH_SHORT).show()
             }
         }
 
+        // 5. REDIRECCIÓN A REGISTRO
         enlace.signupRedirect.setOnClickListener {
             startActivity(Intent(this, Register::class.java))
         }
+
+        configurarVisibilidadContrasena()
     }
 
-    /**
-     * Finaliza el flujo de login y transiciona a la actividad principal.
-     */
-    private fun procesarIngresoExitoso(nombreUsuario: String) {
+    private fun ejecutarLoginApi(identificador: String, clave: String) {
+        val api = RetrofitInstance.retrofit.create(UsuarioApi::class.java)
+        val repo = UsuarioRepository(api)
+
+        lifecycleScope.launch {
+            try {
+                val response = repo.loginUsuario(identificador, clave)
+
+                if (response.isSuccessful) {
+                    val loginData = response.body()
+                    if (loginData != null && loginData.username != null) {
+                        gestionarRecordatorio(identificador, clave)
+
+                        // Mensaje de bienvenida traducido (asumiendo que tienes welcome_user en strings)
+                        Toast.makeText(this@Login, "${getString(R.string.welcome_user)} ${loginData.nombre}", Toast.LENGTH_SHORT).show()
+
+                        navegarAMain(loginData)
+                    }
+                } else {
+                    Toast.makeText(this@Login, getString(R.string.error_invalid_credentials), Toast.LENGTH_SHORT).show()
+                }
+            } catch (e: Exception) {
+                Toast.makeText(this@Login, getString(R.string.error_network), Toast.LENGTH_LONG).show()
+            }
+        }
+    }
+
+    private fun navegarAMain(loginData: LoginResponseDto) {
         val intent = Intent(this, MainActivity::class.java)
-        intent.putExtra("username", nombreUsuario)
+        intent.putExtra("user_data", Gson().toJson(loginData))
         startActivity(intent)
         finish()
     }
 
-    /**
-     * Inicializa y despliega el diálogo de hardware para validación de huella digital.
-     */
+    private fun gestionarRecordatorio(id: String, pass: String) {
+        val editor = getSharedPreferences("login_prefs", MODE_PRIVATE).edit()
+        if (enlace.cbRememberMe.isChecked) {
+            editor.putString("saved_user", id)
+            editor.putString("saved_pass", pass)
+            editor.putBoolean("is_remembered", true)
+        } else {
+            editor.clear()
+        }
+        editor.apply()
+    }
+
+    private fun configurarVisibilidadContrasena() {
+        var claveVisible = false
+        enlace.btnMostrarPasswordLogin.setOnClickListener {
+            claveVisible = !claveVisible
+            enlace.loginPassword.inputType = if (claveVisible) {
+                android.text.InputType.TYPE_CLASS_TEXT or android.text.InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD
+            } else {
+                android.text.InputType.TYPE_CLASS_TEXT or android.text.InputType.TYPE_TEXT_VARIATION_PASSWORD
+            }
+            enlace.btnMostrarPasswordLogin.setImageResource(if (claveVisible) R.drawable.ic_open_eye else R.drawable.ic_close_eye)
+            enlace.loginPassword.setSelection(enlace.loginPassword.text?.length ?: 0)
+        }
+    }
+
     private fun desplegarAutenticacionBiometrica(alExito: () -> Unit) {
         val ejecutor = ContextCompat.getMainExecutor(this)
-
-        val avisoBiometrico = BiometricPrompt(
-            this,
-            ejecutor,
-            object : BiometricPrompt.AuthenticationCallback() {
-                override fun onAuthenticationSucceeded(resultado: BiometricPrompt.AuthenticationResult) {
-                    super.onAuthenticationSucceeded(resultado)
-                    alExito()
-                }
-            })
+        val avisoBiometrico = BiometricPrompt(this, ejecutor, object : BiometricPrompt.AuthenticationCallback() {
+            override fun onAuthenticationSucceeded(resultado: BiometricPrompt.AuthenticationResult) {
+                super.onAuthenticationSucceeded(resultado)
+                alExito()
+            }
+        })
 
         val configuracionAviso = BiometricPrompt.PromptInfo.Builder()
-            .setTitle("Acceso mediante huella")
-            .setSubtitle("Autentíquese para continuar")
-            .setNegativeButtonText("Cancelar")
+            .setTitle(getString(R.string.biometric_title))
+            .setSubtitle(getString(R.string.biometric_subtitle))
+            .setNegativeButtonText(getString(android.R.string.cancel))
             .build()
 
         avisoBiometrico.authenticate(configuracionAviso)

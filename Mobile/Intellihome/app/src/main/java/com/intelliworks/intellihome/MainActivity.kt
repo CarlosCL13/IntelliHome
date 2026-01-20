@@ -1,72 +1,74 @@
 package com.intelliworks.intellihome
 
-import com.intelliworks.intellihome.utils.BaseActivity
 import android.os.Bundle
+import android.util.Log
+import com.intelliworks.intellihome.utils.BaseActivity
 import com.intelliworks.intellihome.databinding.ActivityMainBinding
-import com.intelliworks.intellihome.model.User
+import com.intelliworks.intellihome.data.model.LoginResponseDto
+import com.google.gson.Gson
 
-/**
- * Controlador principal de la aplicación que gestiona el panel de perfil de usuario.
- * Se encarga de la recuperación de la entidad completa desde persistencia y su
- * representación en la interfaz de usuario.
- */
 class MainActivity : BaseActivity() {
 
     private lateinit var enlace: ActivityMainBinding
-    private lateinit var baseDatos: DatabaseHelper
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
         enlace = ActivityMainBinding.inflate(layoutInflater)
         setContentView(enlace.root)
 
-        baseDatos = DatabaseHelper(this)
+        // Recuperar datos del Intent (enviados desde Login)
+        val datosUsuarioJson = intent.getStringExtra("user_data")
 
-        // Recuperación del identificador único transferido desde el flujo de autenticación
-        val nombreUsuario = intent.getStringExtra("username")
-
-        if (nombreUsuario != null) {
-            val usuario = baseDatos.getUserByUsername(nombreUsuario)
-            usuario?.let { desplegarInformacionUsuario(it) }
+        if (!datosUsuarioJson.isNullOrEmpty()) {
+            try {
+                val usuario = Gson().fromJson(datosUsuarioJson, LoginResponseDto::class.java)
+                desplegarInformacionServidor(usuario)
+            } catch (e: Exception) {
+                Log.e("MainActivity", "Error al procesar datos del servidor")
+            }
+        } else {
+            Log.e("MainActivity", "No se recibieron datos del servidor")
         }
     }
 
-    /**
-     * Vincula los atributos del modelo de usuario con los componentes de la vista.
-     * Implementa lógica de mapeo para recursos internacionalizados y datos encriptados.
-     */
-    private fun desplegarInformacionUsuario(usuario: User) {
-        enlace.txtUserId.text = "ID: ${usuario.id}"
-        enlace.txtUsername.text = "Usuario: ${usuario.username}"
-        enlace.txtNombre.text = "Nombre: ${usuario.nombre} ${usuario.apellidos}"
-        enlace.txtCorreo.text = "Correo: ${usuario.correo}"
-        enlace.txtTelefono.text = "Teléfono: ${usuario.telefono}"
-        enlace.txtFechaNacimiento.text = "Fecha de nacimiento: ${usuario.fechaNacimiento}"
-        enlace.txtDomicilio.text = "Domicilio: ${usuario.domicilio}"
+    private fun desplegarInformacionServidor(u: LoginResponseDto) {
+        enlace.apply {
+            // El nombre y apellido se muestran igual en cualquier idioma
+            txtNombre.text = "${u.nombre ?: ""} ${u.apellidos ?: ""}".trim()
 
-        // Resolución dinámica de la pregunta de seguridad basada en el índice de recursos
-        val catalogoPreguntas = resources.getStringArray(R.array.preguntas_recuperacion)
-        val preguntaDesplegada = if (usuario.preguntaRecuperacionId in 1..catalogoPreguntas.size)
-            catalogoPreguntas[usuario.preguntaRecuperacionId - 1]
-        else
-            "Pregunta no definida"
+            // --- Uso de recursos traducibles con parámetros ---
 
-        enlace.txtPreguntaRecuperacion.text = "Pregunta: $preguntaDesplegada"
+            // @string/label_username -> "Usuario: @%1$s" o "Username: @%1$s"
+            txtUsername.text = getString(R.string.label_username, u.username ?: "")
 
-        enlace.txtRespuestaRecuperacion.text = "Respuesta: ${usuario.respuestaRecuperacion}"
-        enlace.txtFingerprint.text =
-            "Huella: ${if (usuario.fingerprintEnabled) "Activada" else "Desactivada"}"
-        enlace.txtEstadoCuenta.text = "Estado: ${usuario.estadoCuenta}"
+            // @string/label_user_id -> "ID de Usuario: %1$d" o "User ID: %1$d"
+            txtUserId.text = getString(R.string.label_user_id, u.id ?: 0)
 
-        // Representación de información financiera enmascarada para protección de datos
-        enlace.txtDatosTarjeta.text =
-            "Tarjeta: **** **** **** ${usuario.ultimos4} (${usuario.marca}) - Exp: ${usuario.fechaExpiracion}"
+            // @string/label_email -> "Correo: %1$s" o "Email: %1$s"
+            txtCorreo.text = getString(R.string.label_email, u.correo ?: getString(R.string.data_not_available))
+
+            // @string/label_phone -> "Teléfono: %1$s" o "Phone: %1$s"
+            txtTelefono.text = getString(R.string.label_phone, u.telefono ?: getString(R.string.data_not_available))
+
+            // Estado de cuenta
+            val estado = u.estadoCuenta?.uppercase() ?: getString(R.string.data_not_available)
+            txtEstadoCuenta.text = getString(R.string.label_status, estado)
+
+            // --- Traducción lógica del Rol ---
+            val nombreRol = when (u.rolId) {
+                1 -> getString(R.string.role_admin)
+                2 -> getString(R.string.role_user)
+                3 -> getString(R.string.role_tech)
+                else -> getString(R.string.role_guest)
+            }
+
+            // @string/label_role -> "Rol: %1$s" o "Role: %1$s"
+            txtRol.text = getString(R.string.label_role, nombreRol)
+        }
     }
 
     override fun onResume() {
         super.onResume()
-        // Sincronización de la apariencia visual con las preferencias globales
         applyAppAppearance(enlace.root)
     }
 }

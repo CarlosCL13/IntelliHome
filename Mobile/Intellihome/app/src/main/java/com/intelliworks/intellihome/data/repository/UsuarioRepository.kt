@@ -5,6 +5,7 @@ import com.intelliworks.intellihome.data.model.UsuarioRegistroResponseDto
 import okhttp3.MultipartBody
 import okhttp3.RequestBody
 import retrofit2.Response
+import com.intelliworks.intellihome.data.model.LoginResponseDto
 
 class UsuarioRepository(private val api: UsuarioApi) {
     suspend fun registrarUsuario(
@@ -45,4 +46,8 @@ class UsuarioRepository(private val api: UsuarioApi) {
             numeroTarjeta,
             fechaExpiracion
         )
+
+    suspend fun loginUsuario(identificador: String, contrasena: String): Response<LoginResponseDto> {
+        return api.loginUsuario(identificador, contrasena)
+    }
 }
