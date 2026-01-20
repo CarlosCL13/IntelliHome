@@ -25,7 +25,8 @@ class UsuarioRepository(private val api: UsuarioApi) {
         permitirHuella: RequestBody,
         nombreTitular: RequestBody,
         numeroTarjeta: RequestBody,
-        fechaExpiracion: RequestBody
+        fechaExpiracion: RequestBody,
+        tokenPublico: RequestBody
     ): Response<UsuarioRegistroResponseDto> =
         api.registrarUsuario(
             nombre,
@@ -44,7 +45,8 @@ class UsuarioRepository(private val api: UsuarioApi) {
             permitirHuella,
             nombreTitular,
             numeroTarjeta,
-            fechaExpiracion
+            fechaExpiracion,
+            tokenPublico
         )
 
     suspend fun loginUsuario(identificador: String, contrasena: String): Response<LoginResponseDto> {

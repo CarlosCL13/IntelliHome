@@ -1,70 +1,67 @@
 package com.intelliworks.intellihome
 
 import android.app.DatePickerDialog
-import androidx.biometric.BiometricManager
 import android.content.Intent
 import android.os.Bundle
 import android.widget.NumberPicker
 import android.widget.Toast
+import android.widget.CheckBox
+import android.view.ViewGroup
+import android.widget.ArrayAdapter
+import android.text.InputType.TYPE_CLASS_TEXT
+import android.text.InputType.TYPE_TEXT_VARIATION_PASSWORD
+import android.text.InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD
+import android.util.Patterns
+import android.view.View
+import androidx.biometric.BiometricManager
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.biometric.BiometricPrompt
 import androidx.core.content.ContextCompat
-
-import android.text.InputType.TYPE_CLASS_TEXT
-import android.text.InputType.TYPE_TEXT_VARIATION_PASSWORD
-import android.text.InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD
-
+import androidx.lifecycle.lifecycleScope
 import java.text.SimpleDateFormat
 import java.util.Calendar
-import android.util.Patterns
-import android.view.View
-
-import com.intelliworks.intellihome.databinding.ActivityRegisterBinding
-import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.launch
 import com.intelliworks.intellihome.data.api.RetrofitInstance
 import com.intelliworks.intellihome.data.api.CatalogosApi
 import com.intelliworks.intellihome.data.repository.CatalogosRepository
+import com.intelliworks.intellihome.databinding.ActivityRegisterBinding
+import com.intelliworks.intellihome.utils.BiometricCryptoHelper.encriptarClave
+import com.intelliworks.intellihome.utils.BiometricCryptoHelper.encriptarToken
+import com.intelliworks.intellihome.utils.BiometricCryptoHelper.generarClaveBiometrica
+import com.intelliworks.intellihome.utils.BiometricCryptoHelper.generarTokenPublico
 import okhttp3.MediaType.Companion.toMediaType
-import android.widget.CheckBox
-import android.view.ViewGroup
-import android.widget.ArrayAdapter
-import com.intelliworks.intellihome.utils.BaseActivity
 import okhttp3.RequestBody.Companion.asRequestBody
 import okhttp3.RequestBody.Companion.toRequestBody
+import javax.crypto.Cipher
 
 /**
  * Clase para la pantalla de registro de usuario.
  */
-class Register : BaseActivity() {
-
+class Register : AppCompatActivity() {
     private lateinit var binding: ActivityRegisterBinding
 
     // Variable para almacenar la URI de la imagen de usuario
     private var imagenUsuarioUri: android.net.Uri? = null
 
-    // Constantes
-    companion object {
-        // Constante para el código de solicitud de selección de imagen
-        private const val REQUEST_CODE_PICK_IMAGE = 1001
-    }
+    // Constante para el código de solicitud de selección de imagen
+    companion object { private const val REQUEST_CODE_PICK_IMAGE = 1001 }
 
     // Crea un archivo temporal a partir de una URI
     private fun crearArchivoTemp(uri: android.net.Uri): java.io.File? {
         return try {
-
-            // Obtiene el nombre del archivo original (si existe)
             var nombreArchivo = "imagen_temp.jpg"
+
+            // Intenta obtener el nombre original del archivo desde la ruta
             val cursor = contentResolver.query(uri, null, null, null, null)
             cursor?.use {
                 val nameIndex = it.getColumnIndex(android.provider.OpenableColumns.DISPLAY_NAME)
                 if (it.moveToFirst() && nameIndex != -1) {
-                    nombreArchivo = it.getString(nameIndex)
+                    nombreArchivo = it.getString(nameIndex) // Si existe, lo asigna
                 }
             }
 
-            // Crea el archivo temporal en el directorio de la caché
+            // Crea el archivo temporal en el directorio de caché con el nombre y extensión correctos
             val archivoTemp = java.io.File.createTempFile(
                 nombreArchivo.substringBeforeLast('.'),
                 "." + nombreArchivo.substringAfterLast('.', "jpg"),
@@ -72,7 +69,7 @@ class Register : BaseActivity() {
             )
             archivoTemp.deleteOnExit()
 
-            // Copia el contenido de la URI al archivo temporal
+            // Copia el contenido de la ruta al archivo temporal
             contentResolver.openInputStream(uri)?.use { inputStream ->
                 archivoTemp.outputStream().use { outputStream ->
                     inputStream.copyTo(outputStream)
@@ -85,27 +82,21 @@ class Register : BaseActivity() {
         }
     }
 
-    override fun onResume() {
-        super.onResume()
-        applyAppAppearance(binding.root)
-    }
-
     // Método onCreate de la actividad
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityRegisterBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-
         // Instancias de API y repositorio
         val catalogosApi = RetrofitInstance.retrofit.create(CatalogosApi::class.java)
         val catalogosRepository = CatalogosRepository(catalogosApi)
 
-        // Inicializar CheckBox de términos deshabilitado
+        // Deshabilita el checkbox de términos y condiciones
         binding.cbTerminos.isEnabled = false
         binding.cbTerminos.isChecked = false
 
-        // Mostrar AlertDialog de términos y condiciones al tocar el texto
+        // Muestra AlertDialog de términos y condiciones al tocar el texto
         binding.tvVerTerminos.setOnClickListener {
             mostrarDialogoTerminos()
         }
@@ -120,47 +111,36 @@ class Register : BaseActivity() {
             startActivityForResult(intent, REQUEST_CODE_PICK_IMAGE)
         }
 
-
         var passwordVisible = false
         var confirmarPasswordVisible = false
-        // Mostrar/ocultar contraseña
+
+        // Muestra/oculta contraseña
         binding.btnMostrarPassword.setOnClickListener {
             passwordVisible = !passwordVisible
-
-            // Si la contraseña es visible, mostrar el texto, sino ocultarlo
+            // Si la contraseña es visible, la muestra, sino la oculta
             if (passwordVisible) {
-                // Cambiar input type para mostrar contraseña
                 binding.etContrasena.inputType = TYPE_CLASS_TEXT or TYPE_TEXT_VARIATION_VISIBLE_PASSWORD
-                // Cambiar icono del botón
                 binding.btnMostrarPassword.setImageResource(R.drawable.ic_open_eye)
             } else {
-                // Cambiar input type para ocultar contraseña
                 binding.etContrasena.inputType = TYPE_CLASS_TEXT or TYPE_TEXT_VARIATION_PASSWORD
-                // Cambiar icono del botón
                 binding.btnMostrarPassword.setImageResource(R.drawable.ic_close_eye)
             }
-            // Mantener el cursor al final
             binding.etContrasena.setSelection(binding.etContrasena.text?.length ?: 0)
         }
-        // Mostrar/ocultar confirmar contraseña
+
+        // Muestra/oculta confirmar contraseña
         binding.btnMostrarPassword2.setOnClickListener {
             confirmarPasswordVisible = !confirmarPasswordVisible
-
-            // Si la contraseña es visible, mostrar el texto, sino ocultarlo
+            // Si la contraseña es visible, la muestra, sino la oculta
             if (confirmarPasswordVisible) {
-                // Cambiar input type para mostrar contraseña
                 binding.etConfirmarContrasena.inputType = TYPE_CLASS_TEXT or TYPE_TEXT_VARIATION_VISIBLE_PASSWORD
-                // Cambiar icono del botón
                 binding.btnMostrarPassword2.setImageResource(R.drawable.ic_open_eye)
             } else {
-                // Cambiar input type para ocultar contraseña
                 binding.etConfirmarContrasena.inputType = TYPE_CLASS_TEXT or TYPE_TEXT_VARIATION_PASSWORD
-                // Cambiar icono del botón
                 binding.btnMostrarPassword2.setImageResource(R.drawable.ic_close_eye)
             }
             binding.etConfirmarContrasena.setSelection(binding.etConfirmarContrasena.text?.length ?: 0)
         }
-
 
         val calendario = Calendar.getInstance()
         val formatoFecha = SimpleDateFormat("yyyy-MM-dd")
@@ -171,8 +151,7 @@ class Register : BaseActivity() {
             binding.etFechaNacimiento.setText(formatoFecha.format(calendario.time))
         }
 
-
-        // Mostrar calendario al tocar el campo de fecha de nacimiento
+        // Muestra el calendario al tocar el campo de fecha de nacimiento
         binding.etFechaNacimiento.apply {
             isFocusable = false
             isClickable = true
@@ -186,7 +165,6 @@ class Register : BaseActivity() {
                 ).show()
             }
         }
-        // Mostrar calendario con el boton en fecha de nacimiento
         binding.btnCalendario.setOnClickListener {
             DatePickerDialog(
                 this@Register,
@@ -197,8 +175,7 @@ class Register : BaseActivity() {
             ).show()
         }
 
-
-        // Mostrar selector al tocar el campo de fecha de vencimiento de la tarjeta
+        // Muestra el selector al tocar el campo de fecha de vencimiento de la tarjeta
         binding.etFechaVencimiento.apply {
             isFocusable = false
             isClickable = true
@@ -208,16 +185,16 @@ class Register : BaseActivity() {
                 }
             }
         }
-        // Mostrar selector con el botón en fecha de vencimiento de la tarjeta
         binding.btnCalendario2.setOnClickListener {
             selectorMesAnio { mes, anio ->
                 binding.etFechaVencimiento.setText(String.format("%02d/%d", mes, anio))
             }
         }
 
-
         // Registrar usuario se guarda en la base de datos y se redirige al inicio de sesión (POST)
         binding.btnRegistrar.setOnClickListener {
+
+            // Obtiene los datos del formulario
             val username = binding.etUsername.text.toString()
             val password = binding.etContrasena.text.toString()
             val confirmPassword = binding.etConfirmarContrasena.text.toString()
@@ -227,19 +204,21 @@ class Register : BaseActivity() {
             val telefono = binding.etTelefono.text.toString()
             val fechaNacimiento = binding.etFechaNacimiento.text.toString()
             val domicilio = binding.etDomicilio.text.toString()
-            val preguntaRecuperacionId = binding.spPregunta.selectedItemPosition + 1        // ID 1-based
+            val preguntaRecuperacionId = binding.spPregunta.selectedItemPosition + 1                 // ID 1-based
             val respuestaRecuperacion = binding.etRespuesta.text.toString()
             val fingerprintEnabled = binding.cbHuellaDigital.isChecked
             val nombreTitular = binding.etTitularTarjeta.text.toString()
             val numeroEncriptado = binding.etNumeroTarjeta.text.toString()
             val fechaExpiracion = binding.etFechaVencimiento.text.toString()
+            val tokenPublico = if (fingerprintEnabled) generarTokenPublico() else null               // Genera token solo si huella está habilitada
 
-            val llHobbies = findViewById<ViewGroup>(R.id.ll_hobbies)                    // Recolectar hobbies seleccionados
+            val llHobbies = findViewById<ViewGroup>(R.id.ll_hobbies)                            // Recolectar hobbies seleccionados
             val hobbiesIds = (1 until llHobbies.childCount).mapNotNull { idx ->
                 val v = llHobbies.getChildAt(idx)
                 if (v is CheckBox && v.isChecked) v.tag?.toString()?.toIntOrNull() else null
             }
-            val llCasa = findViewById<ViewGroup>(R.id.ll_casa_preferencia)              // Recolectar tipos de casa seleccionados
+
+            val llCasa = findViewById<ViewGroup>(R.id.ll_casa_preferencia)                      // Recolectar tipos de casa seleccionados
             val tiposCasaIds = (1 until llCasa.childCount).mapNotNull { idx ->
                 val v = llCasa.getChildAt(idx)
                 if (v is CheckBox && v.isChecked) v.tag?.toString()?.toIntOrNull() else null
@@ -263,7 +242,7 @@ class Register : BaseActivity() {
                 return@setOnClickListener
             }
 
-            // Imagen de perfil
+            // Define la imagen de perfil y genera el archivo temporal para enviar
             val uri = imagenUsuarioUri
             if (uri == null) {
                 Toast.makeText(this, "Selecciona una imagen de perfil", Toast.LENGTH_LONG).show()
@@ -279,7 +258,7 @@ class Register : BaseActivity() {
             val usuarioApi = RetrofitInstance.retrofit.create(com.intelliworks.intellihome.data.api.UsuarioApi::class.java)
             val usuarioRepo = com.intelliworks.intellihome.data.repository.UsuarioRepository(usuarioApi)
 
-            // MediaType con charset UTF-8 para manejar caracteres especiales
+            // Configuración de partes para multipart
             val textPlainUtf8 = "text/plain; charset=utf-8".toMediaType()
 
             val nombreRB = nombre.toRequestBody(textPlainUtf8)
@@ -298,22 +277,30 @@ class Register : BaseActivity() {
             val nombreTitularRB = nombreTitular.toRequestBody(textPlainUtf8)
             val numeroTarjetaRB = numeroEncriptado.toRequestBody(textPlainUtf8)
             val fechaExpiracionRB = fechaExpiracion.toRequestBody(textPlainUtf8)
+            val tokenPublicoRB = (tokenPublico ?: "").toRequestBody(textPlainUtf8)
+            val nombreArchivoSeguro = archivoTemp.name.replace(Regex("[^A-Za-z0-9._-]"), "_") // Asegurar nombre de archivo seguro
+            val imagenPerfilPart = okhttp3.MultipartBody.Part.createFormData("imagen_perfil", nombreArchivoSeguro, archivoTemp.asRequestBody("image/*".toMediaType()))
 
-            // Sanitizar el nombre del archivo para evitar errores por caracteres especiales
-            val nombreArchivoSeguro = archivoTemp.name.replace(Regex("[^A-Za-z0-9._-]"), "_")
-            val imagenPerfilPart = okhttp3.MultipartBody.Part.createFormData(
-                "imagen_perfil",
-                nombreArchivoSeguro,
-                archivoTemp.asRequestBody("image/*".toMediaType())
-            )
-
-            fun realizarRegistro() {
+            // Función para el registro de usuario
+            fun realizarRegistro(cifrado: Cipher? = null) {
                 lifecycleScope.launch {
+
+                    // Si se selecciona huella digital, se encripta el token usando el Cipher autenticado y se guarda
+                    if (fingerprintEnabled && cifrado != null) {
+                        val (tokenEncriptado, iv) = encriptarToken(tokenPublico ?: "", cifrado)
+                        val prefs = getSharedPreferences("biometric_prefs", MODE_PRIVATE)
+                        prefs.edit()
+                            .putString("token_encriptado", tokenEncriptado)
+                            .putString("token_iv", iv)
+                            .apply()
+                    }
+
+                    // Intenta de registrar el usuario
                     try {
                         val response = usuarioRepo.registrarUsuario(
                             nombreRB, apellidosRB, usernameRB, correoRB, telefonoRB, fechaNacimientoRB, domicilioRB, contrasenaRB,
                             imagenPerfilPart, hobbiesIdsRB, tiposCasaIdsRB, preguntaRecuperacionIdRB, respuestaRecuperacionRB, permitirHuellaRB,
-                            nombreTitularRB, numeroTarjetaRB, fechaExpiracionRB
+                            nombreTitularRB, numeroTarjetaRB, fechaExpiracionRB, tokenPublicoRB
                         )
                         if (response.isSuccessful) {
                             val body = response.body()
@@ -333,10 +320,22 @@ class Register : BaseActivity() {
                 }
             }
 
+            // Valida la selección de huella digital y si se puede usar antes de realizar el registro
             if (binding.cbHuellaDigital.isChecked) {
                 if (canUseBiometric()) {
-                    showBiometricPrompt {
-                        realizarRegistro()
+                    // Genera la clave biométrica antes del prompt
+                    generarClaveBiometrica()
+                    // Muestra el prompt biométrico para confirmar
+                    showBiometricPrompt { autenticado ->
+                        if (autenticado) {
+                            // Encripta el token después de la autenticación exitosa
+                            try {
+                                val cifrado = encriptarClave()
+                                realizarRegistro(cifrado)
+                            } catch (e: Exception) {
+                                Toast.makeText(this, "Error al encriptar token: ${e.message}", Toast.LENGTH_LONG).show()
+                            }
+                        }
                     }
                 } else {
                     Toast.makeText(this, "Huella digital no disponible en este dispositivo", Toast.LENGTH_LONG).show()
@@ -346,7 +345,6 @@ class Register : BaseActivity() {
             }
         }
 
-
         // Redirigir al inicio de sesión al tocar el texto correspondiente
         binding.btnLoginRedirigir.setOnClickListener {
             val intent = Intent(this, Login::class.java)
@@ -354,100 +352,87 @@ class Register : BaseActivity() {
             finish()
         }
 
-
-        // Poblar hobbies dinámicamente (GET)
+        // Obtiene la lista de hobbies (GET)
         lifecycleScope.launch {
-            try {
-                val response = catalogosRepository.getHobbies()
-                if (response.isSuccessful) {
-                    val hobbies = response.body() ?: emptyList()
-                    val llHobbies = findViewById<ViewGroup>(R.id.ll_hobbies)
-                    while (llHobbies.childCount > 1) llHobbies.removeViewAt(1)
-                    hobbies.forEach { hobby ->
-                        val checkBox = CheckBox(this@Register)
-                        checkBox.text = hobby.nombre
-                        checkBox.tag = hobby.id
-                        llHobbies.addView(checkBox)
-                    }
-                } else {
-                    Toast.makeText(this@Register, "Error al obtener hobbies", Toast.LENGTH_SHORT).show()
+            val response = catalogosRepository.getHobbies()
+            if (response.isSuccessful) {
+                val hobbies = response.body() ?: emptyList()
+                val llHobbies = findViewById<ViewGroup>(R.id.ll_hobbies)
+                while (llHobbies.childCount > 1) llHobbies.removeViewAt(1)
+                hobbies.forEach { hobby ->
+                    val checkBox = CheckBox(this@Register)
+                    checkBox.id = View.generateViewId()
+                    checkBox.text = hobby.nombre
+                    checkBox.tag = hobby.id
+                    checkBox.textSize = 14f
+                    llHobbies.addView(checkBox)
                 }
-            } catch (e: Exception) {
-                Toast.makeText(
-                    this@Register,
-                    getString(R.string.error_network),
-                    Toast.LENGTH_LONG
-                ).show()
+            } else {
+                Toast.makeText(this@Register, "Error al obtener hobbies", Toast.LENGTH_SHORT).show()
             }
         }
 
-
+        // Obtiene la lista de tipos de casa (GET)
         lifecycleScope.launch {
-            try {
-                val response = catalogosRepository.getTiposCasa()
-                if (response.isSuccessful) {
-                    val tiposCasa = response.body() ?: emptyList()
-                    val llCasa = findViewById<ViewGroup>(R.id.ll_casa_preferencia)
-                    while (llCasa.childCount > 1) llCasa.removeViewAt(1)
-                    tiposCasa.forEach { tipo ->
-                        val checkBox = CheckBox(this@Register)
-                        checkBox.text = tipo.nombre
-                        checkBox.tag = tipo.id
-                        llCasa.addView(checkBox)
-                    }
-                } else {
-                    Toast.makeText(this@Register, "Error al obtener tipos de casa", Toast.LENGTH_SHORT).show()
+            val response = catalogosRepository.getTiposCasa()
+            if (response.isSuccessful) {
+                val tiposCasa = response.body() ?: emptyList()
+                val llCasa = findViewById<ViewGroup>(R.id.ll_casa_preferencia)
+                while (llCasa.childCount > 1) llCasa.removeViewAt(1)
+                tiposCasa.forEach { tipo ->
+                    val checkBox = CheckBox(this@Register)
+                    checkBox.id = View.generateViewId()
+                    checkBox.text = tipo.nombre
+                    checkBox.tag = tipo.id
+                    checkBox.textSize = 14f
+                    llCasa.addView(checkBox)
                 }
-            } catch (e: Exception) {
-                Toast.makeText(
-                    this@Register,
-                    getString(R.string.error_network),
-                    Toast.LENGTH_LONG
-                ).show()
+            } else {
+                Toast.makeText(this@Register, "Error al obtener tipos de casa", Toast.LENGTH_SHORT).show()
             }
         }
 
-
+        // Obtiene la lista de preguntas de recuperación (GET)
         lifecycleScope.launch {
-            try {
-                val response = catalogosRepository.getPreguntasRecuperacion()
-                if (response.isSuccessful) {
-                    val preguntas = response.body() ?: emptyList()
-                    val textos = preguntas.mapNotNull { it.texto }
-                    binding.spPregunta.adapter =
-                        ArrayAdapter(this@Register, android.R.layout.simple_spinner_dropdown_item, textos)
+            val response = catalogosRepository.getPreguntasRecuperacion()
+            if (response.isSuccessful) {
+                val preguntas = response.body() ?: emptyList()
+                val textos = preguntas.filterNotNull().map { it.texto }
+                if (textos.isNotEmpty()) {
+                    val adapter = ArrayAdapter(this@Register, android.R.layout.simple_spinner_dropdown_item, textos)
+                    binding.spPregunta.adapter = adapter
+                    binding.spPregunta.isEnabled = true
                 } else {
-                    Toast.makeText(this@Register, "Error al obtener preguntas", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this@Register, "No hay preguntas de recuperación disponibles", Toast.LENGTH_SHORT).show()
+                    binding.spPregunta.isEnabled = false
                 }
-            } catch (e: Exception) {
-                Toast.makeText(
-                    this@Register,
-                    getString(R.string.error_network),
-                    Toast.LENGTH_LONG
-                ).show()
+                // Puedes guardar los IDs en una variable si necesitas saber cuál seleccionó el usuario
+            } else {
+                Toast.makeText(this@Register, "Error al obtener preguntas de recuperación", Toast.LENGTH_SHORT).show()
             }
         }
-
     }
 
     // Selector de mes/año para fecha de vencimiento de la tarjeta
     fun selectorMesAnio(onDateSelected: (month: Int, year: Int) -> Unit) {
         val diagoloEmergente = layoutInflater.inflate(R.layout.dialog_month_year_picker, null)
+
+        // Obtiene el NumberPicker para el mes y año
         val selectorMes = diagoloEmergente.findViewById<NumberPicker>(R.id.monthPicker)
         val selectorAnio = diagoloEmergente.findViewById<NumberPicker>(R.id.yearPicker)
 
-        // Mínimo y máximo para el selector de mes
+        // Configura el rango permitido para el mes (1 a 12)
         selectorMes.minValue = 1
         selectorMes.maxValue = 12
         selectorMes.value = Calendar.getInstance().get(Calendar.MONTH) + 1
 
-        // Mínimo y máximo para el selector de año
+        // Obtiene el año actual y configura el rango permitido para el año
         val anioActual = Calendar.getInstance().get(Calendar.YEAR)
         selectorAnio.minValue = anioActual
         selectorAnio.maxValue = anioActual + 20
         selectorAnio.value = anioActual
 
-        // Configuración del diálogo
+        // Construye y muestra el diálogo de selección
         AlertDialog.Builder(this)
             .setTitle("Seleccione mes y año")
             .setView(diagoloEmergente)
@@ -463,36 +448,43 @@ class Register : BaseActivity() {
     // Función para validar si el dispositivo puede usar huella digital
     private fun canUseBiometric(): Boolean {
         val biometricManager = BiometricManager.from(this)
+        // Verifica si el dispositivo puede usar huella digital
         return biometricManager.canAuthenticate(
             BiometricManager.Authenticators.BIOMETRIC_STRONG
         ) == BiometricManager.BIOMETRIC_SUCCESS
     }
 
     // Función para mostrar el prompt de huella digital
-    private fun showBiometricPrompt(onSuccess: () -> Unit) {
-
-        // Ejecutor, esta variable nos permite ejecutar el prompt en el hilo principal de la aplicación
+    private fun showBiometricPrompt(onSuccess: (Boolean) -> Unit) {
         val executor = ContextCompat.getMainExecutor(this)
-
-        // Configuración del prompt
-        val biometricPrompt = BiometricPrompt(this, executor,
+        // Crea el prompt de autenticación biométrica
+        val biometricPrompt = BiometricPrompt(
+            this, executor,
             object : BiometricPrompt.AuthenticationCallback() {
+                // Se llama cuando la autenticación es exitosa
                 override fun onAuthenticationSucceeded(
                     result: BiometricPrompt.AuthenticationResult
                 ) {
                     super.onAuthenticationSucceeded(result)
-                    onSuccess()
+                    onSuccess(true)
                 }
+                // Se llama si ocurre un error durante la autenticación
                 override fun onAuthenticationError(errorCode: Int, errString: CharSequence) {
                     Toast.makeText(this@Register, errString, Toast.LENGTH_LONG).show()
+                    onSuccess(false)
                 }
-            })
+                // Se llama si la autenticación falla
+                override fun onAuthenticationFailed() {
+                    Toast.makeText(this@Register, "Autenticación fallida", Toast.LENGTH_SHORT).show()
+                }
+            }
+        )
 
-        // Texto a mostrar en el prompt
+        // Configura el contenido del prompt biométrico y lo muestra
         val promptInfo = BiometricPrompt.PromptInfo.Builder()
-            .setTitle("Confirmar huella digital")
-            .setSubtitle("Habilitar el inicio de sesión con huella digital")
-            .setNegativeButtonText("Cancelar")
+            .setTitle("Confirmar huella digital") // Título del diálogo
+            .setSubtitle("Habilitar el inicio de sesión con huella digital") // Subtítulo
+            .setNegativeButtonText("Cancelar") // Texto del botón de cancelar
             .build()
         biometricPrompt.authenticate(promptInfo)
     }
@@ -500,35 +492,34 @@ class Register : BaseActivity() {
     // Función para mostrar el diálogo de términos y condiciones
     private fun mostrarDialogoTerminos() {
         val builder = AlertDialog.Builder(this)
-
-        // Cargar el texto de términos desde res/raw/terms.txt
+        // Abre el archivo desde recursos, lee el texto y lo muestra
         val inputStream = resources.openRawResource(R.raw.terms)
         val terminos = inputStream.bufferedReader().use { it.readText() }
-
-        // Crear ScrollView y TextView para los términos
         val scrollView = android.widget.ScrollView(this)
         val textView = android.widget.TextView(this)
-        textView.text = terminos
-        textView.setPadding(32, 32, 32, 32)
-        textView.textSize = 16f
-        scrollView.addView(textView)
+        textView.text = terminos                                        // Asigna el texto leído
+        textView.setPadding(32, 32, 32, 32) // Añade padding para mejor legibilidad
+        textView.textSize = 16f                                         // Ajusta el tamaño de letra
+        scrollView.addView(textView)                             // Agrega el TextView al ScrollView
 
-        // Botón aceptar (se habilita al llegar al final)
+        // Configura el AlertDialog
         builder.setView(scrollView)
         builder.setNegativeButton("Cancelar", null)
-
         builder.setPositiveButton("Aceptar") { dialog, _ ->
             binding.cbTerminos.isEnabled = true
             binding.cbTerminos.isChecked = true
             dialog.dismiss()
         }
 
+        // Crea y muestra el diálogo
         val dialog = builder.create()
         dialog.show()
 
-        // Deshabilita el botón aceptar hasta que se llegue al final del ScrollView
+        // Obtiene el botón aceptar para controlarlo manualmente
         val btnAceptar = dialog.getButton(AlertDialog.BUTTON_POSITIVE)
         btnAceptar.isEnabled = false
+
+        // Habilita el botón aceptar solo si el usuario llega al final del texto
         scrollView.viewTreeObserver.addOnScrollChangedListener {
             val view = scrollView.getChildAt(0)
             if (view != null) {
@@ -538,37 +529,31 @@ class Register : BaseActivity() {
         }
     }
 
-    // Manejar el resultado de la selección de imagen
+    // Controla la selección de imagen
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
 
-        // Si el usuario seleccionó una imagen, se guarda su URI en la variable
+        // Verifica si la acción corresponde a la selección de imagen y si fue exitosa
         if (requestCode == REQUEST_CODE_PICK_IMAGE && resultCode == RESULT_OK) {
-
-            // Obtiene la URI de la imagen seleccionada
+            // Obtiene la ruta de la imagen seleccionada
             val uri = data?.data
 
-            // Si la URI no es nula, se guarda en la variable y se muestra en el ImageView
+            // Si la URI es válida, abre y lee la imagen, obtiene el tamaño y lo cierra
             if (uri != null) {
-
-                // Valida tamaño máximo de 1MB
                 val inputStream = contentResolver.openInputStream(uri)
                 val size = inputStream?.available() ?: 0
                 inputStream?.close()
+
+                // Si la imagen supera 1MB, muestra un mensaje y cancela
                 if (size > 1048576) { // 1MB en bytes
                     Toast.makeText(this, "La imagen debe ser menor a 1MB", Toast.LENGTH_LONG).show()
                     return
                 }
-
-                // Persiste permisos de lectura
                 contentResolver.takePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION)
                 imagenUsuarioUri = uri
+
+                // Muestra la imagen seleccionada en el ImageView
                 binding.imgUsuario.setImageURI(uri)
-
-                // Crea el archivo temporal
-                val archivoTemp = crearArchivoTemp(uri)
-
-
             }
         }
     }
