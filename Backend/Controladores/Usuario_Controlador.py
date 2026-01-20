@@ -27,6 +27,7 @@ def registrar_usuario(
     nombre_titular: str = Form(...),
     numero_tarjeta: str = Form(...),
     fecha_expiracion: str = Form(...),
+    token_publico: Optional[str] = Form(None),
     db: Session = Depends(get_db)
 ):
     # Convertir cadenas separadas por comas a listas de enteros
@@ -50,7 +51,8 @@ def registrar_usuario(
         permitir_huella=permitir_huella,
         nombre_titular=nombre_titular,
         numero_tarjeta=numero_tarjeta,
-        fecha_expiracion=fecha_expiracion
+        fecha_expiracion=fecha_expiracion,
+        token_publico=token_publico
     )
     if 'errores' in resultado:
         raise HTTPException(status_code=422, detail=resultado['errores'])

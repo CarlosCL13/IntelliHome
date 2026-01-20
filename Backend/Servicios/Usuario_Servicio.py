@@ -54,12 +54,13 @@ class Usuario_Servicio:
         permitir_huella: int = 0,
         nombre_titular: str = None,
         numero_tarjeta: str = None,
-        fecha_expiracion: str = None
+        fecha_expiracion: str = None,
+        token_publico: str = None
     ):
         errores = {}
         usuario = None
         try:
-            Usuario_Servicio._validar_unicidad(db, correo, username, errores)
+            Usuario_Servicio._validar_unicidad(db, correo, username,telefono, errores)
             Usuario_Servicio._validar_contrasena(contrasena, errores)
             Usuario_Servicio._validar_nombres_obscenos(nombre, apellidos, username, errores)
             Usuario_Servicio._validar_telefono(telefono, errores)
@@ -102,7 +103,8 @@ class Usuario_Servicio:
                 numero_encriptado=numero_encriptado,
                 fecha_expiracion=fecha_expiracion,
                 marca=marca,
-                ultimos_4=ultimos_4
+                ultimos_4=ultimos_4,
+                token_publico=token_publico
             )
             db.add(usuario)
             db.commit()
@@ -117,7 +119,7 @@ class Usuario_Servicio:
 
     # Validación de unicidad de correo y username
     @staticmethod
-    def _validar_unicidad(db, correo, username, errores):
+    def _validar_unicidad(db, correo, username, telefono, errores):
         """
         Verifica que el correo y el nombre de usuario sean únicos en la base de datos.
         """
@@ -125,6 +127,8 @@ class Usuario_Servicio:
             errores['correo'] = 'El correo ya está registrado.'
         if db.query(Usuario).filter_by(username=username).first():
             errores['username'] = 'El nombre de usuario ya está registrado.'
+        if db.query(Usuario).filter_by(telefono=telefono).first():
+            errores['telefono'] = 'El teléfono ya está registrado.'
 
     # Validación de contraseña
     @staticmethod

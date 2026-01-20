@@ -23,6 +23,7 @@ class Usuario(db.Model):
     pregunta_recuperacion_id = db.Column(db.Integer, db.ForeignKey('preguntas_recuperacion.id'), nullable=False)
     respuesta_recuperacion = db.Column(db.String(255), nullable=False)
     permitir_huella = db.Column(db.Integer, default=0, nullable=False)  # 0 = no permite, 1 = sí permite
+    token_publico = db.Column(db.String(255), nullable=True)  # Token biométrico público
     intentos_fallidos = db.Column(db.Integer, default=0, nullable=False)
     estado_cuenta = db.Column(db.String(20), default='activo', nullable=False)  # valores: 'activo', 'bloqueado'
 
