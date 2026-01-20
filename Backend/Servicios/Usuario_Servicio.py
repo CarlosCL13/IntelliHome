@@ -60,9 +60,9 @@ class Usuario_Servicio:
         usuario = None
         try:
             Usuario_Servicio._validar_unicidad(db, correo, username, errores)
-            Usuario_Servicio._validar_contraseña(contraseña, errores)
+            Usuario_Servicio._validar_contraseña_registro(contraseña, errores)
             Usuario_Servicio._validar_nombres_obscenos(nombre, apellidos, username, errores)
-            Usuario_Servicio._validar_telefono(telefono, errores)
+            Usuario_Servicio._validar_telefono_registro(telefono, errores)
             hobbies = Usuario_Servicio._validar_hobbies(db, hobbies_ids, errores)
             tipos_casa = Usuario_Servicio._validar_tipos_casa(db, tipos_casa_ids, errores)
             Usuario_Servicio._validar_pregunta_recuperacion(db, pregunta_recuperacion_id, errores)
@@ -112,6 +112,61 @@ class Usuario_Servicio:
             return {'errores': {'internal': f'Error interno: {str(e)}'}}
         finally:
             db.close()
+    
+    # Login de usuario
+    @staticmethod
+    def login_usuario(db: Session, identificador: str, contraseña: str):
+        """
+        Permite iniciar sesión usando nombre de usuario, correo o teléfono y contraseña.
+        """
+        errores = {}
+        usuario = None
+
+        try:
+            # Buscar usuario por nombre de usuario, correo o teléfono
+            usuario = Usuario_Servicio._validar_identificador_login(db, identificador, errores)
+            
+            if errores:
+                return {'errores': errores}
+            
+            # si la cuenta está bloqueada se retorna error
+            if usuario.estado_cuenta == 'bloqueado':
+                errores['cuenta'] = 'La cuenta está bloqueada. Contacte al administrador.'
+                return {'errores': errores}
+            
+            validacion_contrasena = Usuario_Servicio._validar_contraseña_login(contraseña, usuario.contraseña)
+
+            # validar si la contraseña es correcta
+            if not validacion_contrasena:
+                # Incrementar intentos fallidos
+                usuario.intentos_fallidos += 1
+                # Bloquear cuenta si supera 3 intentos
+                if usuario.intentos_fallidos >= 3:
+                    usuario.estado_cuenta = 'bloqueado'
+                db.commit()
+                errores['contraseña'] = 'Contraseña incorrecta.'
+
+                return {'errores': errores}
+            
+            # Resetear intentos fallidos si login exitoso
+            usuario.intentos_fallidos = 0
+            db.commit()
+            # Puedes retornar solo los datos necesarios
+            return {
+                "id": usuario.id,
+                "username": usuario.username,
+                "correo": usuario.correo,
+                "telefono": usuario.telefono,
+                "nombre": usuario.nombre,
+                "apellidos": usuario.apellidos,
+                "rol_id": usuario.rol_id,
+                "estado_cuenta": usuario.estado_cuenta
+            }
+        except Exception as e:
+            db.rollback()
+            return {'errores': {'internal': f'Error interno: {str(e)}'}}
+        finally:
+            db.close()
 
     #================================= VALIDACIONES ================================= #
 
@@ -123,9 +178,9 @@ class Usuario_Servicio:
         if db.query(Usuario).filter_by(username=username).first():
             errores['username'] = 'El nombre de usuario ya está registrado.'
 
-    # Validación de contraseña
+    # Validación de contraseña (registro)
     @staticmethod
-    def _validar_contraseña(contraseña, errores):
+    def _validar_contraseña_registro(contraseña, errores):
         if len(contraseña) < 8 or not re.search(r'[A-Za-z]', contraseña) or not re.search(r'\d', contraseña):
             errores['contraseña'] = 'La contraseña debe tener al menos 8 caracteres y ser alfanumérica.'
 
@@ -188,9 +243,10 @@ class Usuario_Servicio:
             errores['imagen_perfil'] = 'La imagen excede el tamaño máximo de 1 MB.'
         return imagen_path
     
-    # Validación de teléfono
+    # Validación de teléfono (registro)
     @staticmethod
-    def _validar_telefono(telefono, errores):
+    def _validar_telefono_registro(telefono, errores):
+        # se verifica si el telefono es numérico o si no fue dado
         if telefono is None or not str(telefono).isdigit():
             errores['telefono'] = 'El teléfono debe contener solo caracteres numéricos.'
 
@@ -230,6 +286,66 @@ class Usuario_Servicio:
             except Exception:
                 errores['fecha_expiracion'] = 'La fecha de expiración no es válida.'
     
+    # Validación de teléfono (login)
+    @staticmethod
+    def _validar_telefono_login(db, telefono, errores):
+        """
+        Verifica si el teléfono existe en la base de datos de usuarios.
+        Si no existe, agrega un error en el diccionario de errores.
+        """
+        usuario = db.query(Usuario).filter(Usuario.telefono == str(telefono)).first()
+        if not usuario:
+            errores['telefono'] = 'El número de teléfono no está asociado a ningún usuario.'
+    
+    # validación de correo electrónico (login)
+    @staticmethod
+    def _validar_correo_login(db, correo, errores):
+        """
+        Verifica si el correo electrónico existe en la base de datos de usuarios.
+        Si no existe, agrega un error en el diccionario de errores.
+        """
+        usuario = db.query(Usuario).filter(Usuario.correo == correo).first()
+        if not usuario:
+            errores['correo'] = 'El correo electrónico no está asociado a ningún usuario.'
+    
+    #validación de nombre de usuario (login)
+    @staticmethod
+    def _validar_usuario_login(db, nombre_usuario, errores):
+        """
+        Verifica si el nombre de usuario existe en la base de datos de usuarios.
+        Si no existe, agrega un error en el diccionario de errores.
+        """
+        usuario = db.query(Usuario).filter(Usuario.username == nombre_usuario).first()
+        if not usuario:
+            errores['Nombre_usuario'] = 'El nombre de usuario no está asociado a ningún usuario.'
+
+    #validación de identificador (correo, telefono o nombre de usuario)  (login)
+    @staticmethod
+    def _validar_identificador_login(db, identificador, errores):
+        """
+        Verifica si el identificador (correo, teléfono o nombre de usuario) existe en la base de datos de usuarios.
+        Si no existe, agrega un error en el diccionario de errores.
+        """
+        usuario = db.query(Usuario).filter(
+            (Usuario.username == identificador) |
+            (Usuario.correo == identificador) |
+            (Usuario.telefono == identificador)
+        ).first()
+        if not usuario:
+            errores['identificador'] = 'El identificador (correo, teléfono o nombre de usuario) no está asociado a ningún usuario.'
+        return usuario
+
+    # Validación de contraseña
+    @staticmethod
+    def _validar_contraseña_login(contraseña_plana: str, contraseña_hash: str) -> bool:
+        """
+        Verifica si la contraseña plana coincide con el hash almacenado.
+        """
+
+        # Se encripta la contraseña plana y se compara con el hash almacenado        
+        validacion = Usuario_Servicio.pwd_context.verify(contraseña_plana, contraseña_hash)
+
+        return validacion
 
     #================================= UTILIDADES ================================= #
 
@@ -248,14 +364,6 @@ class Usuario_Servicio:
         ultimos_4 = numero_tarjeta[-4:] if numero_tarjeta and len(numero_tarjeta) >= 4 else ''
         return marca, ultimos_4
 
-    # Validación de contraseña
-    @staticmethod
-    def verificar_contraseña(contraseña_plana: str, contraseña_hash: str) -> bool:
-        """
-        Verifica si la contraseña plana coincide con el hash almacenado.
-        """
-        return Usuario_Servicio.pwd_context.verify(contraseña_plana, contraseña_hash)
-    
     # Encriptación de tarjeta de crédito
     @staticmethod
     def _get_fernet():
