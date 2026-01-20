@@ -59,10 +59,20 @@ class Login : BaseActivity() {
 
         // 4. HUELLA DIGITAL
         enlace.fingerprintLogin.setOnClickListener {
-            desplegarAutenticacionBiometrica {
-                // Si la huella es válida, podrías intentar un login automático
-                // o mostrar un mensaje. Por ahora, lanzamos el aviso de éxito:
-                Toast.makeText(this, "Autenticación biométrica exitosa", Toast.LENGTH_SHORT).show()
+            val preferenciasLogin = getSharedPreferences("login_prefs", MODE_PRIVATE)
+            val usuarioGuardado = preferenciasLogin.getString("saved_user", null)
+            val claveGuardada = preferenciasLogin.getString("saved_pass", null)
+
+            // Solo permitimos huella si hay datos guardados previamente
+            if (!usuarioGuardado.isNullOrEmpty() && !claveGuardada.isNullOrEmpty()) {
+                desplegarAutenticacionBiometrica {
+                    // Si la huella es correcta, ejecutamos el login automáticamente
+                    Toast.makeText(this, getString(R.string.biometric_success), Toast.LENGTH_SHORT).show()
+                    ejecutarLoginApi(usuarioGuardado, claveGuardada)
+                }
+            } else {
+                // Si no hay datos, le decimos al usuario que debe loguearse manualmente una vez
+                Toast.makeText(this, getString(R.string.error_biometric_no_data), Toast.LENGTH_LONG).show()
             }
         }
 

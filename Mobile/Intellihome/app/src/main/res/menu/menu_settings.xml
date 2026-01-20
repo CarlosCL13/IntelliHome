@@ -3,12 +3,12 @@
 
     <item
         android:id="@+id/menu_settings"
-        android:title="Ajustes"
+        android:title="@string/settings_menu"
         android:icon="@drawable/baseline_settings_24" />
 
     <item
         android:id="@+id/menu_help"
-        android:title="Ayuda"
+        android:title="@string/help"
         android:icon="@drawable/baseline_settings_24" />
 
 </menu>

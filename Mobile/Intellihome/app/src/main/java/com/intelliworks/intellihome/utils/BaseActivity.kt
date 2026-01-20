@@ -1,5 +1,7 @@
 package com.intelliworks.intellihome.utils
 
+import androidx.appcompat.app.AlertDialog
+import android.widget.TextView
 import android.content.Context
 import android.content.Intent
 import android.graphics.Color
@@ -122,15 +124,36 @@ abstract class BaseActivity : AppCompatActivity() {
     private fun mostrarMenuOpciones(ancla: View) {
         val popupMenu = PopupMenu(this, ancla)
         popupMenu.menuInflater.inflate(R.menu.menu_settings, popupMenu.menu)
+
         popupMenu.setOnMenuItemClickListener { item ->
             when (item.itemId) {
                 R.id.menu_settings -> {
                     startActivity(Intent(this, SettingsActivity::class.java))
                     true
                 }
+                R.id.menu_help -> {
+                    mostrarVentanaAyuda() // Llamada al nuevo método
+                    true
+                }
                 else -> false
             }
         }
         popupMenu.show()
+    }
+
+    /**
+     * Crea y muestra un diálogo de alerta con los pasos para el registro.
+     */
+    private fun mostrarVentanaAyuda() {
+        val builder = AlertDialog.Builder(this)
+        val vistaAyuda = layoutInflater.inflate(R.layout.activity_help, null)
+
+        builder.setView(vistaAyuda)
+        builder.setPositiveButton(getString(android.R.string.ok)) { dialog, _ ->
+            dialog.dismiss()
+        }
+
+        val dialog = builder.create()
+        dialog.show()
     }
 }
