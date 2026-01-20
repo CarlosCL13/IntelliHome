@@ -6,6 +6,8 @@ from Base_de_Datos.db_session import get_db
 
 router = APIRouter(prefix="/usuarios", tags=["usuarios"])
 
+# Endpoint para el registro de un nuevo usuario
+
 @router.post("/registro")
 def registrar_usuario(
     nombre: str = Form(...),
@@ -15,7 +17,7 @@ def registrar_usuario(
     telefono: str = Form(...),
     fecha_nacimiento: str = Form(...),
     domicilio: str = Form(...),
-    contraseña: str = Form(...),
+    contrasena: str = Form(...),
     imagen_perfil: UploadFile = File(...),
     hobbies_ids: str = Form(...),  # Recibe una cadena separada por comas
     tipos_casa_ids: str = Form(...),  # Recibe una cadena separada por comas
@@ -39,7 +41,7 @@ def registrar_usuario(
         telefono=telefono,
         fecha_nacimiento=fecha_nacimiento,
         domicilio=domicilio,
-        contraseña=contraseña,
+        contrasena=contrasena,
         imagen_perfil=imagen_perfil,
         hobbies_ids=hobbies_ids_list,
         tipos_casa_ids=tipos_casa_ids_list,

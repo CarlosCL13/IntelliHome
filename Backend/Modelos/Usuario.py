@@ -14,7 +14,7 @@ class Usuario(db.Model):
     apellidos = db.Column(db.String(120), nullable=False)
     correo = db.Column(db.String(120), unique=True, nullable=False)
     username = db.Column(db.String(80), unique=True, nullable=False)
-    contraseña = db.Column(db.String(120), nullable=False)
+    contrasena = db.Column(db.String(120), nullable=False)
     telefono = db.Column(db.String(20), nullable=False)
     fecha_nacimiento = db.Column(db.Date, nullable=False)
     hobbies = db.relationship('Hobby', secondary='usuario_hobbies', backref='usuarios')
