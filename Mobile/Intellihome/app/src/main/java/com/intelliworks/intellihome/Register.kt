@@ -26,6 +26,7 @@ import com.intelliworks.intellihome.data.api.RetrofitInstance
 import com.intelliworks.intellihome.data.api.CatalogosApi
 import com.intelliworks.intellihome.data.repository.CatalogosRepository
 import com.intelliworks.intellihome.databinding.ActivityRegisterBinding
+import com.intelliworks.intellihome.utils.BaseActivity
 import com.intelliworks.intellihome.utils.BiometricCryptoHelper.encriptarClave
 import com.intelliworks.intellihome.utils.BiometricCryptoHelper.encriptarToken
 import com.intelliworks.intellihome.utils.BiometricCryptoHelper.generarClaveBiometrica
@@ -38,7 +39,7 @@ import javax.crypto.Cipher
 /**
  * Clase para la pantalla de registro de usuario.
  */
-class Register : AppCompatActivity() {
+class Register : BaseActivity() {
     private lateinit var binding: ActivityRegisterBinding
 
     // Variable para almacenar la URI de la imagen de usuario
@@ -46,6 +47,11 @@ class Register : AppCompatActivity() {
 
     // Constante para el código de solicitud de selección de imagen
     companion object { private const val REQUEST_CODE_PICK_IMAGE = 1001 }
+
+    override fun onResume() {
+        super.onResume()
+        applyAppAppearance(binding.root)
+    }
 
     // Crea un archivo temporal a partir de una URI
     private fun crearArchivoTemp(uri: android.net.Uri): java.io.File? {

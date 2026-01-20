@@ -98,3 +98,11 @@ def restablecer_contrasena(
     if "errores" in resultado:
         raise HTTPException(status_code=400, detail=resultado["errores"])
     return resultado
+    
+# Endpoint para buscar usuario por token público
+@router.post("/buscar-por-token")
+def buscar_usuario_por_token(token_publico: str = Form(...), db: Session = Depends(get_db)):
+    resultado = Usuario_Servicio.buscar_por_token_publico(db=db, token_publico=token_publico)
+    if 'errores' in resultado:
+        raise HTTPException(status_code=404, detail=resultado['errores'])
+    return resultado

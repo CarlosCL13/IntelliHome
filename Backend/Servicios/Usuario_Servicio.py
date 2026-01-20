@@ -63,7 +63,7 @@ class Usuario_Servicio:
             Usuario_Servicio._validar_unicidad(db, correo, username, telefono, errores)
             Usuario_Servicio._validar_contrasena_registro(contrasena, errores)
             Usuario_Servicio._validar_nombres_obscenos(nombre, apellidos, username, errores)
-            Usuario_Servicio._validar_telefono_registro(telefono, errores)
+            Usuario_Servicio._validar_telefono(telefono, errores)
             hobbies = Usuario_Servicio._validar_hobbies(db, hobbies_ids, errores)
             tipos_casa = Usuario_Servicio._validar_tipos_casa(db, tipos_casa_ids, errores)
             Usuario_Servicio._validar_pregunta_recuperacion(db, pregunta_recuperacion_id, errores)
@@ -491,4 +491,33 @@ class Usuario_Servicio:
                 buffer.write(imagen_perfil.file.read())
             return imagen_path
         return None
-    
+# Buscar usuario por token público
+    @staticmethod
+    def buscar_por_token_publico(db: Session, token_publico: str):
+        """
+        Busca un usuario por token público y devuelve la info tipo login.
+        """
+        errores = {}
+        try:
+            usuario = db.query(Usuario).filter_by(token_publico=token_publico).first()
+            if not usuario:
+                errores['token_publico'] = 'No existe usuario con ese token.'
+                return {'errores': errores}
+            if usuario.estado_cuenta == 'bloqueado':
+                errores['cuenta'] = 'La cuenta está bloqueada. Contacte al administrador.'
+                return {'errores': errores}
+            return {
+                "id": usuario.id,
+                "username": usuario.username,
+                "correo": usuario.correo,
+                "telefono": usuario.telefono,
+                "nombre": usuario.nombre,
+                "apellidos": usuario.apellidos,
+                "rol_id": usuario.rol_id,
+                "estado_cuenta": usuario.estado_cuenta
+            }
+        except Exception as e:
+            db.rollback()
+            return {'errores': {'internal': f'Error interno: {str(e)}'}}
+        finally:
+            db.close()

@@ -1,5 +1,7 @@
 <resources>
     <string name="app_name">IntelliHome</string>
+    <string name="settings_menu">Ajustes</string>
+    <string name="help">Ayuda</string>
 
     <!-- Login -->
     <string name="login">Iniciar sesión</string>
@@ -11,7 +13,8 @@
     <string name="authenticate_to_continue">Autentíquese para continuar</string>
     <string name="rememberme">Recuérdame</string>
     <string name="forgot_password">Olvidé mi contraseña</string>
-
+    <string name="biometric_success">Identidad confirmada</string>
+    <string name="error_biometric_no_data">Por favor, inicia sesión manualmente y selecciona "Recuérdame" para activar la huella.</string>
 
     <string name="signup">¿No tienes una cuenta? Regístrate</string>
     <string name="error_empty_fields">Por favor complete los campos</string>
@@ -23,7 +26,7 @@
     <string name="settings">Configuración</string>
     <string name="fingerprint_login">Acceso con huella</string>
     <string name="logo_desc">Logotipo de la aplicación</string>
-    <string name="logout">Log out</string>
+    <string name="logout">Cerrar sesión</string>
 
     <!-- REGISTER -->
     <string name="register_logo_desc">Logotipo de aplicación</string>
@@ -117,6 +120,19 @@
     <string name="error_password_regex">Debe tener al menos 8 caracteres, letras y números</string>
     <string name="error_password_match">Las contraseñas no coinciden</string>
     <string name="password_updated">Contraseña actualizada exitosamente</string>
+    <!-- Help -->
+    <string name="help_title">Guía de Registro IntelliHome</string>
+
+    <string name="help_content">
+        Sigue estos pasos para crear tu cuenta correctamente:\n\n
+        1. **Información Básica:** Ingresa tu nombre, apellidos y un correo electrónico válido.\n\n
+        2. **Imagen de Perfil:** Debes seleccionar una foto. Asegúrate de que pese menos de 1MB.\n\n
+        3. **Seguridad:** Crea un nombre de usuario único y una contraseña segura. No uses palabras ofensivas.\n\n
+        4. **Biometría:** Si tu teléfono lo permite, activa la huella digital para un acceso más rápido.\n\n
+        5. **Recuperación:** Selecciona una pregunta de seguridad. Esta será la única forma de recuperar tu cuenta si olvidas la clave.\n\n
+        6. **Preferencias:** Es obligatorio seleccionar tus tipos de vivienda y al menos un hobby para personalizar tu hogar inteligente.\n\n
+        7. **Método de Pago:** Registra tu tarjeta para la gestión automática de servicios.
+    </string>
 
 
 </resources>

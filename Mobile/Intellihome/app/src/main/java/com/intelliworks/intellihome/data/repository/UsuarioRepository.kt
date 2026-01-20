@@ -52,4 +52,6 @@ class UsuarioRepository(private val api: UsuarioApi) {
     suspend fun loginUsuario(identificador: String, contrasena: String): Response<LoginResponseDto> {
         return api.loginUsuario(identificador, contrasena)
     }
+    // Función para buscar usuario por token público
+    suspend fun buscarPorToken(tokenPublico: String) = api.buscarPorToken(tokenPublico)
 }

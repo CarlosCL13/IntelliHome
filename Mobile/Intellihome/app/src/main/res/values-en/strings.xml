@@ -1,5 +1,7 @@
 <resources>
     <string name="app_name">IntelliHome</string>
+    <string name="settings_menu">Settings</string>
+    <string name="help">Help</string>
 
     <!-- LOGIN -->
     <string name="login">Login</string>
@@ -11,6 +13,8 @@
     <string name="authenticate_to_continue">Authenticate to continue</string>
     <string name="rememberme">Remember me</string>
     <string name="forgot_password">Forgot password</string>
+    <string name="biometric_success">Identity confirmed</string>
+    <string name="error_biometric_no_data">Please log in manually and select "Remember Me" to enable fingerprint login.</string>
 
     <string name="signup">Don\'t have an account? Sign up</string>
     <string name="error_empty_fields">Please fill in all fields</string>
@@ -26,7 +30,7 @@
     <!-- REGISTER -->
     <string name="register_logo_desc">App logo</string>
     <string name="register_user_photo_desc">User photo</string>
-    <string name="logout">Cerrar sesión</string>
+    <string name="logout">Log out</string>
 
 
     <string name="register_name">Name:</string>
@@ -117,5 +121,17 @@
     <string name="error_password_regex">Must be at least 8 characters, with letters and numbers</string>
     <string name="error_password_match">Passwords do not match</string>
     <string name="password_updated">Password updated successfully</string>
+    <!-- Help -->
+    <string name="help_title">IntelliHome Registration Guide</string>
 
+    <string name="help_content">
+        Follow these steps to create your account correctly:\n\n
+        1. **Basic Info:** Enter your first name, last name, and a valid email address.\n\n
+        2. **Profile Picture:** You must select a photo. Ensure it is smaller than 1MB.\n\n
+        3. **Security:** Create a unique username and a strong password. Avoid using offensive language.\n\n
+        4. **Biometrics:** If your phone supports it, enable fingerprint login for faster access.\n\n
+        5. **Recovery:** Select a security question. This will be the only way to recover your account if you forget your password.\n\n
+        6. **Preferences:** You must select your housing types and at least one hobby to personalize your smart home experience.\n\n
+        7. **Payment Method:** Register your card for automatic service management.
+    </string>
 </resources>

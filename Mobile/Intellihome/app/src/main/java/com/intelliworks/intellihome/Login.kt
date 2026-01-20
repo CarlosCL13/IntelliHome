@@ -14,6 +14,8 @@ import com.intelliworks.intellihome.data.repository.UsuarioRepository
 import com.intelliworks.intellihome.databinding.ActivityLoginBinding
 import com.intelliworks.intellihome.utils.BaseActivity
 import kotlinx.coroutines.launch
+import com.intelliworks.intellihome.utils.BiometricCryptoHelper.desencriptarClave
+import com.intelliworks.intellihome.utils.BiometricCryptoHelper.desencriptarToken
 
 class Login : BaseActivity() {
 
@@ -57,12 +59,61 @@ class Login : BaseActivity() {
             startActivity(Intent(this, PasswordRecoveryActivity::class.java))
         }
 
+        // 4. AUX 1: Función para llamar al endpoint de login biométrico
+        fun loginPorToken(tokenPublico: String) {
+            val api = RetrofitInstance.retrofit.create(UsuarioApi::class.java)
+            val repo = UsuarioRepository(api)
+
+            lifecycleScope.launch {
+                try {
+                    val response = repo.buscarPorToken(tokenPublico)
+                    if (response.isSuccessful) {
+                        val loginData = response.body()
+                        if (loginData != null && loginData.username != null) {
+                            // Mensaje de bienvenida
+                            Toast.makeText(this@Login, "Bienvenido ${loginData.nombre}", Toast.LENGTH_SHORT).show()
+                            navegarAMain(loginData)
+                        } else {
+                            Toast.makeText(this@Login, "Token biométrico inválido", Toast.LENGTH_LONG).show()
+                        }
+                    } else {
+                        Toast.makeText(this@Login, "Token biométrico inválido", Toast.LENGTH_LONG).show()
+                    }
+                } catch (e: Exception) {
+                    Toast.makeText(this@Login, "Error de red: ${e.message}", Toast.LENGTH_LONG).show()
+                }
+            }
+        }
+
+        // 4. AUX 2: Función para manejar el login con huella digital
+        fun loginConHuella() {
+            // Recupera el token encriptado y el IV de SharedPreferences
+            val prefs = getSharedPreferences("biometric_prefs", MODE_PRIVATE)
+            val tokenEncriptado = prefs.getString("token_encriptado", null)
+            val tokenIv = prefs.getString("token_iv", null)
+
+            if (tokenEncriptado.isNullOrEmpty() || tokenIv.isNullOrEmpty()) {
+                Toast.makeText(this, "No hay datos biométricos registrados", Toast.LENGTH_LONG).show()
+                return
+            }
+
+            try {
+                // Desencripta el token usando la clave biométrica
+                val cifrado = desencriptarClave(android.util.Base64.decode(tokenIv, android.util.Base64.DEFAULT))
+                val tokenPublico = desencriptarToken(tokenEncriptado, tokenIv, cifrado)
+
+                // Llama al endpoint de login biométrico con el token público
+                loginPorToken(tokenPublico)
+            } catch (e: Exception) {
+                Toast.makeText(this, "Error al desencriptar token biométrico: ${e.message}", Toast.LENGTH_LONG).show()
+            }
+        }
+
         // 4. HUELLA DIGITAL
         enlace.fingerprintLogin.setOnClickListener {
             desplegarAutenticacionBiometrica {
-                // Si la huella es válida, podrías intentar un login automático
-                // o mostrar un mensaje. Por ahora, lanzamos el aviso de éxito:
-                Toast.makeText(this, "Autenticación biométrica exitosa", Toast.LENGTH_SHORT).show()
+                // Si la autenticación biométrica es exitosa, intentamos login automático con token biométrico
+                loginConHuella()
             }
         }
 
