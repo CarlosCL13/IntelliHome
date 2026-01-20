@@ -1,0 +1,9 @@
+<resources>
+    <string-array name="preguntas_recuperacion">
+        <item>¿Cuál es el mejor equipo de futbol de Costa Rica?</item>
+        <item>¿Cuál es su profesor preferido?</item>
+        <item>¿Cuál es su lugar de nacimiento?</item>
+        <item>¿Cuál es su fruta favorita?</item>
+        <item>¿Cuál fue el primer país al que viajó?</item>
+    </string-array>
+</resources>

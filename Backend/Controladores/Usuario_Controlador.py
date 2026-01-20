@@ -1,3 +1,4 @@
+
 from fastapi import APIRouter, Depends, UploadFile, File, Form, HTTPException
 from sqlalchemy.orm import Session
 from Servicios.Usuario_Servicio import Usuario_Servicio
@@ -29,7 +30,7 @@ def registrar_usuario(
     fecha_expiracion: str = Form(...),
     token_publico: Optional[str] = Form(None),
     db: Session = Depends(get_db)
-):
+    ):
     # Convertir cadenas separadas por comas a listas de enteros
     hobbies_ids_list = [int(i) for i in hobbies_ids.split(",")] if hobbies_ids else []
     tipos_casa_ids_list = [int(i) for i in tipos_casa_ids.split(",")] if tipos_casa_ids else []
@@ -56,4 +57,44 @@ def registrar_usuario(
     )
     if 'errores' in resultado:
         raise HTTPException(status_code=422, detail=resultado['errores'])
+    return resultado
+
+@router.post("/login")
+def login_usuario(
+    identificador: str = Form(...),
+    contrasena: str = Form(...),
+    db: Session = Depends(get_db)
+    ):
+    resultado = Usuario_Servicio.login_usuario(db=db, identificador=identificador, contrasena=contrasena)
+    if "errores" in resultado:
+        raise HTTPException(status_code=401, detail=resultado["errores"])
+    return resultado
+
+@router.post("/recuperar-contrasena")
+def recuperar_contrasena(
+    identificador: str = Form(...),
+    db: Session = Depends(get_db)
+    ):
+    # respuesta con la pregunta de recuperación
+    resultado = Usuario_Servicio.obtener_pregunta_recuperacion(db=db, identificador=identificador)
+
+    if "errores" in resultado:
+        raise HTTPException(status_code=400, detail=resultado["errores"])
+    return resultado
+
+@router.post("/restablecer-contrasena")
+def restablecer_contrasena(
+    identificador: str = Form(...),
+    nueva_contrasena: str = Form(...),
+    respuesta_recuperacion: str = Form(...),
+    db: Session = Depends(get_db)
+    ):
+    resultado = Usuario_Servicio.restablecer_contrasena(
+        db=db,
+        identificador=identificador,
+        nueva_contrasena=nueva_contrasena,
+        respuesta_recuperacion=respuesta_recuperacion
+    )
+    if "errores" in resultado:
+        raise HTTPException(status_code=400, detail=resultado["errores"])
     return resultado

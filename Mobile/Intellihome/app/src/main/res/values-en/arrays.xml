@@ -1,0 +1,10 @@
+<!-- res/values-en/arrays.xml -->
+<resources>
+    <string-array name="preguntas_recuperacion">
+        <item>What is the best football team in Costa Rica?</item>
+        <item>Who is your favorite teacher?</item>
+        <item>What is your birthplace?</item>
+        <item>What is your favorite fruit?</item>
+        <item>What was the first country you traveled to?</item>
+    </string-array>
+</resources>

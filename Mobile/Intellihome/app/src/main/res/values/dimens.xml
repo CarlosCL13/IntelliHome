@@ -1,0 +1,7 @@
+<resources>
+    <dimen name="fab_margin">16dp</dimen>
+    <dimen name="language_border">6dp</dimen>
+    <dimen name="settings_button_size">48dp</dimen>
+    <dimen name="settings_margin_top">16dp</dimen>
+    <dimen name="settings_margin_end">16dp</dimen>
+</resources>

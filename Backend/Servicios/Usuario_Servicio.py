@@ -60,10 +60,10 @@ class Usuario_Servicio:
         errores = {}
         usuario = None
         try:
-            Usuario_Servicio._validar_unicidad(db, correo, username,telefono, errores)
-            Usuario_Servicio._validar_contrasena(contrasena, errores)
+            Usuario_Servicio._validar_unicidad(db, correo, username, telefono, errores)
+            Usuario_Servicio._validar_contrasena_registro(contraseña, errores)
             Usuario_Servicio._validar_nombres_obscenos(nombre, apellidos, username, errores)
-            Usuario_Servicio._validar_telefono(telefono, errores)
+            Usuario_Servicio._validar_telefono_registro(telefono, errores)
             hobbies = Usuario_Servicio._validar_hobbies(db, hobbies_ids, errores)
             tipos_casa = Usuario_Servicio._validar_tipos_casa(db, tipos_casa_ids, errores)
             Usuario_Servicio._validar_pregunta_recuperacion(db, pregunta_recuperacion_id, errores)
@@ -114,6 +114,135 @@ class Usuario_Servicio:
             return {'errores': {'internal': f'Error interno: {str(e)}'}}
         finally:
             db.close()
+    
+    # Login de usuario
+    @staticmethod
+    def login_usuario(db: Session, identificador: str, contrasena: str):
+        """
+        Permite iniciar sesión usando nombre de usuario, correo o teléfono y contraseña.
+        """
+        errores = {}
+        usuario = None
+
+        try:
+            # Buscar usuario por nombre de usuario, correo o teléfono
+            usuario = Usuario_Servicio._validar_identificador(db, identificador, errores)
+            
+            if errores:
+                return {'errores': errores}
+            
+            # si la cuenta está bloqueada se retorna error
+            if usuario.estado_cuenta == 'bloqueado':
+                errores['cuenta'] = 'La cuenta está bloqueada. Contacte al administrador.'
+                return {'errores': errores}
+            
+            validacion_contrasena = Usuario_Servicio._validar_contraseña_login(contrasena, usuario.contraseña)
+
+            # validar si la contraseña es correcta
+            if not validacion_contrasena:
+                # Incrementar intentos fallidos
+                usuario.intentos_fallidos += 1
+                # Bloquear cuenta si supera 3 intentos
+                if usuario.intentos_fallidos >= 3:
+                    usuario.estado_cuenta = 'bloqueado'
+                db.commit()
+                errores['contraseña'] = 'Contraseña incorrecta.'
+
+                return {'errores': errores}
+            
+            # Resetear intentos fallidos si login exitoso
+            usuario.intentos_fallidos = 0
+            db.commit()
+            # Puedes retornar solo los datos necesarios
+            return {
+                "id": usuario.id,
+                "username": usuario.username,
+                "correo": usuario.correo,
+                "telefono": usuario.telefono,
+                "nombre": usuario.nombre,
+                "apellidos": usuario.apellidos,
+                "rol_id": usuario.rol_id,
+                "estado_cuenta": usuario.estado_cuenta
+            }
+        except Exception as e:
+            db.rollback()
+            return {'errores': {'internal': f'Error interno: {str(e)}'}}
+        finally:
+            db.close()
+
+    # Obtención de la pregunta de recuperación de contraseña
+    @staticmethod
+    def obtener_pregunta_recuperacion(db: Session, identificador: str):
+        """
+        Permite obtener la pregunta de recuperación de contraseña usando nombre de usuario, correo o teléfono.
+        """
+        errores = {}
+        usuario = None
+
+        try:
+            # Buscar usuario por nombre de usuario, correo o teléfono
+            usuario = Usuario_Servicio._validar_identificador(db, identificador, errores)
+            
+            if errores:
+                return {'errores': errores}
+
+            #Se obtiene la información de la pregunta de recuperación asociada al usuario
+            PreguntaRecuperacion_inf = db.query(PreguntaRecuperacion).filter_by(id=usuario.pregunta_recuperacion_id).first()
+            
+            return {
+                "identificador": identificador,
+                "pregunta_id": PreguntaRecuperacion_inf.id,
+                "pregunta": PreguntaRecuperacion_inf.texto
+            }
+        except Exception as e:
+            db.rollback()
+            return {'errores': {'internal': f'Error interno: {str(e)}'}}
+        finally:
+            db.close()
+
+    # Restablecimiento de contraseña
+    @staticmethod
+    def restablecer_contrasena(db: Session, identificador: str, nueva_contrasena: str, respuesta_recuperacion: str):
+        """
+        Permite restablecer la contraseña si la respuesta de recuperación es correcta.
+        """
+
+        errores = {}
+        usuario = None
+
+        try:
+            # Buscar usuario por nombre de usuario, correo o teléfono
+            usuario = Usuario_Servicio._validar_identificador(db, identificador, errores)
+            
+            if errores:
+                return {'errores': errores}
+            
+            # Validar respuesta de recuperación
+            if usuario.respuesta_recuperacion.lower() != respuesta_recuperacion.lower():
+                errores['respuesta_recuperacion'] = 'Respuesta de recuperación incorrecta.'
+                return {'errores': errores}
+            
+            # Validar nueva contraseña
+            Usuario_Servicio._validar_contraseña_registro(nueva_contrasena, errores)
+            if errores:
+                return {'errores': errores}
+            
+            # Se encripta la nueva contraseña y se actualiza
+            hashed_password = Usuario_Servicio.pwd_context.hash(nueva_contrasena)
+            usuario.contraseña = hashed_password
+
+            # Resetear intentos fallidos y estado de cuenta
+            usuario.intentos_fallidos = 0
+            usuario.estado_cuenta = 'activo'
+
+            db.commit()
+            return {'mensaje': 'Contraseña restablecida exitosamente'}
+        
+        except Exception as e:
+            db.rollback()
+            return {'errores': {'internal': f'Error interno: {str(e)}'}}
+        finally:
+            db.close()
 
     #================================= VALIDACIONES ================================= #
 
@@ -130,9 +259,9 @@ class Usuario_Servicio:
         if db.query(Usuario).filter_by(telefono=telefono).first():
             errores['telefono'] = 'El teléfono ya está registrado.'
 
-    # Validación de contraseña
+    # Validación de contraseña (registro)
     @staticmethod
-    def _validar_contrasena(contrasena, errores):
+    def _validar_contrasena_registro(contrasena, errores):
         """
         Verifica que la contraseña cumpla con los requisitos mínimos.
         """
@@ -216,7 +345,7 @@ class Usuario_Servicio:
             errores['imagen_perfil'] = 'La imagen excede el tamaño máximo de 1 MB.'
         return imagen_path
     
-    # Validación de teléfono
+    # Validación de teléfono (registro)
     @staticmethod
     def _validar_telefono(telefono, errores):
         """
@@ -267,6 +396,33 @@ class Usuario_Servicio:
             except Exception:
                 errores['fecha_expiracion'] = 'La fecha de expiración no es válida.'
     
+    #validación de identificador (correo, telefono o nombre de usuario)  (login)
+    @staticmethod
+    def _validar_identificador(db, identificador, errores):
+        """
+        Verifica si el identificador (correo, teléfono o nombre de usuario) existe en la base de datos de usuarios.
+        Si no existe, agrega un error en el diccionario de errores.
+        """
+        usuario = db.query(Usuario).filter(
+            (Usuario.username == identificador) |
+            (Usuario.correo == identificador) |
+            (Usuario.telefono == identificador)
+        ).first()
+        if not usuario:
+            errores['identificador'] = 'El identificador (correo, teléfono o nombre de usuario) no está asociado a ningún usuario.'
+        return usuario
+
+    # Validación de contraseña
+    @staticmethod
+    def _validar_contraseña_login(contraseña_plana: str, contraseña_hash: str) -> bool:
+        """
+        Verifica si la contraseña plana coincide con el hash almacenado.
+        """
+
+        # Se encripta la contraseña plana y se compara con el hash almacenado        
+        validacion = Usuario_Servicio.pwd_context.verify(contraseña_plana, contraseña_hash)
+
+        return validacion
 
     #================================= UTILIDADES ================================= #
 
@@ -335,3 +491,4 @@ class Usuario_Servicio:
                 buffer.write(imagen_perfil.file.read())
             return imagen_path
         return None
+    
