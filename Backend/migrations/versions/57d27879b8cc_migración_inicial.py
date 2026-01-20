@@ -1,8 +1,8 @@
 """Migración Inicial
 
-Revision ID: 7cffd32899c6
+Revision ID: 57d27879b8cc
 Revises: 
-Create Date: 2026-01-17 20:22:47.454679
+Create Date: 2026-01-19 20:53:52.168159
 
 """
 from typing import Sequence, Union
@@ -12,7 +12,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = '7cffd32899c6'
+revision: str = '57d27879b8cc'
 down_revision: Union[str, Sequence[str], None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -54,13 +54,14 @@ def upgrade() -> None:
     sa.Column('apellidos', sa.String(length=120), nullable=False),
     sa.Column('correo', sa.String(length=120), nullable=False),
     sa.Column('username', sa.String(length=80), nullable=False),
-    sa.Column('contraseña', sa.String(length=120), nullable=False),
+    sa.Column('contrasena', sa.String(length=120), nullable=False),
     sa.Column('telefono', sa.String(length=20), nullable=False),
     sa.Column('fecha_nacimiento', sa.Date(), nullable=False),
     sa.Column('domicilio', sa.String(length=255), nullable=False),
     sa.Column('pregunta_recuperacion_id', sa.Integer(), nullable=False),
     sa.Column('respuesta_recuperacion', sa.String(length=255), nullable=False),
     sa.Column('permitir_huella', sa.Integer(), nullable=False),
+    sa.Column('token_publico', sa.String(length=255), nullable=True),
     sa.Column('intentos_fallidos', sa.Integer(), nullable=False),
     sa.Column('estado_cuenta', sa.String(length=20), nullable=False),
     sa.Column('nombre_titular', sa.String(length=120), nullable=False),

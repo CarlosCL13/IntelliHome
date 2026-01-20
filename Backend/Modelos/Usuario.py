@@ -14,7 +14,7 @@ class Usuario(db.Model):
     apellidos = db.Column(db.String(120), nullable=False)
     correo = db.Column(db.String(120), unique=True, nullable=False)
     username = db.Column(db.String(80), unique=True, nullable=False)
-    contraseña = db.Column(db.String(120), nullable=False)
+    contrasena = db.Column(db.String(120), nullable=False)
     telefono = db.Column(db.String(20), nullable=False)
     fecha_nacimiento = db.Column(db.Date, nullable=False)
     hobbies = db.relationship('Hobby', secondary='usuario_hobbies', backref='usuarios')
@@ -23,6 +23,7 @@ class Usuario(db.Model):
     pregunta_recuperacion_id = db.Column(db.Integer, db.ForeignKey('preguntas_recuperacion.id'), nullable=False)
     respuesta_recuperacion = db.Column(db.String(255), nullable=False)
     permitir_huella = db.Column(db.Integer, default=0, nullable=False)  # 0 = no permite, 1 = sí permite
+    token_publico = db.Column(db.String(255), nullable=True)  # Token biométrico público
     intentos_fallidos = db.Column(db.Integer, default=0, nullable=False)
     estado_cuenta = db.Column(db.String(20), default='activo', nullable=False)  # valores: 'activo', 'bloqueado'
 

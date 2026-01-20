@@ -45,7 +45,7 @@ class Usuario_Servicio:
         telefono: str = None,
         fecha_nacimiento: str = None,
         domicilio: str = None,
-        contraseña: str = None,
+        contrasena: str = None,
         imagen_perfil: UploadFile = None,
         hobbies_ids: list = None,
         tipos_casa_ids: list = None,
@@ -54,13 +54,14 @@ class Usuario_Servicio:
         permitir_huella: int = 0,
         nombre_titular: str = None,
         numero_tarjeta: str = None,
-        fecha_expiracion: str = None
+        fecha_expiracion: str = None,
+        token_publico: str = None
     ):
         errores = {}
         usuario = None
         try:
-            Usuario_Servicio._validar_unicidad(db, correo, username, errores)
-            Usuario_Servicio._validar_contraseña_registro(contraseña, errores)
+            Usuario_Servicio._validar_unicidad(db, correo, username, telefono, errores)
+            Usuario_Servicio._validar_contrasena_registro(contraseña, errores)
             Usuario_Servicio._validar_nombres_obscenos(nombre, apellidos, username, errores)
             Usuario_Servicio._validar_telefono_registro(telefono, errores)
             hobbies = Usuario_Servicio._validar_hobbies(db, hobbies_ids, errores)
@@ -79,7 +80,7 @@ class Usuario_Servicio:
 
             imagen_path = Usuario_Servicio._guardar_imagen(imagen_perfil)
             rol_id = 2
-            hashed_password = Usuario_Servicio.pwd_context.hash(contraseña)
+            hashed_password = Usuario_Servicio.pwd_context.hash(contrasena)
             # Encriptar el número de tarjeta antes de guardarlo
             numero_encriptado = Usuario_Servicio._encriptar_tarjeta(numero_tarjeta) if numero_tarjeta else None
             usuario = Usuario(
@@ -91,7 +92,7 @@ class Usuario_Servicio:
                 telefono=telefono,
                 fecha_nacimiento=fecha_nacimiento_date,
                 domicilio=domicilio,
-                contraseña=hashed_password,
+                contrasena=hashed_password,
                 rol_id=rol_id,
                 hobbies=hobbies,
                 tipos_casa=tipos_casa,
@@ -102,7 +103,8 @@ class Usuario_Servicio:
                 numero_encriptado=numero_encriptado,
                 fecha_expiracion=fecha_expiracion,
                 marca=marca,
-                ultimos_4=ultimos_4
+                ultimos_4=ultimos_4,
+                token_publico=token_publico
             )
             db.add(usuario)
             db.commit()
@@ -246,21 +248,32 @@ class Usuario_Servicio:
 
     # Validación de unicidad de correo y username
     @staticmethod
-    def _validar_unicidad(db, correo, username, errores):
+    def _validar_unicidad(db, correo, username, telefono, errores):
+        """
+        Verifica que el correo y el nombre de usuario sean únicos en la base de datos.
+        """
         if db.query(Usuario).filter_by(correo=correo).first():
             errores['correo'] = 'El correo ya está registrado.'
         if db.query(Usuario).filter_by(username=username).first():
             errores['username'] = 'El nombre de usuario ya está registrado.'
+        if db.query(Usuario).filter_by(telefono=telefono).first():
+            errores['telefono'] = 'El teléfono ya está registrado.'
 
     # Validación de contraseña (registro)
     @staticmethod
-    def _validar_contraseña_registro(contraseña, errores):
-        if len(contraseña) < 8 or not re.search(r'[A-Za-z]', contraseña) or not re.search(r'\d', contraseña):
-            errores['contraseña'] = 'La contraseña debe tener al menos 8 caracteres y ser alfanumérica.'
+    def _validar_contrasena_registro(contrasena, errores):
+        """
+        Verifica que la contraseña cumpla con los requisitos mínimos.
+        """
+        if len(contrasena) < 8 or not re.search(r'[A-Za-z]', contrasena) or not re.search(r'\d', contrasena):
+            errores['contrasena'] = 'La contraseña debe tener al menos 8 caracteres y ser alfanumérica.'
 
     # Validación de nombres obscenos
     @staticmethod
     def _validar_nombres_obscenos(nombre, apellidos, username, errores):
+        """
+        Verifica que el nombre, apellidos y username no contengan palabras obscenas.
+        """
         for campo, valor in [('nombre', nombre), ('apellidos', apellidos), ('username', username)]:
             if any(pal in valor.lower() for pal in Usuario_Servicio.PALABRAS_OBSCENAS):
                 errores[campo] = 'El valor contiene palabras no permitidas.'
@@ -268,6 +281,9 @@ class Usuario_Servicio:
     # Validación de hobbies
     @staticmethod
     def _validar_hobbies(db, hobbies_ids, errores):
+        """
+        Verifica que los hobbies proporcionados existan en la base de datos.
+        """
         hobbies = []
         if hobbies_ids:
             hobbies = db.query(Hobby).filter(Hobby.id.in_(hobbies_ids)).all()
@@ -278,6 +294,9 @@ class Usuario_Servicio:
     # Validación de tipos de casa
     @staticmethod
     def _validar_tipos_casa(db, tipos_casa_ids, errores):
+        """
+        Verifica que los tipos de casa proporcionados existan en la base de datos.
+        """
         tipos_casa = []
         if tipos_casa_ids:
             tipos_casa = db.query(TipoCasa).filter(TipoCasa.id.in_(tipos_casa_ids)).all()
@@ -288,6 +307,9 @@ class Usuario_Servicio:
     # Validación de pregunta de recuperación
     @staticmethod
     def _validar_pregunta_recuperacion(db, pregunta_recuperacion_id, errores):
+        """
+        Determina si la pregunta de recuperación existe en la base de datos.
+        """
         pregunta = db.query(PreguntaRecuperacion).filter_by(id=pregunta_recuperacion_id).first()
         if not pregunta:
             errores['pregunta_recuperacion'] = 'La pregunta de recuperación no existe.'
@@ -296,12 +318,18 @@ class Usuario_Servicio:
     # Validación de respuesta de recuperación
     @staticmethod
     def _validar_respuesta_recuperacion(respuesta_recuperacion, errores):
+        """
+        Verifica que la respuesta de recuperación no esté vacía.
+        """
         if not respuesta_recuperacion:
             errores['respuesta_recuperacion'] = 'La respuesta de recuperación es obligatoria.'
 
     # Validación de imagen de perfil
     @staticmethod
     def _validar_imagen(imagen_perfil, errores):
+        """
+        Verifica que la imagen de perfil cumpla con los requisitos de formato y tamaño.
+        """
         imagen_path = None
         if not imagen_perfil:
             errores['imagen_perfil'] = 'La imagen de perfil es obligatoria.'
@@ -319,8 +347,10 @@ class Usuario_Servicio:
     
     # Validación de teléfono (registro)
     @staticmethod
-    def _validar_telefono_registro(telefono, errores):
-        # se verifica si el telefono es numérico o si no fue dado
+    def _validar_telefono(telefono, errores):
+        """
+        Verifica que el teléfono contenga solo caracteres numéricos.
+        """
         if telefono is None or not str(telefono).isdigit():
             errores['telefono'] = 'El teléfono debe contener solo caracteres numéricos.'
 
@@ -328,6 +358,9 @@ class Usuario_Servicio:
     # Validación de fecha de nacimiento
     @staticmethod
     def _validar_fecha_nacimiento(fecha_nacimiento, errores):
+        """
+        Verifica que la fecha de nacimiento tenga el formato correcto YYYY-MM-DD.
+        """
         from datetime import datetime
         fecha_nacimiento_date = None
         if fecha_nacimiento:
@@ -340,6 +373,9 @@ class Usuario_Servicio:
     # Validación de tarjeta de crédito
     @staticmethod
     def _validar_tarjeta(numero_tarjeta, fecha_expiracion, nombre_titular, errores):
+        """
+        Determina si los datos de la tarjeta de crédito son válidos.
+        """
         # Validar nombre del titular
         if not nombre_titular or not nombre_titular.strip():
             errores['nombre_titular'] = 'El nombre del titular es obligatorio.'
@@ -393,6 +429,9 @@ class Usuario_Servicio:
     # Calcular marca y últimos 4 dígitos de la tarjeta
     @staticmethod
     def _calcular_marca_y_ultimos4(numero_tarjeta):
+        """
+        Determina la marca de la tarjeta y obtiene los últimos 4 dígitos.
+        """
         # Determinar marca por el prefijo
         if numero_tarjeta.startswith('4'):
             marca = 'Visa'
@@ -405,6 +444,14 @@ class Usuario_Servicio:
         ultimos_4 = numero_tarjeta[-4:] if numero_tarjeta and len(numero_tarjeta) >= 4 else ''
         return marca, ultimos_4
 
+    # Validación de contraseña
+    @staticmethod
+    def verificar_contrasena(contrasena_plana: str, contrasena_hash: str) -> bool:
+        """
+        Verifica si la contraseña plana coincide con el hash almacenado.
+        """
+        return Usuario_Servicio.pwd_context.verify(contrasena_plana, contrasena_hash)
+    
     # Encriptación de tarjeta de crédito
     @staticmethod
     def _get_fernet():
@@ -433,6 +480,9 @@ class Usuario_Servicio:
     # Guardar imagen de perfil
     @staticmethod
     def _guardar_imagen(imagen_perfil):
+        """
+        Guarda la imagen de perfil en el sistema de archivos y devuelve la ruta.
+        """
         if imagen_perfil:
             uploads_dir = os.path.join(os.getcwd(), 'uploads')
             os.makedirs(uploads_dir, exist_ok=True)

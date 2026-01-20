@@ -7,6 +7,8 @@ from Base_de_Datos.db_session import get_db
 
 router = APIRouter(prefix="/usuarios", tags=["usuarios"])
 
+# Endpoint para el registro de un nuevo usuario
+
 @router.post("/registro")
 def registrar_usuario(
     nombre: str = Form(...),
@@ -16,7 +18,7 @@ def registrar_usuario(
     telefono: str = Form(...),
     fecha_nacimiento: str = Form(...),
     domicilio: str = Form(...),
-    contraseña: str = Form(...),
+    contrasena: str = Form(...),
     imagen_perfil: UploadFile = File(...),
     hobbies_ids: str = Form(...),  # Recibe una cadena separada por comas
     tipos_casa_ids: str = Form(...),  # Recibe una cadena separada por comas
@@ -26,6 +28,7 @@ def registrar_usuario(
     nombre_titular: str = Form(...),
     numero_tarjeta: str = Form(...),
     fecha_expiracion: str = Form(...),
+    token_publico: Optional[str] = Form(None),
     db: Session = Depends(get_db)
     ):
     # Convertir cadenas separadas por comas a listas de enteros
@@ -40,7 +43,7 @@ def registrar_usuario(
         telefono=telefono,
         fecha_nacimiento=fecha_nacimiento,
         domicilio=domicilio,
-        contraseña=contraseña,
+        contrasena=contrasena,
         imagen_perfil=imagen_perfil,
         hobbies_ids=hobbies_ids_list,
         tipos_casa_ids=tipos_casa_ids_list,
@@ -49,7 +52,8 @@ def registrar_usuario(
         permitir_huella=permitir_huella,
         nombre_titular=nombre_titular,
         numero_tarjeta=numero_tarjeta,
-        fecha_expiracion=fecha_expiracion
+        fecha_expiracion=fecha_expiracion,
+        token_publico=token_publico
     )
     if 'errores' in resultado:
         raise HTTPException(status_code=422, detail=resultado['errores'])
