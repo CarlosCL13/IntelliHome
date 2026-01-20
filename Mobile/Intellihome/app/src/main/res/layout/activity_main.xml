@@ -4,150 +4,104 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="#F5F5F5"
     tools:context=".MainActivity">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginTop="120dp"
         android:padding="16dp">
 
-        <!-- Usuario -->
-
-        <TextView
-            android:id="@+id/txtUserId"
-            android:layout_width="0dp"
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/cardHeader"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="140dp"
-            android:text="@string/main_user_id"
-            android:textSize="16sp"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.0"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            app:cardCornerRadius="16dp"
+            app:cardElevation="4dp"
+            app:layout_constraintTop_toTopOf="parent">
 
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:orientation="vertical"
+                android:padding="24dp">
 
-        <TextView
-            android:id="@+id/txtUsername"
-            android:layout_width="0dp"
+                <ImageView
+                    android:id="@+id/imgProfile"
+                    android:layout_width="100dp"
+                    android:layout_height="100dp"
+                    android:contentDescription="@string/app_name"
+                    android:src="@drawable/ic_user_placeholder" />
+
+                <TextView
+                    android:id="@+id/txtNombre"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:textColor="@android:color/black"
+                    android:textSize="22sp"
+                    android:textStyle="bold"
+                    tools:text="John Doe" />
+
+                <TextView
+                    android:id="@+id/txtUsername"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="#757575"
+                    android:textSize="16sp"
+                    tools:text="\@username" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/cardInfo"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="@string/main_username"
-            android:textSize="16sp"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/txtUserId"
-            android:layout_marginTop="8dp"/>
+            android:layout_marginTop="16dp"
+            app:cardCornerRadius="12dp"
+            app:cardElevation="2dp"
+            app:layout_constraintTop_toBottomOf="@id/cardHeader">
 
-        <TextView
-            android:id="@+id/txtNombre"
-            android:layout_width="0dp"
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="16dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/main_title_account"
+                    android:textStyle="bold"
+                    android:textColor="#2E7D32"
+                    android:textSize="12sp"
+                    android:layout_marginBottom="8dp"/>
+
+                <TextView android:id="@+id/txtUserId" android:layout_width="match_parent" android:layout_height="wrap_content" tools:text="ID: 1" android:padding="4dp" android:textSize="16sp"/>
+                <TextView android:id="@+id/txtCorreo" android:layout_width="match_parent" android:layout_height="wrap_content" tools:text="Email: user@example.com" android:padding="4dp" android:textSize="16sp"/>
+                <TextView android:id="@+id/txtTelefono" android:layout_width="match_parent" android:layout_height="wrap_content" tools:text="Phone: 000000" android:padding="4dp" android:textSize="16sp"/>
+                <TextView android:id="@+id/txtEstadoCuenta" android:layout_width="match_parent" android:layout_height="wrap_content" tools:text="Status: ACTIVE" android:padding="4dp" android:textSize="16sp" android:textStyle="bold"/>
+                <TextView android:id="@+id/txtRol" android:layout_width="match_parent" android:layout_height="wrap_content" tools:text="Role: Admin" android:padding="4dp" android:textSize="16sp"/>
+
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnCerrarSesion"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Nombre completo"
-            android:textSize="16sp"
-            app:layout_constraintStart_toStartOf="parent"
+            android:layout_marginTop="52dp"
+            android:text="@string/logout"
+            android:textAllCaps="false"
+            android:textColor="@android:color/white"
+            app:backgroundTint="@color/design_default_color_error"
+            app:cornerRadius="12dp"
+            app:icon="@drawable/outline_arrow_menu_close_24"
+            app:iconTint="@android:color/white"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/txtUsername"
-            android:layout_marginTop="8dp"/>
-
-        <TextView
-            android:id="@+id/txtCorreo"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:text="Correo"
-            android:textSize="16sp"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/txtNombre"
-            android:layout_marginTop="8dp"/>
-
-        <TextView
-            android:id="@+id/txtTelefono"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:text="Teléfono"
-            android:textSize="16sp"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/txtCorreo"
-            android:layout_marginTop="8dp"/>
-
-        <TextView
-            android:id="@+id/txtFechaNacimiento"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:text="Fecha de nacimiento"
-            android:textSize="16sp"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/txtTelefono"
-            android:layout_marginTop="8dp"/>
-
-        <TextView
-            android:id="@+id/txtDomicilio"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:text="Domicilio"
-            android:textSize="16sp"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.0"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/txtFechaNacimiento" />
-
-        <TextView
-            android:id="@+id/txtPreguntaRecuperacion"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:text="Pregunta de recuperación"
-            android:textSize="16sp"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/txtDomicilio"
-            android:layout_marginTop="8dp"/>
-
-        <TextView
-            android:id="@+id/txtRespuestaRecuperacion"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:text="Respuesta"
-            android:textSize="16sp"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/txtPreguntaRecuperacion"
-            android:layout_marginTop="8dp"/>
-
-        <TextView
-            android:id="@+id/txtFingerprint"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:text="Huella: Activada/Desactivada"
-            android:textSize="16sp"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/txtRespuestaRecuperacion"
-            android:layout_marginTop="8dp"/>
-
-        <TextView
-            android:id="@+id/txtEstadoCuenta"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:text="Estado de cuenta"
-            android:textSize="16sp"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/txtFingerprint"
-            android:layout_marginTop="8dp"/>
-
-        <TextView
-            android:id="@+id/txtDatosTarjeta"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:text="Tarjeta: **** **** **** 1234"
-            android:textSize="16sp"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/txtEstadoCuenta"
-            android:layout_marginTop="8dp"
-            android:layout_marginBottom="16dp"/>
-
+            app:layout_constraintTop_toBottomOf="@id/cardInfo" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 </ScrollView>

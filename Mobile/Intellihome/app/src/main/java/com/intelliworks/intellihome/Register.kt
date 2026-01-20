@@ -30,16 +30,16 @@ import okhttp3.MediaType.Companion.toMediaType
 import android.widget.CheckBox
 import android.view.ViewGroup
 import android.widget.ArrayAdapter
+import com.intelliworks.intellihome.utils.BaseActivity
 import okhttp3.RequestBody.Companion.asRequestBody
 import okhttp3.RequestBody.Companion.toRequestBody
 
 /**
  * Clase para la pantalla de registro de usuario.
  */
-class Register : AppCompatActivity() {
+class Register : BaseActivity() {
 
     private lateinit var binding: ActivityRegisterBinding
-    private lateinit var databaseHelper: DatabaseHelper
 
     // Variable para almacenar la URI de la imagen de usuario
     private var imagenUsuarioUri: android.net.Uri? = null
@@ -85,6 +85,11 @@ class Register : AppCompatActivity() {
         }
     }
 
+    override fun onResume() {
+        super.onResume()
+        applyAppAppearance(binding.root)
+    }
+
     // Método onCreate de la actividad
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -104,10 +109,6 @@ class Register : AppCompatActivity() {
         binding.tvVerTerminos.setOnClickListener {
             mostrarDialogoTerminos()
         }
-
-
-        // Base de datos de prueba
-        databaseHelper = DatabaseHelper(this)
 
 
         // Selección de imagen de usuario
@@ -356,65 +357,77 @@ class Register : AppCompatActivity() {
 
         // Poblar hobbies dinámicamente (GET)
         lifecycleScope.launch {
-            val response = catalogosRepository.getHobbies()
-            if (response.isSuccessful) {
-                val hobbies = response.body() ?: emptyList()
-                val llHobbies = findViewById<ViewGroup>(R.id.ll_hobbies)
-                // Elimina los hijos actuales excepto el TextView título
-                while (llHobbies.childCount > 1) llHobbies.removeViewAt(1)
-                hobbies.forEach { hobby ->
-                    val checkBox = CheckBox(this@Register)
-                    checkBox.id = View.generateViewId()
-                    checkBox.text = hobby.nombre
-                    checkBox.tag = hobby.id
-                    checkBox.textSize = 14f
-                    llHobbies.addView(checkBox)
-                }
-            } else {
-                Toast.makeText(this@Register, "Error al obtener hobbies", Toast.LENGTH_SHORT).show()
-            }
-        }
-
-        // Poblar tipos de casa dinámicamente (GET)
-        lifecycleScope.launch {
-            val response = catalogosRepository.getTiposCasa()
-            if (response.isSuccessful) {
-                val tiposCasa = response.body() ?: emptyList()
-                val llCasa = findViewById<ViewGroup>(R.id.ll_casa_preferencia)
-                // Elimina los hijos actuales excepto el TextView título
-                while (llCasa.childCount > 1) llCasa.removeViewAt(1)
-                tiposCasa.forEach { tipo ->
-                    val checkBox = CheckBox(this@Register)
-                    checkBox.id = View.generateViewId()
-                    checkBox.text = tipo.nombre
-                    checkBox.tag = tipo.id
-                    checkBox.textSize = 14f
-                    llCasa.addView(checkBox)
-                }
-            } else {
-                Toast.makeText(this@Register, "Error al obtener tipos de casa", Toast.LENGTH_SHORT).show()
-            }
-        }
-
-        // Poblar preguntas de recuperación en el Spinner (GET)
-        lifecycleScope.launch {
-            val response = catalogosRepository.getPreguntasRecuperacion()
-            if (response.isSuccessful) {
-                val preguntas = response.body() ?: emptyList()
-                val textos = preguntas.filterNotNull().map { it.texto }
-                if (textos.isNotEmpty()) {
-                    val adapter = ArrayAdapter(this@Register, android.R.layout.simple_spinner_dropdown_item, textos)
-                    binding.spPregunta.adapter = adapter
-                    binding.spPregunta.isEnabled = true
+            try {
+                val response = catalogosRepository.getHobbies()
+                if (response.isSuccessful) {
+                    val hobbies = response.body() ?: emptyList()
+                    val llHobbies = findViewById<ViewGroup>(R.id.ll_hobbies)
+                    while (llHobbies.childCount > 1) llHobbies.removeViewAt(1)
+                    hobbies.forEach { hobby ->
+                        val checkBox = CheckBox(this@Register)
+                        checkBox.text = hobby.nombre
+                        checkBox.tag = hobby.id
+                        llHobbies.addView(checkBox)
+                    }
                 } else {
-                    Toast.makeText(this@Register, "No hay preguntas de recuperación disponibles", Toast.LENGTH_SHORT).show()
-                    binding.spPregunta.isEnabled = false
+                    Toast.makeText(this@Register, "Error al obtener hobbies", Toast.LENGTH_SHORT).show()
                 }
-                // Puedes guardar los IDs en una variable si necesitas saber cuál seleccionó el usuario
-            } else {
-                Toast.makeText(this@Register, "Error al obtener preguntas de recuperación", Toast.LENGTH_SHORT).show()
+            } catch (e: Exception) {
+                Toast.makeText(
+                    this@Register,
+                    getString(R.string.error_network),
+                    Toast.LENGTH_LONG
+                ).show()
             }
         }
+
+
+        lifecycleScope.launch {
+            try {
+                val response = catalogosRepository.getTiposCasa()
+                if (response.isSuccessful) {
+                    val tiposCasa = response.body() ?: emptyList()
+                    val llCasa = findViewById<ViewGroup>(R.id.ll_casa_preferencia)
+                    while (llCasa.childCount > 1) llCasa.removeViewAt(1)
+                    tiposCasa.forEach { tipo ->
+                        val checkBox = CheckBox(this@Register)
+                        checkBox.text = tipo.nombre
+                        checkBox.tag = tipo.id
+                        llCasa.addView(checkBox)
+                    }
+                } else {
+                    Toast.makeText(this@Register, "Error al obtener tipos de casa", Toast.LENGTH_SHORT).show()
+                }
+            } catch (e: Exception) {
+                Toast.makeText(
+                    this@Register,
+                    getString(R.string.error_network),
+                    Toast.LENGTH_LONG
+                ).show()
+            }
+        }
+
+
+        lifecycleScope.launch {
+            try {
+                val response = catalogosRepository.getPreguntasRecuperacion()
+                if (response.isSuccessful) {
+                    val preguntas = response.body() ?: emptyList()
+                    val textos = preguntas.mapNotNull { it.texto }
+                    binding.spPregunta.adapter =
+                        ArrayAdapter(this@Register, android.R.layout.simple_spinner_dropdown_item, textos)
+                } else {
+                    Toast.makeText(this@Register, "Error al obtener preguntas", Toast.LENGTH_SHORT).show()
+                }
+            } catch (e: Exception) {
+                Toast.makeText(
+                    this@Register,
+                    getString(R.string.error_network),
+                    Toast.LENGTH_LONG
+                ).show()
+            }
+        }
+
     }
 
     // Selector de mes/año para fecha de vencimiento de la tarjeta

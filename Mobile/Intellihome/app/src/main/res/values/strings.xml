@@ -14,11 +14,18 @@
 
 
     <string name="signup">¿No tienes una cuenta? Regístrate</string>
-
+    <string name="error_empty_fields">Por favor complete los campos</string>
+    <string name="error_invalid_credentials">Usuario o contraseña incorrectos</string>
+    <string name="error_network">Error de conexión con el servidor</string>
+    <string name="welcome_user">¡Bienvenido/a,</string>
+    <string name="biometric_title">Acceso Biométrico</string>
+    <string name="biometric_subtitle">Use su huella para continuar</string>
     <string name="settings">Configuración</string>
     <string name="fingerprint_login">Acceso con huella</string>
     <string name="logo_desc">Logotipo de la aplicación</string>
+    <string name="logout">Log out</string>
 
+    <!-- REGISTER -->
     <string name="register_logo_desc">Logotipo de aplicación</string>
     <string name="register_user_photo_desc">Foto de usuario</string>
 
@@ -82,9 +89,21 @@
     <string name="lang_english">Inglés</string>
 
     <!-- MAIN -->
-    <string name="main_username">Usuario</string>
-    <string name="main_user_id">ID</string>
-    <string name="main_fingerprint">Huella</string>
+    <string name="main_title_account">DETALLES DE LA CUENTA</string>
+
+    <string name="label_user_id">ID de Usuario: %1$d</string>
+    <string name="label_username">Usuario: @%1$s</string>
+    <string name="label_email">Correo: %1$s</string>
+    <string name="label_phone">Teléfono: %1$s</string>
+    <string name="label_status">Estado: %1$s</string>
+    <string name="label_role">Rol: %1$s</string>
+
+    <string name="data_not_available">No disponible</string>
+
+    <string name="role_admin">Administrador</string>
+    <string name="role_user">Usuario Estándar</string>
+    <string name="role_tech">Técnico</string>
+    <string name="role_guest">Invitado</string>
     <string name="select_color">Selecciona un color</string>
     <!-- Recovery -->
     <string name="recovery_title">Recuperar Contraseña</string>
@@ -98,5 +117,6 @@
     <string name="error_password_regex">Debe tener al menos 8 caracteres, letras y números</string>
     <string name="error_password_match">Las contraseñas no coinciden</string>
     <string name="password_updated">Contraseña actualizada exitosamente</string>
+
 
 </resources>

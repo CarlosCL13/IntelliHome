@@ -1,14 +1,16 @@
 package com.intelliworks.intellihome.data.api
 
 import com.intelliworks.intellihome.data.model.UsuarioRegistroResponseDto
+import com.intelliworks.intellihome.data.model.LoginResponseDto
+import com.intelliworks.intellihome.data.model.PreguntaResponseDto
+import com.intelliworks.intellihome.data.model.RecoveryResultDto
 import okhttp3.MultipartBody
 import okhttp3.RequestBody
 import retrofit2.Response
-import retrofit2.http.Multipart
-import retrofit2.http.POST
-import retrofit2.http.Part
+import retrofit2.http.*
 
 interface UsuarioApi {
+
     @Multipart
     @POST("usuarios/registro")
     suspend fun registrarUsuario(
@@ -30,4 +32,33 @@ interface UsuarioApi {
         @Part("numero_tarjeta") numeroTarjeta: RequestBody,
         @Part("fecha_expiracion") fechaExpiracion: RequestBody
     ): Response<UsuarioRegistroResponseDto>
+
+    @FormUrlEncoded
+    @POST("usuarios/login")
+    suspend fun loginUsuario(
+        @Field("identificador") identificador: String,
+        @Field("contrasena") contrasena: String
+    ): Response<LoginResponseDto>
+
+    /**
+     * Obtiene la pregunta de seguridad.
+     * Sincronizado con @router.post("/recuperar-contrasena") en Python.
+     */
+    @FormUrlEncoded
+    @POST("usuarios/recuperar-contrasena")
+    suspend fun obtenerPregunta(
+        @Field("identificador") identificador: String
+    ): Response<PreguntaResponseDto>
+
+    /**
+     * Restablece la contraseña.
+     * Sincronizado con @router.post("/restablecer-contrasena") y Form(...) en Python.
+     */
+    @FormUrlEncoded
+    @POST("usuarios/restablecer-contrasena")
+    suspend fun restablecerContrasena(
+        @Field("identificador") identificador: String,
+        @Field("nueva_contrasena") nuevaContrasena: String,
+        @Field("respuesta_recuperacion") respuestaRecuperacion: String
+    ): Response<RecoveryResultDto>
 }
