@@ -18,8 +18,20 @@ import android.text.InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import android.util.Patterns
+import android.view.View
 
 import com.intelliworks.intellihome.databinding.ActivityRegisterBinding
+import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.launch
+import com.intelliworks.intellihome.data.api.RetrofitInstance
+import com.intelliworks.intellihome.data.api.CatalogosApi
+import com.intelliworks.intellihome.data.repository.CatalogosRepository
+import okhttp3.MediaType.Companion.toMediaType
+import android.widget.CheckBox
+import android.view.ViewGroup
+import android.widget.ArrayAdapter
+import okhttp3.RequestBody.Companion.asRequestBody
+import okhttp3.RequestBody.Companion.toRequestBody
 
 /**
  * Clase para la pantalla de registro de usuario.
@@ -32,6 +44,7 @@ class Register : AppCompatActivity() {
     // Variable para almacenar la URI de la imagen de usuario
     private var imagenUsuarioUri: android.net.Uri? = null
 
+    // Constantes
     companion object {
         // Constante para el código de solicitud de selección de imagen
         private const val REQUEST_CODE_PICK_IMAGE = 1001
@@ -72,10 +85,16 @@ class Register : AppCompatActivity() {
         }
     }
 
+    // Método onCreate de la actividad
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityRegisterBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        
+
+        // Instancias de API y repositorio
+        val catalogosApi = RetrofitInstance.retrofit.create(CatalogosApi::class.java)
+        val catalogosRepository = CatalogosRepository(catalogosApi)
 
         // Inicializar CheckBox de términos deshabilitado
         binding.cbTerminos.isEnabled = false
@@ -93,10 +112,10 @@ class Register : AppCompatActivity() {
 
         // Selección de imagen de usuario
         binding.imgUsuario.setOnClickListener {
-            val intent = android.content.Intent(android.content.Intent.ACTION_OPEN_DOCUMENT)
-            intent.addCategory(android.content.Intent.CATEGORY_OPENABLE)
+            val intent = Intent(Intent.ACTION_OPEN_DOCUMENT)
+            intent.addCategory(Intent.CATEGORY_OPENABLE)
             intent.type = "image/*"
-            intent.putExtra(android.content.Intent.EXTRA_MIME_TYPES, arrayOf("image/png", "image/jpg", "image/jpeg", "image/gif"))
+            intent.putExtra(Intent.EXTRA_MIME_TYPES, arrayOf("image/png", "image/jpg", "image/jpeg", "image/gif"))
             startActivityForResult(intent, REQUEST_CODE_PICK_IMAGE)
         }
 
@@ -151,6 +170,7 @@ class Register : AppCompatActivity() {
             binding.etFechaNacimiento.setText(formatoFecha.format(calendario.time))
         }
 
+        
         // Mostrar calendario al tocar el campo de fecha de nacimiento
         binding.etFechaNacimiento.apply {
             isFocusable = false
@@ -176,6 +196,7 @@ class Register : AppCompatActivity() {
             ).show()
         }
 
+
         // Mostrar selector al tocar el campo de fecha de vencimiento de la tarjeta
         binding.etFechaVencimiento.apply {
             isFocusable = false
@@ -194,13 +215,7 @@ class Register : AppCompatActivity() {
         }
 
 
-        // Obtener preguntas de recuperación y asignarlas al spinner
-        val preguntas = resources.getStringArray(R.array.preguntas_recuperacion)
-        val adapterPreguntas = android.widget.ArrayAdapter(this, android.R.layout.simple_spinner_dropdown_item, preguntas)
-        binding.spPregunta.adapter = adapterPreguntas
-
-
-        // Registrar usuario se guarda en la base de datos y se redirige al inicio de sesión
+        // Registrar usuario se guarda en la base de datos y se redirige al inicio de sesión (POST)
         binding.btnRegistrar.setOnClickListener {
             val username = binding.etUsername.text.toString()
             val password = binding.etContrasena.text.toString()
@@ -211,57 +226,123 @@ class Register : AppCompatActivity() {
             val telefono = binding.etTelefono.text.toString()
             val fechaNacimiento = binding.etFechaNacimiento.text.toString()
             val domicilio = binding.etDomicilio.text.toString()
-            val preguntaRecuperacionId = binding.spPregunta.selectedItemPosition + 1 // ID 1-based
+            val preguntaRecuperacionId = binding.spPregunta.selectedItemPosition + 1        // ID 1-based
             val respuestaRecuperacion = binding.etRespuesta.text.toString()
             val fingerprintEnabled = binding.cbHuellaDigital.isChecked
-            val intentosFallidos = 0
-            val estadoCuenta = "activo"
             val nombreTitular = binding.etTitularTarjeta.text.toString()
             val numeroEncriptado = binding.etNumeroTarjeta.text.toString()
             val fechaExpiracion = binding.etFechaVencimiento.text.toString()
-            val marca = "Mastercard"
-            val ultimos4 = if (numeroEncriptado.length >= 4) numeroEncriptado.takeLast(4) else "0000"
-            val imagenPerfil = imagenUsuarioUri?.toString() ?: ""
-            val rolId = 2
 
+            val llHobbies = findViewById<ViewGroup>(R.id.ll_hobbies)                    // Recolectar hobbies seleccionados
+            val hobbiesIds = (1 until llHobbies.childCount).mapNotNull { idx ->
+                val v = llHobbies.getChildAt(idx)
+                if (v is CheckBox && v.isChecked) v.tag?.toString()?.toIntOrNull() else null
+            }
+            val llCasa = findViewById<ViewGroup>(R.id.ll_casa_preferencia)              // Recolectar tipos de casa seleccionados
+            val tiposCasaIds = (1 until llCasa.childCount).mapNotNull { idx ->
+                val v = llCasa.getChildAt(idx)
+                if (v is CheckBox && v.isChecked) v.tag?.toString()?.toIntOrNull() else null
+            }
 
-            // Se valida si el usuario aceptó los términos y condiciones
+            // Validaciones básicas
             if (!binding.cbTerminos.isChecked) {
                 Toast.makeText(this, "Debes aceptar los términos y condiciones", Toast.LENGTH_LONG).show()
                 return@setOnClickListener
             }
-
-            // Se valida el formato de correo electrónico
             if (!Patterns.EMAIL_ADDRESS.matcher(correo).matches()) {
                 Toast.makeText(this, "Ingresa un correo electrónico válido", Toast.LENGTH_LONG).show()
                 return@setOnClickListener
             }
-
-            // Se valida que los campos del formulario no esten vacios
-            if (username.isEmpty() || password.isEmpty() || confirmPassword.isEmpty() || nombre.isEmpty() || apellidos.isEmpty() || correo.isEmpty() || telefono.isEmpty() || fechaNacimiento.isEmpty() || domicilio.isEmpty() || respuestaRecuperacion.isEmpty() || nombreTitular.isEmpty() || numeroEncriptado.isEmpty() || fechaExpiracion.isEmpty()) {
+            if (username.isEmpty() || password.isEmpty() || confirmPassword.isEmpty() || nombre.isEmpty() || apellidos.isEmpty() || correo.isEmpty() || telefono.isEmpty() || fechaNacimiento.isEmpty() || domicilio.isEmpty() || respuestaRecuperacion.isEmpty() || nombreTitular.isEmpty() || numeroEncriptado.isEmpty() || fechaExpiracion.isEmpty() || hobbiesIds.isEmpty() || tiposCasaIds.isEmpty()) {
                 Toast.makeText(this, "Favor llenar todos los campos", Toast.LENGTH_LONG).show()
                 return@setOnClickListener
             }
-
-            // Se valida que la contraseña y confirmar contraseña sean iguales
             if (password != confirmPassword) {
                 Toast.makeText(this, "Las contraseñas no coinciden", Toast.LENGTH_LONG).show()
                 return@setOnClickListener
             }
 
-            // Se valida si se marcó la casilla de huella digital, sino se registra el usuario sin huella
+            // Imagen de perfil
+            val uri = imagenUsuarioUri
+            if (uri == null) {
+                Toast.makeText(this, "Selecciona una imagen de perfil", Toast.LENGTH_LONG).show()
+                return@setOnClickListener
+            }
+            val archivoTemp = crearArchivoTemp(uri)
+            if (archivoTemp == null) {
+                Toast.makeText(this, "Error al procesar la imagen", Toast.LENGTH_LONG).show()
+                return@setOnClickListener
+            }
+
+            // Preparar partes para multipart
+            val usuarioApi = RetrofitInstance.retrofit.create(com.intelliworks.intellihome.data.api.UsuarioApi::class.java)
+            val usuarioRepo = com.intelliworks.intellihome.data.repository.UsuarioRepository(usuarioApi)
+
+            // MediaType con charset UTF-8 para manejar caracteres especiales
+            val textPlainUtf8 = "text/plain; charset=utf-8".toMediaType()
+            
+            val nombreRB = nombre.toRequestBody(textPlainUtf8)
+            val apellidosRB = apellidos.toRequestBody(textPlainUtf8)
+            val usernameRB = username.toRequestBody(textPlainUtf8)
+            val correoRB = correo.toRequestBody(textPlainUtf8)
+            val telefonoRB = telefono.toRequestBody(textPlainUtf8)
+            val fechaNacimientoRB = fechaNacimiento.toRequestBody(textPlainUtf8)
+            val domicilioRB = domicilio.toRequestBody(textPlainUtf8)
+            val contrasenaRB = password.toRequestBody(textPlainUtf8)
+            val hobbiesIdsRB = hobbiesIds.joinToString(",").toRequestBody(textPlainUtf8)
+            val tiposCasaIdsRB = tiposCasaIds.joinToString(",").toRequestBody(textPlainUtf8)
+            val preguntaRecuperacionIdRB = preguntaRecuperacionId.toString().toRequestBody(textPlainUtf8)
+            val respuestaRecuperacionRB = respuestaRecuperacion.toRequestBody(textPlainUtf8)
+            val permitirHuellaRB = (if (fingerprintEnabled) "1" else "0").toRequestBody(textPlainUtf8)
+            val nombreTitularRB = nombreTitular.toRequestBody(textPlainUtf8)
+            val numeroTarjetaRB = numeroEncriptado.toRequestBody(textPlainUtf8)
+            val fechaExpiracionRB = fechaExpiracion.toRequestBody(textPlainUtf8)
+
+            // Sanitizar el nombre del archivo para evitar errores por caracteres especiales
+            val nombreArchivoSeguro = archivoTemp.name.replace(Regex("[^A-Za-z0-9._-]"), "_")
+            val imagenPerfilPart = okhttp3.MultipartBody.Part.createFormData(
+                "imagen_perfil",
+                nombreArchivoSeguro,
+                archivoTemp.asRequestBody("image/*".toMediaType())
+            )
+
+            fun realizarRegistro() {
+                lifecycleScope.launch {
+                    try {
+                        val response = usuarioRepo.registrarUsuario(
+                            nombreRB, apellidosRB, usernameRB, correoRB, telefonoRB, fechaNacimientoRB, domicilioRB, contrasenaRB,
+                            imagenPerfilPart, hobbiesIdsRB, tiposCasaIdsRB, preguntaRecuperacionIdRB, respuestaRecuperacionRB, permitirHuellaRB,
+                            nombreTitularRB, numeroTarjetaRB, fechaExpiracionRB
+                        )
+                        if (response.isSuccessful) {
+                            val body = response.body()
+                            if (body?.errores.isNullOrEmpty()) {
+                                Toast.makeText(this@Register, body?.mensaje ?: "Registro exitoso", Toast.LENGTH_LONG).show()
+                                startActivity(Intent(this@Register, Login::class.java))
+                                finish()
+                            } else {
+                                Toast.makeText(this@Register, body.errores.joinToString("\n"), Toast.LENGTH_LONG).show()
+                            }
+                        } else {
+                            Toast.makeText(this@Register, "Error en el registro: ${response.code()}", Toast.LENGTH_LONG).show()
+                        }
+                    } catch (e: Exception) {
+                        Toast.makeText(this@Register, "Error: ${e.localizedMessage}", Toast.LENGTH_LONG).show()
+                    }
+                }
+            } 
+
             if (binding.cbHuellaDigital.isChecked) {
                 if (canUseBiometric()) {
                     showBiometricPrompt {
-                        registerUser(rolId, imagenPerfil, nombre, apellidos, correo, username, password, telefono, fechaNacimiento, domicilio, preguntaRecuperacionId, respuestaRecuperacion, fingerprintEnabled, intentosFallidos, estadoCuenta, nombreTitular, numeroEncriptado, fechaExpiracion, marca, ultimos4)
+                        realizarRegistro()
                     }
                 } else {
                     Toast.makeText(this, "Huella digital no disponible en este dispositivo", Toast.LENGTH_LONG).show()
-                    registerUser(rolId, imagenPerfil, nombre, apellidos, correo, username, password, telefono, fechaNacimiento, domicilio, preguntaRecuperacionId, respuestaRecuperacion, false, intentosFallidos, estadoCuenta, nombreTitular, numeroEncriptado, fechaExpiracion, marca, ultimos4)
                 }
             } else {
-                registerUser(rolId, imagenPerfil, nombre, apellidos, correo, username, password, telefono, fechaNacimiento, domicilio, preguntaRecuperacionId, respuestaRecuperacion, false, intentosFallidos, estadoCuenta, nombreTitular, numeroEncriptado, fechaExpiracion, marca, ultimos4)
-            }
+                realizarRegistro()
+            } 
         }
 
 
@@ -272,8 +353,69 @@ class Register : AppCompatActivity() {
             finish()
         }
 
-    }
 
+        // Poblar hobbies dinámicamente (GET)
+        lifecycleScope.launch {
+            val response = catalogosRepository.getHobbies()
+            if (response.isSuccessful) {
+                val hobbies = response.body() ?: emptyList()
+                val llHobbies = findViewById<ViewGroup>(R.id.ll_hobbies)
+                // Elimina los hijos actuales excepto el TextView título
+                while (llHobbies.childCount > 1) llHobbies.removeViewAt(1)
+                hobbies.forEach { hobby ->
+                    val checkBox = CheckBox(this@Register)
+                    checkBox.id = View.generateViewId()
+                    checkBox.text = hobby.nombre
+                    checkBox.tag = hobby.id
+                    checkBox.textSize = 14f
+                    llHobbies.addView(checkBox)
+                }
+            } else {
+                Toast.makeText(this@Register, "Error al obtener hobbies", Toast.LENGTH_SHORT).show()
+            }
+        }
+
+        // Poblar tipos de casa dinámicamente (GET)
+        lifecycleScope.launch {
+            val response = catalogosRepository.getTiposCasa()
+            if (response.isSuccessful) {
+                val tiposCasa = response.body() ?: emptyList()
+                val llCasa = findViewById<ViewGroup>(R.id.ll_casa_preferencia)
+                // Elimina los hijos actuales excepto el TextView título
+                while (llCasa.childCount > 1) llCasa.removeViewAt(1)
+                tiposCasa.forEach { tipo ->
+                    val checkBox = CheckBox(this@Register)
+                    checkBox.id = View.generateViewId()
+                    checkBox.text = tipo.nombre
+                    checkBox.tag = tipo.id
+                    checkBox.textSize = 14f
+                    llCasa.addView(checkBox)
+                }
+            } else {
+                Toast.makeText(this@Register, "Error al obtener tipos de casa", Toast.LENGTH_SHORT).show()
+            }
+        }
+
+        // Poblar preguntas de recuperación en el Spinner (GET)
+        lifecycleScope.launch {
+            val response = catalogosRepository.getPreguntasRecuperacion()
+            if (response.isSuccessful) {
+                val preguntas = response.body() ?: emptyList()
+                val textos = preguntas.filterNotNull().map { it.texto }
+                if (textos.isNotEmpty()) {
+                    val adapter = ArrayAdapter(this@Register, android.R.layout.simple_spinner_dropdown_item, textos)
+                    binding.spPregunta.adapter = adapter
+                    binding.spPregunta.isEnabled = true
+                } else {
+                    Toast.makeText(this@Register, "No hay preguntas de recuperación disponibles", Toast.LENGTH_SHORT).show()
+                    binding.spPregunta.isEnabled = false
+                }
+                // Puedes guardar los IDs en una variable si necesitas saber cuál seleccionó el usuario
+            } else {
+                Toast.makeText(this@Register, "Error al obtener preguntas de recuperación", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
 
     // Selector de mes/año para fecha de vencimiento de la tarjeta
     fun selectorMesAnio(onDateSelected: (month: Int, year: Int) -> Unit) {
@@ -339,7 +481,6 @@ class Register : AppCompatActivity() {
             .setSubtitle("Habilitar el inicio de sesión con huella digital")
             .setNegativeButtonText("Cancelar")
             .build()
-
         biometricPrompt.authenticate(promptInfo)
     }
 
@@ -384,23 +525,8 @@ class Register : AppCompatActivity() {
         }
     }
 
-    // Función para registrar el usuario en la base de datos
-    private fun registerUser(rolId: Int, imagenPerfil: String, nombre: String, apellidos: String, correo: String, username: String, password: String, telefono: String, fechaNacimiento: String, domicilio: String, preguntaRecuperacionId: Int, respuestaRecuperacion: String, fingerprintEnabled: Boolean, intentosFallidos: Int, estadoCuenta: String, nombreTitular: String, numeroEncriptado: String, fechaExpiracion: String, marca: String, ultimos4: String) {
-        // Se llama a la función insertUser del DatabaseHelper para insertar el usuario en la base de datos
-        val result = databaseHelper.insertUser(rolId, imagenPerfil, nombre, apellidos, correo, username, password, telefono, fechaNacimiento, domicilio, preguntaRecuperacionId, respuestaRecuperacion, fingerprintEnabled, intentosFallidos, estadoCuenta, nombreTitular, numeroEncriptado, fechaExpiracion, marca, ultimos4)
-
-        // Si el registro fue exitoso, se redirige al inicio de sesión, sino se muestra un mensaje de error
-        if (result != -1L) {
-            Toast.makeText(this, "Registro exitoso", Toast.LENGTH_LONG).show()
-            startActivity(Intent(this, Login::class.java))
-            finish()
-        } else {
-            Toast.makeText(this, "El registro falló", Toast.LENGTH_LONG).show()
-        }
-    }
-
     // Manejar el resultado de la selección de imagen
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: android.content.Intent?) {
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
 
         // Si el usuario seleccionó una imagen, se guarda su URI en la variable
@@ -422,7 +548,7 @@ class Register : AppCompatActivity() {
                 }
 
                 // Persiste permisos de lectura
-                contentResolver.takePersistableUriPermission(uri, android.content.Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                contentResolver.takePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION)
                 imagenUsuarioUri = uri
                 binding.imgUsuario.setImageURI(uri)
 

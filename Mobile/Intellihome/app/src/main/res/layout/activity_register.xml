@@ -379,36 +379,6 @@
                     android:textSize="16sp"
                     android:textStyle="bold"
                     android:layout_marginBottom="8dp" />
-                <CheckBox
-                    android:id="@+id/hobby_tv"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Ver TV"
-                    android:textSize="14sp" />
-                <CheckBox
-                    android:id="@+id/hobby_hiking"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Hiking (senderismo)"
-                    android:textSize="14sp"/>
-                <CheckBox
-                    android:id="@+id/hobby_boardgames"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Juegos de mesa"
-                    android:textSize="14sp" />
-                <CheckBox
-                    android:id="@+id/hobby_snorkel"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Esnórquel"
-                    android:textSize="14sp" />
-                <CheckBox
-                    android:id="@+id/hobby_sports"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Deportes"
-                    android:textSize="14sp" />
             </LinearLayout>
 
             <!-- Domicilio -->
@@ -460,24 +430,6 @@
                     android:textSize="16sp"
                     android:textStyle="bold"
                     android:layout_marginBottom="8dp" />
-                <CheckBox
-                    android:id="@+id/casa_minimalista"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Minimalista"
-                    android:textSize="14sp" />
-                <CheckBox
-                    android:id="@+id/casa_aventurera"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Aventurera"
-                    android:textSize="14sp" />
-                <CheckBox
-                    android:id="@+id/casa_contemporanea"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Contemporanea"
-                    android:textSize="14sp" />
             </LinearLayout>
 
             <!-- Datos de tarjeta de pago -->
