@@ -61,7 +61,7 @@ class Usuario_Servicio:
         usuario = None
         try:
             Usuario_Servicio._validar_unicidad(db, correo, username, telefono, errores)
-            Usuario_Servicio._validar_contrasena_registro(contraseña, errores)
+            Usuario_Servicio._validar_contrasena_registro(contrasena, errores)
             Usuario_Servicio._validar_nombres_obscenos(nombre, apellidos, username, errores)
             Usuario_Servicio._validar_telefono_registro(telefono, errores)
             hobbies = Usuario_Servicio._validar_hobbies(db, hobbies_ids, errores)
@@ -136,7 +136,7 @@ class Usuario_Servicio:
                 errores['cuenta'] = 'La cuenta está bloqueada. Contacte al administrador.'
                 return {'errores': errores}
             
-            validacion_contrasena = Usuario_Servicio._validar_contraseña_login(contrasena, usuario.contraseña)
+            validacion_contrasena = Usuario_Servicio._validar_contrasena_login(contrasena, usuario.contrasena)
 
             # validar si la contraseña es correcta
             if not validacion_contrasena:
@@ -146,7 +146,7 @@ class Usuario_Servicio:
                 if usuario.intentos_fallidos >= 3:
                     usuario.estado_cuenta = 'bloqueado'
                 db.commit()
-                errores['contraseña'] = 'Contraseña incorrecta.'
+                errores['contrasena'] = 'Contraseña incorrecta.'
 
                 return {'errores': errores}
             
@@ -223,13 +223,13 @@ class Usuario_Servicio:
                 return {'errores': errores}
             
             # Validar nueva contraseña
-            Usuario_Servicio._validar_contraseña_registro(nueva_contrasena, errores)
+            Usuario_Servicio._validar_contrasena_registro(nueva_contrasena, errores)
             if errores:
                 return {'errores': errores}
             
             # Se encripta la nueva contraseña y se actualiza
             hashed_password = Usuario_Servicio.pwd_context.hash(nueva_contrasena)
-            usuario.contraseña = hashed_password
+            usuario.contrasena = hashed_password
 
             # Resetear intentos fallidos y estado de cuenta
             usuario.intentos_fallidos = 0
@@ -414,13 +414,13 @@ class Usuario_Servicio:
 
     # Validación de contraseña
     @staticmethod
-    def _validar_contraseña_login(contraseña_plana: str, contraseña_hash: str) -> bool:
+    def _validar_contrasena_login(contrasena_plana: str, contrasena_hash: str) -> bool:
         """
         Verifica si la contraseña plana coincide con el hash almacenado.
         """
 
         # Se encripta la contraseña plana y se compara con el hash almacenado        
-        validacion = Usuario_Servicio.pwd_context.verify(contraseña_plana, contraseña_hash)
+        validacion = Usuario_Servicio.pwd_context.verify(contrasena_plana, contrasena_hash)
 
         return validacion
 

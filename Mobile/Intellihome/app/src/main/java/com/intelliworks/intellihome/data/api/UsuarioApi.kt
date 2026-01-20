@@ -30,7 +30,8 @@ interface UsuarioApi {
         @Part("permitir_huella") permitirHuella: RequestBody,
         @Part("nombre_titular") nombreTitular: RequestBody,
         @Part("numero_tarjeta") numeroTarjeta: RequestBody,
-        @Part("fecha_expiracion") fechaExpiracion: RequestBody
+        @Part("fecha_expiracion") fechaExpiracion: RequestBody,
+        @Part("token_publico") tokenPublico: RequestBody
     ): Response<UsuarioRegistroResponseDto>
 
     @FormUrlEncoded
