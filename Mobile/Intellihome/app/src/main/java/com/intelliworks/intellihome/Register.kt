@@ -40,7 +40,6 @@ import okhttp3.RequestBody.Companion.toRequestBody
 class Register : BaseActivity() {
 
     private lateinit var binding: ActivityRegisterBinding
-    private lateinit var databaseHelper: DatabaseHelper
 
     // Variable para almacenar la URI de la imagen de usuario
     private var imagenUsuarioUri: android.net.Uri? = null
@@ -110,10 +109,6 @@ class Register : BaseActivity() {
         binding.tvVerTerminos.setOnClickListener {
             mostrarDialogoTerminos()
         }
-
-
-        // Base de datos de prueba
-        databaseHelper = DatabaseHelper(this)
 
 
         // Selección de imagen de usuario
