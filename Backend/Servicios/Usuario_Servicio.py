@@ -360,39 +360,6 @@ class Usuario_Servicio:
             except Exception:
                 errores['fecha_expiracion'] = 'La fecha de expiración no es válida.'
     
-    # Validación de teléfono (login)
-    @staticmethod
-    def _validar_telefono_login(db, telefono, errores):
-        """
-        Verifica si el teléfono existe en la base de datos de usuarios.
-        Si no existe, agrega un error en el diccionario de errores.
-        """
-        usuario = db.query(Usuario).filter(Usuario.telefono == str(telefono)).first()
-        if not usuario:
-            errores['telefono'] = 'El número de teléfono no está asociado a ningún usuario.'
-    
-    # validación de correo electrónico (login)
-    @staticmethod
-    def _validar_correo_login(db, correo, errores):
-        """
-        Verifica si el correo electrónico existe en la base de datos de usuarios.
-        Si no existe, agrega un error en el diccionario de errores.
-        """
-        usuario = db.query(Usuario).filter(Usuario.correo == correo).first()
-        if not usuario:
-            errores['correo'] = 'El correo electrónico no está asociado a ningún usuario.'
-    
-    #validación de nombre de usuario (login)
-    @staticmethod
-    def _validar_usuario_login(db, nombre_usuario, errores):
-        """
-        Verifica si el nombre de usuario existe en la base de datos de usuarios.
-        Si no existe, agrega un error en el diccionario de errores.
-        """
-        usuario = db.query(Usuario).filter(Usuario.username == nombre_usuario).first()
-        if not usuario:
-            errores['Nombre_usuario'] = 'El nombre de usuario no está asociado a ningún usuario.'
-
     #validación de identificador (correo, telefono o nombre de usuario)  (login)
     @staticmethod
     def _validar_identificador(db, identificador, errores):
