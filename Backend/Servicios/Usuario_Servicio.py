@@ -124,7 +124,7 @@ class Usuario_Servicio:
 
         try:
             # Buscar usuario por nombre de usuario, correo o teléfono
-            usuario = Usuario_Servicio._validar_identificador_login(db, identificador, errores)
+            usuario = Usuario_Servicio._validar_identificador(db, identificador, errores)
             
             if errores:
                 return {'errores': errores}
@@ -161,6 +161,36 @@ class Usuario_Servicio:
                 "apellidos": usuario.apellidos,
                 "rol_id": usuario.rol_id,
                 "estado_cuenta": usuario.estado_cuenta
+            }
+        except Exception as e:
+            db.rollback()
+            return {'errores': {'internal': f'Error interno: {str(e)}'}}
+        finally:
+            db.close()
+
+    # Obtención de la pregunta de recuperación de contraseña
+    @staticmethod
+    def obtener_pregunta_recuperacion(db: Session, identificador: str):
+        """
+        Permite obtener la pregunta de recuperación de contraseña usando nombre de usuario, correo o teléfono.
+        """
+        errores = {}
+        usuario = None
+
+        try:
+            # Buscar usuario por nombre de usuario, correo o teléfono
+            usuario = Usuario_Servicio._validar_identificador(db, identificador, errores)
+            
+            if errores:
+                return {'errores': errores}
+
+            #Se obtiene la información de la pregunta de recuperación asociada al usuario
+            PreguntaRecuperacion_inf = db.query(PreguntaRecuperacion).filter_by(id=usuario.pregunta_recuperacion_id).first()
+            
+            return {
+                "identificador": identificador,
+                "pregunta_id": PreguntaRecuperacion_inf.id,
+                "pregunta": PreguntaRecuperacion_inf.texto
             }
         except Exception as e:
             db.rollback()
@@ -321,7 +351,7 @@ class Usuario_Servicio:
 
     #validación de identificador (correo, telefono o nombre de usuario)  (login)
     @staticmethod
-    def _validar_identificador_login(db, identificador, errores):
+    def _validar_identificador(db, identificador, errores):
         """
         Verifica si el identificador (correo, teléfono o nombre de usuario) existe en la base de datos de usuarios.
         Si no existe, agrega un error en el diccionario de errores.
@@ -400,3 +430,4 @@ class Usuario_Servicio:
                 buffer.write(imagen_perfil.file.read())
             return imagen_path
         return None
+    

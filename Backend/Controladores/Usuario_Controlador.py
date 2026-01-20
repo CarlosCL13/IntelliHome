@@ -65,3 +65,13 @@ def login_usuario(
     if "errores" in resultado:
         raise HTTPException(status_code=401, detail=resultado["errores"])
     return resultado
+
+@router.post("/recuperar-contrasena")
+def recuperar_contrasena(
+    identificador: str = Form(...),
+    db: Session = Depends(get_db)
+    ):
+    resultado = Usuario_Servicio.obtener_pregunta_recuperacion(db=db, identificador=identificador)
+    if "errores" in resultado:
+        raise HTTPException(status_code=400, detail=resultado["errores"])
+    return resultado
