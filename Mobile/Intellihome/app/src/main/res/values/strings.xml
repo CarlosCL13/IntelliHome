@@ -1,0 +1,138 @@
+<resources>
+    <string name="app_name">IntelliHome</string>
+    <string name="settings_menu">Ajustes</string>
+    <string name="help">Ayuda</string>
+
+    <!-- Login -->
+    <string name="login">Iniciar sesión</string>
+    <string name="username_hint">Usuario, correo o teléfono</string>
+    <string name="password_hint">Contraseña</string>
+    <string name="login_failed">Inicio de sesión fallido</string>
+    <string name="enter_username_first">Ingrese el nombre de usuario primero</string>
+    <string name="fingerprint_not_enabled">La huella digital no está habilitada para este usuario</string>
+    <string name="authenticate_to_continue">Autentíquese para continuar</string>
+    <string name="rememberme">Recuérdame</string>
+    <string name="forgot_password">Olvidé mi contraseña</string>
+    <string name="biometric_success">Identidad confirmada</string>
+    <string name="error_biometric_no_data">Por favor, inicia sesión manualmente y selecciona "Recuérdame" para activar la huella.</string>
+
+    <string name="signup">¿No tienes una cuenta? Regístrate</string>
+    <string name="error_empty_fields">Por favor complete los campos</string>
+    <string name="error_invalid_credentials">Usuario o contraseña incorrectos</string>
+    <string name="error_network">Error de conexión con el servidor</string>
+    <string name="welcome_user">¡Bienvenido/a,</string>
+    <string name="biometric_title">Acceso Biométrico</string>
+    <string name="biometric_subtitle">Use su huella para continuar</string>
+    <string name="settings">Configuración</string>
+    <string name="fingerprint_login">Acceso con huella</string>
+    <string name="logo_desc">Logotipo de la aplicación</string>
+    <string name="logout">Cerrar sesión</string>
+
+    <!-- REGISTER -->
+    <string name="register_logo_desc">Logotipo de aplicación</string>
+    <string name="register_user_photo_desc">Foto de usuario</string>
+
+    <string name="register_name">Nombre:</string>
+    <string name="register_lastname">Apellidos:</string>
+    <string name="register_email">Correo:</string>
+    <string name="register_username">Nombre de usuario:</string>
+
+    <string name="register_password">Contraseña:</string>
+    <string name="register_password_hint">(min 8 caracteres)</string>
+    <string name="register_confirm_password">Confirmar contraseña:</string>
+
+    <string name="register_show_password">Mostrar u ocultar contraseña</string>
+
+    <string name="register_recovery_question">Pregunta de recuperación:</string>
+    <string name="register_select_question">Selecciona una pregunta</string>
+    <string name="register_answer">Respuesta</string>
+
+    <string name="register_phone">Teléfono:</string>
+
+    <string name="register_birthdate">Fecha de nacimiento:</string>
+    <string name="register_birthdate_hint">dd/mm/yyyy</string>
+    <string name="register_open_calendar">Abrir calendario</string>
+
+    <string name="register_hobbies">Hobbies:</string>
+    <string name="hobby_tv">Ver TV</string>
+    <string name="hobby_hiking">Hiking (senderismo)</string>
+    <string name="hobby_boardgames">Juegos de mesa</string>
+    <string name="hobby_snorkel">Esnórquel</string>
+    <string name="hobby_sports">Deportes</string>
+
+    <string name="register_address">Domicilio:</string>
+
+    <string name="register_house_preference">Casa de preferencia:</string>
+    <string name="house_minimalist">Minimalista</string>
+    <string name="house_adventurous">Aventurera</string>
+    <string name="house_contemporary">Contemporánea</string>
+
+    <string name="register_payment_data">Datos de tarjeta de pago:</string>
+    <string name="register_card_holder">Titular de tarjeta:</string>
+    <string name="register_card_number">Número de tarjeta:</string>
+    <string name="register_card_expiration">Fecha de vencimiento:</string>
+    <string name="register_card_expiration_hint">mm/yyyy</string>
+
+    <string name="register_fingerprint">Habilitar inicio de sesión con huella</string>
+
+    <string name="register_terms">Ver términos y condiciones</string>
+
+    <string name="register_button">Registrarme</string>
+    <string name="register_login_redirect">¿Ya estás registrado? Iniciar sesión</string>
+
+    <!-- SETTINGS -->
+    <string name="settings_title">Configuración</string>
+    <string name="settings_theme">Tema</string>
+    <string name="settings_dark_mode">Tema oscuro</string>
+    <string name="settings_background_color">Color del fondo</string>
+    <string name="settings_select_color">Seleccionar color</string>
+    <string name="settings_language">Idioma</string>
+
+    <string name="lang_spanish">Español</string>
+    <string name="lang_english">Inglés</string>
+
+    <!-- MAIN -->
+    <string name="main_title_account">DETALLES DE LA CUENTA</string>
+
+    <string name="label_user_id">ID de Usuario: %1$d</string>
+    <string name="label_username">Usuario: @%1$s</string>
+    <string name="label_email">Correo: %1$s</string>
+    <string name="label_phone">Teléfono: %1$s</string>
+    <string name="label_status">Estado: %1$s</string>
+    <string name="label_role">Rol: %1$s</string>
+
+    <string name="data_not_available">No disponible</string>
+
+    <string name="role_admin">Administrador</string>
+    <string name="role_user">Usuario Estándar</string>
+    <string name="role_tech">Técnico</string>
+    <string name="role_guest">Invitado</string>
+    <string name="select_color">Selecciona un color</string>
+    <!-- Recovery -->
+    <string name="recovery_title">Recuperar Contraseña</string>
+    <string name="recovery_user_hint">Usuario, correo o teléfono</string>
+    <string name="recovery_btn_find">Buscar Pregunta</string>
+    <string name="recovery_question_placeholder">Aquí aparecerá tu pregunta...</string>
+    <string name="recovery_answer_hint">Tu respuesta</string>
+    <string name="recovery_new_pass_hint">Nueva contraseña</string>
+    <string name="recovery_confirm_pass_hint">Confirmar nueva contraseña</string>
+    <string name="recovery_btn_update">Actualizar Contraseña</string>
+    <string name="error_password_regex">Debe tener al menos 8 caracteres, letras y números</string>
+    <string name="error_password_match">Las contraseñas no coinciden</string>
+    <string name="password_updated">Contraseña actualizada exitosamente</string>
+    <!-- Help -->
+    <string name="help_title">Guía de Registro IntelliHome</string>
+
+    <string name="help_content">
+        Sigue estos pasos para crear tu cuenta correctamente:\n\n
+        1. **Información Básica:** Ingresa tu nombre, apellidos y un correo electrónico válido.\n\n
+        2. **Imagen de Perfil:** Debes seleccionar una foto. Asegúrate de que pese menos de 1MB.\n\n
+        3. **Seguridad:** Crea un nombre de usuario único y una contraseña segura. No uses palabras ofensivas.\n\n
+        4. **Biometría:** Si tu teléfono lo permite, activa la huella digital para un acceso más rápido.\n\n
+        5. **Recuperación:** Selecciona una pregunta de seguridad. Esta será la única forma de recuperar tu cuenta si olvidas la clave.\n\n
+        6. **Preferencias:** Es obligatorio seleccionar tus tipos de vivienda y al menos un hobby para personalizar tu hogar inteligente.\n\n
+        7. **Método de Pago:** Registra tu tarjeta para la gestión automática de servicios.
+    </string>
+
+
+</resources>

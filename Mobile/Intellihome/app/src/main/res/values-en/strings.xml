@@ -1,0 +1,137 @@
+<resources>
+    <string name="app_name">IntelliHome</string>
+    <string name="settings_menu">Settings</string>
+    <string name="help">Help</string>
+
+    <!-- LOGIN -->
+    <string name="login">Login</string>
+    <string name="username_hint">Username, email or phone</string>
+    <string name="password_hint">Password</string>
+    <string name="login_failed">Login failed</string>
+    <string name="enter_username_first">Enter username first</string>
+    <string name="fingerprint_not_enabled">Fingerprint not enabled for this user</string>
+    <string name="authenticate_to_continue">Authenticate to continue</string>
+    <string name="rememberme">Remember me</string>
+    <string name="forgot_password">Forgot password</string>
+    <string name="biometric_success">Identity confirmed</string>
+    <string name="error_biometric_no_data">Please log in manually and select "Remember Me" to enable fingerprint login.</string>
+
+    <string name="signup">Don\'t have an account? Sign up</string>
+    <string name="error_empty_fields">Please fill in all fields</string>
+    <string name="error_invalid_credentials">Invalid username or password</string>
+    <string name="error_network">Server connection error</string>
+    <string name="welcome_user">Welcome,</string>
+    <string name="biometric_title">Biometric Access</string>
+    <string name="biometric_subtitle">Use your fingerprint to continue</string>
+    <string name="settings">Settings</string>
+    <string name="fingerprint_login">Fingerprint login</string>
+    <string name="logo_desc">Application logo</string>
+
+    <!-- REGISTER -->
+    <string name="register_logo_desc">App logo</string>
+    <string name="register_user_photo_desc">User photo</string>
+    <string name="logout">Log out</string>
+
+
+    <string name="register_name">Name:</string>
+    <string name="register_lastname">Last name:</string>
+    <string name="register_email">Email:</string>
+    <string name="register_username">Username:</string>
+
+    <string name="register_password">Password:</string>
+    <string name="register_password_hint">(min 8 characters)</string>
+    <string name="register_confirm_password">Confirm password:</string>
+
+    <string name="register_show_password">Show or hide password</string>
+
+    <string name="register_recovery_question">Recovery question:</string>
+    <string name="register_select_question">Select a question</string>
+    <string name="register_answer">Answer</string>
+
+    <string name="register_phone">Phone:</string>
+
+    <string name="register_birthdate">Birth date:</string>
+    <string name="register_birthdate_hint">dd/mm/yyyy</string>
+    <string name="register_open_calendar">Open calendar</string>
+
+    <string name="register_hobbies">Hobbies:</string>
+    <string name="hobby_tv">Watch TV</string>
+    <string name="hobby_hiking">Hiking</string>
+    <string name="hobby_boardgames">Board games</string>
+    <string name="hobby_snorkel">Snorkeling</string>
+    <string name="hobby_sports">Sports</string>
+
+    <string name="register_address">Address:</string>
+
+    <string name="register_house_preference">Preferred house:</string>
+    <string name="house_minimalist">Minimalist</string>
+    <string name="house_adventurous">Adventurous</string>
+    <string name="house_contemporary">Contemporary</string>
+
+    <string name="register_payment_data">Payment card details:</string>
+    <string name="register_card_holder">Card holder:</string>
+    <string name="register_card_number">Card number:</string>
+    <string name="register_card_expiration">Expiration date:</string>
+    <string name="register_card_expiration_hint">mm/yyyy</string>
+
+    <string name="register_fingerprint">Enable fingerprint login</string>
+
+    <string name="register_terms">View terms and conditions</string>
+
+    <string name="register_button">Sign up</string>
+    <string name="register_login_redirect">Already registered? Log in</string>
+
+    <!-- SETTINGS -->
+    <string name="settings_title">Settings</string>
+    <string name="settings_theme">Theme</string>
+    <string name="settings_dark_mode">Dark mode</string>
+    <string name="settings_background_color">Background color</string>
+    <string name="settings_select_color">Select color</string>
+    <string name="settings_language">Language</string>
+
+    <string name="lang_spanish">Spanish</string>
+    <string name="lang_english">English</string>
+
+    <!-- MAIN -->
+    <string name="main_title_account">ACCOUNT DETAILS</string>
+    <string name="label_user_id">User ID: %1$d</string>
+    <string name="label_username">Username: @%1$s</string>
+    <string name="label_email">Email: %1$s</string>
+    <string name="label_phone">Phone: %1$s</string>
+    <string name="label_status">Status: %1$s</string>
+    <string name="label_role">Role: %1$s</string>
+
+    <string name="data_not_available">N/A</string>
+
+    <string name="role_admin">Administrator</string>
+    <string name="role_user">Standard User</string>
+    <string name="role_tech">Technician</string>
+    <string name="role_guest">Guest</string>
+    <string name="select_color">Select a color</string>
+
+    <!-- Recovery -->
+    <string name="recovery_title">Reset Password</string>
+    <string name="recovery_user_hint">Username, email or phone</string>
+    <string name="recovery_btn_find">Find Question</string>
+    <string name="recovery_question_placeholder">Your question will appear here...</string>
+    <string name="recovery_answer_hint">Your answer</string>
+    <string name="recovery_new_pass_hint">New password</string>
+    <string name="recovery_confirm_pass_hint">Confirm new password</string>
+    <string name="recovery_btn_update">Update Password</string>
+    <string name="error_password_regex">Must be at least 8 characters, with letters and numbers</string>
+    <string name="error_password_match">Passwords do not match</string>
+    <string name="password_updated">Password updated successfully</string>
+    <!-- Help -->
+    <string name="help_title">IntelliHome Registration Guide</string>
+
+    <string name="help_content">
+        Follow these steps to create your account correctly:\n\n
+        1. **Basic Info:** Enter your first name, last name, and a valid email address.\n\n
+        2. **Profile Picture:** You must select a photo. Ensure it is smaller than 1MB.\n\n
+        3. **Security:** Create a unique username and a strong password. Avoid using offensive language.\n\n
+        4. **Biometrics:** If your phone supports it, enable fingerprint login for faster access.\n\n
+        5. **Recovery:** Select a security question. This will be the only way to recover your account if you forget your password.\n\n
+        6. **Preferences:** You must select your housing types and at least one hobby to personalize your smart home experience.\n\n
+        7. **Payment Method:** Register your card for automatic service management.
+    </string>
+</resources>
