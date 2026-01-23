@@ -15,3 +15,11 @@ class UsuarioHobby(db.Model):
     __tablename__ = 'usuario_hobbies'
     usuario_id = db.Column(db.Integer, db.ForeignKey('usuario.id'), primary_key=True)
     hobby_id = db.Column(db.Integer, db.ForeignKey('hobbies.id'), primary_key=True)
+
+class PropiedadHobby(db.Model):
+    """
+    Tabla de asociación entre propiedades y hobbies.
+    """
+    __tablename__ = 'propiedad_hobbies'
+    propiedad_id = db.Column(db.Integer, db.ForeignKey('propiedades.id'), primary_key=True)
+    hobby_id = db.Column(db.Integer, db.ForeignKey('hobbies.id'), primary_key=True)
