@@ -3,4 +3,17 @@
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
     <color name="green">#4fa853</color>
+
+    <!--  Light Control Colors  -->
+    <color name="light_on">#FFD700</color>
+    <!--  Amarillo dorado para luz encendida  -->
+    <color name="light_on_bright">#FFC107</color>
+    <!--  Amarillo más brillante  -->
+    <color name="light_off">#37474F</color>
+    <!--  Gris oscuro para luz apagada  -->
+    <color name="light_off_darker">#263238</color>
+    <!--  Gris más oscuro  -->
+    <color name="room_border">#455A64</color>
+    <!--  Borde de habitaciones  -->
+    <color name="exterior_light_on">#FFE082</color>
 </resources>
