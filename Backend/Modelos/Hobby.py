@@ -21,5 +21,5 @@ class PropiedadHobby(db.Model):
     Tabla de asociación entre propiedades y hobbies.
     """
     __tablename__ = 'propiedad_hobbies'
-    propiedad_id = db.Column(db.Integer, db.ForeignKey('propiedades.id'), primary_key=True)
+    propiedad_id = db.Column(db.Integer, db.ForeignKey('propiedad.id'), primary_key=True)
     hobby_id = db.Column(db.Integer, db.ForeignKey('hobbies.id'), primary_key=True)

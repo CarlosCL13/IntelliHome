@@ -25,6 +25,8 @@ from Modelos.Hobby import Hobby, UsuarioHobby
 from Modelos.TipoCasa import TipoCasa
 from Modelos.PreguntaRecuperacion import PreguntaRecuperacion
 from Modelos.UsuarioTipoCasa import UsuarioTipoCasa
+from Modelos.Propiedad import Propiedad
+from Modelos.FotoPropiedad import FotoPropiedad
 target_metadata = db.Model.metadata
 
 # other values from the config, defined by the needs of env.py,

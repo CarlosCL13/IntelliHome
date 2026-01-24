@@ -13,5 +13,5 @@ class PropiedadAmenidad(db.Model):
     Tabla intermedia para la relación muchas a muchas entre propiedades y amenidades.
     """
     __tablename__ = 'propiedad_amenidades'
-    propiedad_id = db.Column(db.Integer, db.ForeignKey('propiedad.id'), nullable=False)
-    amenidad_id = db.Column(db.Integer, db.ForeignKey('amenidades.id'), nullable=False)
+    propiedad_id = db.Column(db.Integer, db.ForeignKey('propiedad.id'), nullable=False, primary_key=True)
+    amenidad_id = db.Column(db.Integer, db.ForeignKey('amenidades.id'), nullable=False, primary_key=True)

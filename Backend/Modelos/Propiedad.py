@@ -4,10 +4,10 @@ class Propiedad(db.Model):
     """
     Tabla para las propiedades.
     """
-    __tablename__ = 'propiedades'
+    __tablename__ = 'propiedad'
     id = db.Column(db.Integer, primary_key=True)
     usuario_id = db.Column(db.Integer, db.ForeignKey('usuario.id'), nullable=False) # propietario id
-    tipo_casa_id = db.Column(db.Integer, db.ForeignKey('tipo_casa.id'), nullable=False)
+    tipo_casa_id = db.Column(db.Integer, db.ForeignKey('tipos_casa.id'), nullable=False)
     latitud = db.Column(db.Float, nullable=False)
     longitud = db.Column(db.Float, nullable=False)
     titulo_publicacion = db.Column(db.String(150), nullable=False)

@@ -6,6 +6,7 @@ from Modelos.Roles import Rol
 from Servicios.Usuario_Servicio import Usuario_Servicio
 from Controladores.Usuario_Controlador import router as usuario_router
 from Controladores.Catalogos_Controlador import router as catalogos_router
+from Controladores.Propiedad_Controlador import router as propiedad_router
 from fastapi.middleware.cors import CORSMiddleware
 from typing import Optional
 import uvicorn
@@ -35,6 +36,7 @@ def read_root():
 # Registrar el router modular de usuarios
 app.include_router(usuario_router)
 app.include_router(catalogos_router)
+app.include_router(propiedad_router)
 
 # Para correr: uvicorn app:app --reload
 if __name__ == "__main__":
