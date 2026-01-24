@@ -8,7 +8,8 @@ class Propiedad(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     usuario_id = db.Column(db.Integer, db.ForeignKey('usuario.id'), nullable=False) # propietario id
     tipo_casa_id = db.Column(db.Integer, db.ForeignKey('tipo_casa.id'), nullable=False)
-    coordenadas = db.Column(db.String(100), nullable=False) # Falta de definir el formato
+    latitud = db.Column(db.Float, nullable=False)
+    longitud = db.Column(db.Float, nullable=False)
     titulo_publicacion = db.Column(db.String(150), nullable=False)
     descripcion_publicacion = db.Column(db.Text, nullable=True)
     precio_noche = db.Column(db.Float, nullable=False)
