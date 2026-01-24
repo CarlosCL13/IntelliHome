@@ -134,4 +134,21 @@
         6. **Preferences:** You must select your housing types and at least one hobby to personalize your smart home experience.\n\n
         7. **Payment Method:** Register your card for automatic service management.
     </string>
+
+    <!--  Light Control  -->
+    <string name="light_control_title">Light Control</string>
+    <string name="btn_all_lights">All lights</string>
+    <string name="btn_turn_on_all_lights">Turn on lights</string>
+    <string name="btn_turn_off_all_lights">Turn off lights</string>
+    <string name="btn_toggle_all_lights">Turn On / Off</string>
+    <!--  Room names  -->
+    <string name="room_bathroom_1">Bathroom\n1</string>
+    <string name="room_bedroom_3">Bedroom\n3</string>
+    <string name="room_kitchen">Kitchen</string>
+    <string name="room_bedroom_2">Bedroom\n2</string>
+    <string name="room_bathroom_2">Bathroom\n2</string>
+    <string name="room_living_room">Living\nRoom</string>
+    <string name="room_bedroom_1">Bedroom\n1</string>
+    <string name="room_garage">Garage</string>
+
 </resources>
