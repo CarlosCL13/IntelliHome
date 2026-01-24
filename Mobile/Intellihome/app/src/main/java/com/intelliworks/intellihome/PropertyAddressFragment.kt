@@ -56,7 +56,7 @@ class PropertyAddressFragment : Fragment(R.layout.fragment_property_address), On
 
         // 1. Inicializar Places (¡Reemplaza con tu Key Real!)
         if (!Places.isInitialized()) {
-            Places.initialize(requireContext(), "AIzaSyBt8cN-5O3kQtcGIRD61VragAFNo58RqTc")
+            Places.initialize(requireContext(), "API_AQUI")
         }
 
         // 2. Cargar el Mapa
