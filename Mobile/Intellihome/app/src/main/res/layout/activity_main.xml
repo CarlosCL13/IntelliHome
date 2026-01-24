@@ -33,7 +33,7 @@
                     android:layout_width="100dp"
                     android:layout_height="100dp"
                     android:contentDescription="@string/app_name"
-                    android:src="@drawable/ic_user_placeholder" />
+                    android:src="@drawable/outline_arrow_menu_close_24" />
 
                 <TextView
                     android:id="@+id/txtNombre"
