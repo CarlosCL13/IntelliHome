@@ -11,7 +11,6 @@ import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
-import com.google.android.gms.common.api.Status
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
@@ -21,8 +20,6 @@ import com.google.android.libraries.places.api.Places
 import com.google.android.libraries.places.api.model.Place
 import com.google.android.libraries.places.widget.Autocomplete
 import com.google.android.libraries.places.widget.AutocompleteActivity
-import com.google.android.libraries.places.widget.AutocompleteSupportFragment
-import com.google.android.libraries.places.widget.listener.PlaceSelectionListener
 import com.google.android.libraries.places.widget.model.AutocompleteActivityMode
 import java.util.Locale
 
@@ -56,7 +53,7 @@ class PropertyAddressFragment : Fragment(R.layout.fragment_property_address), On
 
         // 1. Inicializar Places (¡Reemplaza con tu Key Real!)
         if (!Places.isInitialized()) {
-            Places.initialize(requireContext(), "API_AQUI")
+            Places.initialize(requireContext(), BuildConfig.MAPS_API_KEY)
         }
 
         // 2. Cargar el Mapa

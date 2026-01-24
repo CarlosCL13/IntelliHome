@@ -1,10 +1,6 @@
 package com.intelliworks.intellihome
 
 import android.os.Bundle
-import androidx.activity.enableEdgeToEdge
-import androidx.appcompat.app.AppCompatActivity
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
 import com.intelliworks.intellihome.databinding.ActivityAddPropertyBinding
 import com.intelliworks.intellihome.utils.BaseActivity
 

@@ -18,7 +18,7 @@
         android:theme="@style/Theme.Intellihome">
         <meta-data
             android:name="com.google.android.geo.API_KEY"
-            android:value="AIzaSyBt8cN-5O3kQtcGIRD61VragAFNo58RqTc" />
+            android:value="${MAPS_API_KEY}" />
         <activity
             android:name=".AddPropertyActivity"
             android:exported="false" />
