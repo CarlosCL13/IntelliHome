@@ -20,6 +20,11 @@ class MainActivity : BaseActivity() {
         enlace.btnCerrarSesion.setOnClickListener {
             cerrarSesion()
         }
+        enlace.btnAgregarPropiedad.setOnClickListener {
+            val intent = Intent(this, AddPropertyActivity::class.java)
+            startActivity(intent)
+        }
+
 
         // Recuperar datos del Intent (enviados desde Login)
         val datosUsuarioJson = intent.getStringExtra("user_data")

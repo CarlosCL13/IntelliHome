@@ -102,6 +102,8 @@
     <string name="label_role">Role: %1$s</string>
 
     <string name="data_not_available">N/A</string>
+    <string name="btn_add_property">Add property</string>
+
 
     <string name="role_admin">Administrator</string>
     <string name="role_user">Standard User</string>

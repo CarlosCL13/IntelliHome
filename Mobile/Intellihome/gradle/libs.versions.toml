@@ -12,6 +12,7 @@ biometric = "1.1.0"
 navigationFragmentKtx = "2.6.0"
 navigationUiKtx = "2.6.0"
 colorpickerview = "2.4.0"
+playServicesMaps = "20.0.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -26,6 +27,7 @@ androidx-biometric = { group = "androidx.biometric", name = "biometric", version
 androidx-navigation-fragment-ktx = { group = "androidx.navigation", name = "navigation-fragment-ktx", version.ref = "navigationFragmentKtx" }
 androidx-navigation-ui-ktx = { group = "androidx.navigation", name = "navigation-ui-ktx", version.ref = "navigationUiKtx" }
 colorpickerview = {module = "com.github.skydoves:colorpickerview", version.ref = "colorpickerview" }
+play-services-maps = { group = "com.google.android.gms", name = "play-services-maps", version.ref = "playServicesMaps" }
 
 
 [plugins]
