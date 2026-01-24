@@ -1,7 +1,7 @@
 from Modelos import db
-from Modelos.UsuarioTipoCasa import UsuarioTipoCasa  # <-- Agrega esta línea
-from Modelos.Hobby import Hobby  # <-- Agrega esta línea
-from Modelos.PreguntaRecuperacion import PreguntaRecuperacion  # <-- Ag
+from Modelos.UsuarioTipoCasa import UsuarioTipoCasa 
+from Modelos.Hobby import Hobby  
+from Modelos.PreguntaRecuperacion import PreguntaRecuperacion 
 
 class Usuario(db.Model):
     """
