@@ -1,5 +1,6 @@
 package com.intelliworks.intellihome
 
+import android.net.Uri
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.map
@@ -50,5 +51,31 @@ class AddPropertyViewModel : ViewModel() {
         }
         addSource(titulo) { validar() }
         addSource(precio) { validar() }
+    }
+
+    val comodidadesSeleccionadas = MutableLiveData<MutableSet<String>>(mutableSetOf())
+
+    fun toggleComodidad(comodidad: String) {
+        val actual = comodidadesSeleccionadas.value ?: mutableSetOf()
+        if (actual.contains(comodidad)) {
+            actual.remove(comodidad)
+        } else {
+            actual.add(comodidad)
+        }
+        // Forzamos la actualización del LiveData
+        comodidadesSeleccionadas.value = actual
+    }
+    // --- SECCIÓN FOTOS ---
+    val fotosSeleccionadas = MutableLiveData<List<Uri>>(emptyList())
+
+    fun agregarFotos(nuevasUris: List<Uri>) {
+        val actual = fotosSeleccionadas.value ?: emptyList()
+        // Sumamos las listas
+        fotosSeleccionadas.value = actual + nuevasUris
+    }
+
+    fun eliminarFoto(uri: Uri) {
+        val actual = fotosSeleccionadas.value ?: emptyList()
+        fotosSeleccionadas.value = actual - uri
     }
 }

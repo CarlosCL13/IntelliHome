@@ -53,8 +53,10 @@ class PropertyDetailsFragment : Fragment(R.layout.fragment_property_details) {
         }
 
         btnSiguiente.setOnClickListener {
-            // Navegar a la siguiente pantalla (Comodidades / Fotos)
-            // parentFragmentManager.beginTransaction().replace(R.id.fragmentContainer, PropertyAmenitiesFragment()).addToBackStack(null).commit()
+            parentFragmentManager.beginTransaction()
+                .replace(R.id.fragmentContainer, PropertyAmenitiesFragment())
+                .addToBackStack(null)
+                .commit()
         }
     }
 
@@ -94,4 +96,6 @@ class PropertyDetailsFragment : Fragment(R.layout.fragment_property_details) {
         override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
         override fun afterTextChanged(s: Editable?) {}
     }
+
+
 }

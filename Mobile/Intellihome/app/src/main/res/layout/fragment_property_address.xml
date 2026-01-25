@@ -71,15 +71,23 @@
             android:src="@drawable/ic_location_pin" />
     </androidx.cardview.widget.CardView>
 
+
     <com.google.android.material.button.MaterialButton
         android:id="@+id/btnSiguienteAddress"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginBottom="24dp"
-        android:text="Siguiente"
         android:enabled="false"
-        app:cornerRadius="0dp"
-        android:padding="16dp"
+        android:text="Siguiente"
+        android:fontFamily="@font/poppins_regular"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        android:textAllCaps="false"
+        android:paddingLeft="24dp"
+        android:paddingRight="24dp"
+        android:paddingTop="20dp"
+        android:paddingBottom="20dp"
+        app:cornerRadius="10dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 

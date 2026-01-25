@@ -207,7 +207,7 @@
         android:paddingRight="24dp"
         android:paddingTop="20dp"
         android:paddingBottom="20dp"
-        app:cornerRadius="0dp"
+        app:cornerRadius="10dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
