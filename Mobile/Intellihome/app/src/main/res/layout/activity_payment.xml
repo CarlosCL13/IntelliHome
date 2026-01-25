@@ -11,9 +11,8 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:padding="16dp">
-        
 
-        <!-- Payment Method Switch -->
+        <!-- Título de sección de pago -->
         <TextView
             android:id="@+id/tv_titulo_alquilar"
             android:layout_width="0dp"
@@ -34,7 +33,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginTop="50dp"
-            android:checked="true"
+            android:checked="false"
             android:text="@string/payment_saved_card_label"
             android:textColor="@android:color/black"
             android:textSize="16sp"
@@ -216,7 +215,7 @@
             app:barrierDirection="bottom"
             app:constraint_referenced_ids="contenedor_tajeta_guardada,contenedor_tarjeta_nueva" />
 
-        <!-- Pay Button -->
+        <!-- Botón de pago -->
         <Button
             android:id="@+id/btn_procesar_pago"
             android:layout_width="0dp"
