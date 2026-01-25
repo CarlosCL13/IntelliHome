@@ -10,6 +10,7 @@ from Modelos.Hobby import Hobby, PropiedadHobby
 from typing import Optional
 from Base_de_Datos.db_session import get_db
 import os
+import socket
 
 router = APIRouter(prefix="/propiedades", tags=["propiedades"])
 
@@ -66,6 +67,10 @@ def get_todas_propiedades(request: Request, db: Session = Depends(get_db)):
     propiedades = db.query(Propiedad).all()
     resultado = []
     base_url = str(request.base_url).rstrip('/')
+    # Reemplazar localhost o 127.0.0.1 por la IP local
+    if "localhost" in base_url or "127.0.0.1" in base_url:
+        ip = get_local_ip()
+        base_url = base_url.replace("localhost", ip).replace("127.0.0.1", ip)
     for prop in propiedades:
         # Obtener solo la primera foto
         foto = db.query(FotoPropiedad).filter(FotoPropiedad.propiedad_id == prop.id).first()
@@ -92,6 +97,9 @@ def get_propiedad_por_id(propiedad_id: int, request: Request, db: Session = Depe
     if not prop:
         raise HTTPException(status_code=404, detail="Propiedad no encontrada")
     base_url = str(request.base_url).rstrip('/')
+    if "localhost" in base_url or "127.0.0.1" in base_url:
+        ip = get_local_ip()
+        base_url = base_url.replace("localhost", ip).replace("127.0.0.1", ip)
     # Fotos
     fotos = db.query(FotoPropiedad).filter(FotoPropiedad.propiedad_id == prop.id).all()
     fotos_urls = []
@@ -113,6 +121,8 @@ def get_propiedad_por_id(propiedad_id: int, request: Request, db: Session = Depe
     resultado = {
         "id": prop.id,
         "usuario": usuario.nombre if usuario else None,
+        "usuario_nombre_completo": f"{usuario.nombre} {usuario.apellidos}".strip() if usuario and hasattr(usuario, 'nombre') and hasattr(usuario, 'apellidos') else None,
+        "usuario_telefono": usuario.telefono if usuario and hasattr(usuario, 'telefono') else None,
         "tipo_casa": tipo_casa.nombre if tipo_casa else None,
         "latitud": prop.latitud,
         "longitud": prop.longitud,
@@ -139,6 +149,9 @@ def get_propiedades_por_usuario(user_id: int, request: Request, db: Session = De
     propiedades = db.query(Propiedad).filter(Propiedad.usuario_id == user_id).all()
     resultado = []
     base_url = str(request.base_url).rstrip('/')
+    if "localhost" in base_url or "127.0.0.1" in base_url:
+        ip = get_local_ip()
+        base_url = base_url.replace("localhost", ip).replace("127.0.0.1", ip)
     for prop in propiedades:
         # Obtener solo la primera foto
         foto = db.query(FotoPropiedad).filter(FotoPropiedad.propiedad_id == prop.id).first()
@@ -157,3 +170,16 @@ def get_propiedades_por_usuario(user_id: int, request: Request, db: Session = De
             "imagen": foto_url
         })
     return resultado
+
+# Función para obtener la IP local de la máquina
+def get_local_ip():
+    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    try:
+        # No importa si no hay internet, solo queremos la IP local
+        s.connect(('10.255.255.255', 1))
+        ip = s.getsockname()[0]
+    except Exception:
+        ip = '127.0.0.1'
+    finally:
+        s.close()
+    return ip

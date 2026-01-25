@@ -14,4 +14,3 @@ class EstadoDispositivo(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     dispositivo_id = db.Column(db.Integer, db.ForeignKey('dispositivo.id'), nullable=False)
     estado = db.Column(db.String(20), nullable=False, default='apagado')
-    # Puedes agregar timestamp si quieres historial

@@ -28,6 +28,9 @@ class CasaServicio:
 
     @staticmethod
     def obtener_estado_leds(db, propiedad_id):
+        """
+        Devuelve el estado actual de todos los LEDs por habitación.
+        """
         dispositivos = db.query(Dispositivo).filter_by(tipo="led", propiedad_id=propiedad_id).all()
         resultado = {}
         for disp in dispositivos:

@@ -145,6 +145,9 @@ class Propiedad_Servicio:
     # Validar numero de huéspedes en la propiedad
     @staticmethod
     def _validar_huespedes(huespedes: int, errores: dict):
+        """
+        Verifica que el número de huéspedes sea mayor que cero.
+        """
         if huespedes <= 0:
             errores["huespedes"] = "El número de huéspedes debe ser mayor que cero."
 
@@ -215,6 +218,9 @@ class Propiedad_Servicio:
     # Crear luces predeterminadas para una propiedad
     @staticmethod
     def crear_luces_predeterminadas(db, propiedad_id):
+        """
+        Crea luces LED predeterminadas para una propiedad en habitaciones comunes.
+        """
         habitaciones = [
             "Sala",
             "Cocina",
