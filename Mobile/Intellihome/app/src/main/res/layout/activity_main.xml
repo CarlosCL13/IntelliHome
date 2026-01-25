@@ -33,7 +33,7 @@
                     android:layout_width="100dp"
                     android:layout_height="100dp"
                     android:contentDescription="@string/app_name"
-                    android:src="@drawable/outline_arrow_menu_close_24" />
+                    android:src="@drawable/ic_user_placeholder" />
 
                 <TextView
                     android:id="@+id/txtNombre"
@@ -73,26 +73,73 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:layout_marginBottom="8dp"
                     android:text="@string/main_title_account"
-                    android:textStyle="bold"
                     android:textColor="#2E7D32"
                     android:textSize="12sp"
-                    android:layout_marginBottom="8dp"/>
+                    android:textStyle="bold" />
 
-                <TextView android:id="@+id/txtUserId" android:layout_width="match_parent" android:layout_height="wrap_content" tools:text="ID: 1" android:padding="4dp" android:textSize="16sp"/>
-                <TextView android:id="@+id/txtCorreo" android:layout_width="match_parent" android:layout_height="wrap_content" tools:text="Email: user@example.com" android:padding="4dp" android:textSize="16sp"/>
-                <TextView android:id="@+id/txtTelefono" android:layout_width="match_parent" android:layout_height="wrap_content" tools:text="Phone: 000000" android:padding="4dp" android:textSize="16sp"/>
-                <TextView android:id="@+id/txtEstadoCuenta" android:layout_width="match_parent" android:layout_height="wrap_content" tools:text="Status: ACTIVE" android:padding="4dp" android:textSize="16sp" android:textStyle="bold"/>
-                <TextView android:id="@+id/txtRol" android:layout_width="match_parent" android:layout_height="wrap_content" tools:text="Role: Admin" android:padding="4dp" android:textSize="16sp"/>
+                <TextView
+                    android:id="@+id/txtUserId"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:padding="4dp"
+                    android:textSize="16sp"
+                    tools:text="ID: 1" />
+
+                <TextView
+                    android:id="@+id/txtCorreo"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:padding="4dp"
+                    android:textSize="16sp"
+                    tools:text="Email: user@example.com" />
+
+                <TextView
+                    android:id="@+id/txtTelefono"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:padding="4dp"
+                    android:textSize="16sp"
+                    tools:text="Phone: 000000" />
+
+                <TextView
+                    android:id="@+id/txtEstadoCuenta"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:padding="4dp"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    tools:text="Status: ACTIVE" />
+
+                <TextView
+                    android:id="@+id/txtRol"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:padding="4dp"
+                    android:textSize="16sp"
+                    tools:text="Role: Admin" />
 
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
+
+
+        <Button
+            android:id="@+id/btnAgregarPropiedad"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:text="@string/btn_add_property"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.0"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/cardInfo" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnCerrarSesion"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="52dp"
+            android:layout_marginTop="8dp"
             android:text="@string/logout"
             android:textAllCaps="false"
             android:textColor="@android:color/white"
@@ -101,7 +148,8 @@
             app:icon="@drawable/outline_arrow_menu_close_24"
             app:iconTint="@android:color/white"
             app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.0"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/cardInfo" />
+            app:layout_constraintTop_toBottomOf="@id/btnAgregarPropiedad" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 </ScrollView>
