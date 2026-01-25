@@ -1,9 +1,9 @@
-
 from fastapi import APIRouter, Depends, UploadFile, File, Form, HTTPException
 from sqlalchemy.orm import Session
 from Servicios.Usuario_Servicio import Usuario_Servicio
 from typing import Optional
 from Base_de_Datos.db_session import get_db
+from Modelos.Usuario import Usuario
 
 router = APIRouter(prefix="/usuarios", tags=["usuarios"])
 
@@ -109,3 +109,12 @@ def buscar_usuario_por_token(token_publico: str = Form(...), db: Session = Depen
     if 'errores' in resultado:
         raise HTTPException(status_code=404, detail=resultado['errores'])
     return resultado
+
+# Endpoint para obtener los últimos 4 dígitos de la tarjeta de un usuario por su user_id
+@router.get("/tarjeta/ultimos4/{user_id}", summary="Obtener los últimos 4 dígitos de la tarjeta de un usuario")
+def get_ultimos4_tarjeta(user_id: int, db: Session = Depends(get_db)):
+    usuario = db.query(Usuario).filter(Usuario.id == user_id).first()
+    if not usuario:
+        raise HTTPException(status_code=404, detail="Usuario no encontrado")
+    ultimos_4 = getattr(usuario, 'ultimos_4', None)
+    return {"user_id": user_id, "ultimos_4": ultimos_4}
