@@ -94,7 +94,5 @@ dependencies {
 
     implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.8.3")
     implementation("androidx.lifecycle:lifecycle-livedata-ktx:2.8.3")
-
-    // Dejo esta explícita porque la usabas, aunque libs.androidx.activity ya la incluye
-    implementation("androidx.activity:activity-ktx:1.9.0")
+    implementation("com.google.code.gson:gson:2.10.1")
 }

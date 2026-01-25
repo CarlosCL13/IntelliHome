@@ -21,7 +21,6 @@ class AddPropertyActivity : BaseActivity() {
         }
     }
 
-
     override fun onResume() {
         super.onResume()
         applyAppAppearance(binding.root)

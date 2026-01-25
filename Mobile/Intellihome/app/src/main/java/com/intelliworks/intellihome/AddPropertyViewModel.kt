@@ -6,13 +6,16 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.map
 
 class AddPropertyViewModel : ViewModel() {
+
+    // --- TIPO DE PROPIEDAD ---
     val tipoPropiedad = MutableLiveData<String>()
-
     val esTipoValido = tipoPropiedad.map { !it.isNullOrEmpty() }
-    // 1. Set para guardar múltiples actividades (evita duplicados)
-    val actividadesSeleccionadas = MutableLiveData<MutableSet<String>>(mutableSetOf())
 
-    // 2. Función para agregar o quitar actividades (Toggle)
+    // --- ACTIVIDADES ---
+    // Se utiliza un Set para evitar duplicados automáticamente al seleccionar/deseleccionar
+    val actividadesSeleccionadas = MutableLiveData<MutableSet<String>>(mutableSetOf())
+    val hayActividades = actividadesSeleccionadas.map { it.isNotEmpty() }
+
     fun toggleActividad(actividad: String) {
         val actual = actividadesSeleccionadas.value ?: mutableSetOf()
         if (actual.contains(actividad)) {
@@ -20,29 +23,26 @@ class AddPropertyViewModel : ViewModel() {
         } else {
             actual.add(actividad)
         }
-        actividadesSeleccionadas.value = actual // Notificar cambio
+        actividadesSeleccionadas.value = actual
     }
 
-    // 3. Validar si hay al menos una seleccionada (para habilitar el botón)
-    val hayActividades = actividadesSeleccionadas.map { it.isNotEmpty() }
-
-    // Datos de ubicación
+    // --- UBICACIÓN ---
     val direccionTexto = MutableLiveData<String>()
     val latitud = MutableLiveData<Double>()
     val longitud = MutableLiveData<Double>()
-
-    // El botón Siguiente se habilita si hay una dirección seleccionada
     val esDireccionValida = direccionTexto.map { !it.isNullOrEmpty() }
-    val titulo = MutableLiveData<String>("")
-    val precio = MutableLiveData<String>("") // String para manejar el input del EditText facil
 
-    // Contadores (Valores iniciales según mockup)
+    // --- DETALLES ---
+    val titulo = MutableLiveData<String>("")
+    val precio = MutableLiveData<String>("")
+
     val huespedes = MutableLiveData<Int>(4)
     val habitaciones = MutableLiveData<Int>(2)
     val camas = MutableLiveData<Int>(2)
     val banos = MutableLiveData<Int>(1)
 
-    // Validación: El botón siguiente se activa si hay título y precio
+    // MediatorLiveData observa cambios en título y precio para habilitar el botón "Siguiente"
+    // solo cuando ambos campos contienen texto.
     val sonDetallesValidos = androidx.lifecycle.MediatorLiveData<Boolean>().apply {
         fun validar() {
             val t = titulo.value
@@ -53,6 +53,7 @@ class AddPropertyViewModel : ViewModel() {
         addSource(precio) { validar() }
     }
 
+    // --- COMODIDADES ---
     val comodidadesSeleccionadas = MutableLiveData<MutableSet<String>>(mutableSetOf())
 
     fun toggleComodidad(comodidad: String) {
@@ -62,15 +63,14 @@ class AddPropertyViewModel : ViewModel() {
         } else {
             actual.add(comodidad)
         }
-        // Forzamos la actualización del LiveData
         comodidadesSeleccionadas.value = actual
     }
-    // --- SECCIÓN FOTOS ---
+
+    // --- FOTOS ---
     val fotosSeleccionadas = MutableLiveData<List<Uri>>(emptyList())
 
     fun agregarFotos(nuevasUris: List<Uri>) {
         val actual = fotosSeleccionadas.value ?: emptyList()
-        // Sumamos las listas
         fotosSeleccionadas.value = actual + nuevasUris
     }
 

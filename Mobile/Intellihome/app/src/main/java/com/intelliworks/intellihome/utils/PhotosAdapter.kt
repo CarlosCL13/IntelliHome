@@ -1,4 +1,4 @@
-package com.intelliworks.intellihome
+package com.intelliworks.intellihome.utils
 
 import android.net.Uri
 import android.view.LayoutInflater
@@ -7,6 +7,7 @@ import android.view.ViewGroup
 import android.widget.ImageButton
 import android.widget.ImageView
 import androidx.recyclerview.widget.RecyclerView
+import com.intelliworks.intellihome.R
 
 class PhotosAdapter(
     private val onDeleteClick: (Uri) -> Unit
@@ -36,7 +37,7 @@ class PhotosAdapter(
         private val btnRemove: ImageButton = itemView.findViewById(R.id.btnRemove)
 
         fun bind(uri: Uri) {
-            imgPhoto.setImageURI(uri) // Carga simple. Para producción usar Glide o Coil
+            imgPhoto.setImageURI(uri)
 
             btnRemove.setOnClickListener {
                 onDeleteClick(uri)

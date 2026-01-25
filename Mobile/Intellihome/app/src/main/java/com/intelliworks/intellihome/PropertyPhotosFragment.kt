@@ -15,21 +15,22 @@ import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.card.MaterialCardView
+import com.intelliworks.intellihome.data.repository.PropertyRepository
+import com.intelliworks.intellihome.utils.PhotosAdapter
+import com.intelliworks.intellihome.utils.Property
+import java.util.UUID
 
 class PropertyPhotosFragment : Fragment(R.layout.fragment_property_photos) {
 
     private val viewModel: AddPropertyViewModel by activityViewModels()
     private lateinit var adapter: PhotosAdapter
 
-    // Variables para manipular la UI
     private lateinit var txtContador: TextView
     private lateinit var btnTerminar: MaterialButton
 
-    // Constantes
     private val MAX_SIZE_BYTES = 1024 * 1024  // 1MB
     private val MAX_PHOTOS = 10
 
-    // Tipos permitidos
     private val ALLOWED_TYPES = listOf(
         "image/jpeg",
         "image/png",
@@ -37,8 +38,6 @@ class PropertyPhotosFragment : Fragment(R.layout.fragment_property_photos) {
         "image/svg+xml"
     )
 
-    // Lanzador del Selector de Fotos
-    // Nota: Configuramos el contrato con el límite máximo de fotos
     private val pickMultipleMedia = registerForActivityResult(
         ActivityResultContracts.PickMultipleVisualMedia(MAX_PHOTOS)
     ) { uris ->
@@ -50,59 +49,55 @@ class PropertyPhotosFragment : Fragment(R.layout.fragment_property_photos) {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // 1. Inicializar Vistas
         val recycler = view.findViewById<RecyclerView>(R.id.recyclerPhotos)
         val btnAddPhotos = view.findViewById<MaterialCardView>(R.id.btnAddPhotos)
         btnTerminar = view.findViewById(R.id.btnTerminar)
         txtContador = view.findViewById(R.id.txtRequisitos)
 
-        // 2. Configurar RecyclerView
         adapter = PhotosAdapter { uri -> viewModel.eliminarFoto(uri) }
         recycler.layoutManager = GridLayoutManager(requireContext(), 3)
         recycler.adapter = adapter
 
-        // 3. Observar cambios en la lista de fotos
         viewModel.fotosSeleccionadas.observe(viewLifecycleOwner) { lista ->
             adapter.submitList(lista)
 
-            // A) Activar/Desactivar botón Terminar
             val hayFotos = lista.isNotEmpty()
             btnTerminar.isEnabled = hayFotos
             btnTerminar.alpha = if (hayFotos) 1.0f else 0.5f
 
-            // B) Actualizar texto del contador (Ej: "Requisitos... \n (3/10)")
             val textoBase = getString(R.string.text_photo_requirements)
             txtContador.text = "$textoBase\n(${lista.size}/$MAX_PHOTOS)"
         }
 
-        // 4. Botón Agregar Fotos (Con validación de cupo ANTES de abrir galería)
+        // Validación de cupo máximo antes de abrir la galería
         btnAddPhotos.setOnClickListener {
             val cantidadActual = viewModel.fotosSeleccionadas.value?.size ?: 0
 
             if (cantidadActual >= MAX_PHOTOS) {
                 Toast.makeText(requireContext(), "Límite alcanzado (Máximo $MAX_PHOTOS fotos)", Toast.LENGTH_SHORT).show()
             } else {
-                // Solo abrimos la galería si hay espacio
                 pickMultipleMedia.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
             }
         }
 
-        // 5. Botón Terminar
         btnTerminar.setOnClickListener {
             finalizarPublicacion()
         }
     }
 
+    /**
+     * Filtra las imágenes seleccionadas basándose en el espacio disponible,
+     * el tipo de archivo (MIME) y el tamaño máximo permitido.
+     */
     private fun validarYAgregarFotos(uris: List<Uri>) {
-        // Cálculo de espacio disponible
         val fotosActuales = viewModel.fotosSeleccionadas.value ?: emptyList()
         val espacioDisponible = MAX_PHOTOS - fotosActuales.size
 
         if (espacioDisponible <= 0) return
 
-        // Si el usuario seleccionó más fotos de las que caben, cortamos la lista
+        // Recorte de lista si excede el límite
         val urisAProcesar = if (uris.size > espacioDisponible) {
-            Toast.makeText(requireContext(), "Solo se agregaron las primeras $espacioDisponible fotos para no exceder el límite.", Toast.LENGTH_LONG).show()
+            Toast.makeText(requireContext(), "Solo se agregaron las primeras $espacioDisponible fotos.", Toast.LENGTH_LONG).show()
             uris.take(espacioDisponible)
         } else {
             uris
@@ -111,7 +106,6 @@ class PropertyPhotosFragment : Fragment(R.layout.fragment_property_photos) {
         val fotosValidas = mutableListOf<Uri>()
         val errores = mutableListOf<String>()
 
-        // Validamos cada foto (Tipo y Peso)
         for (uri in urisAProcesar) {
             val validacion = verificarArchivo(uri)
             if (validacion.esValido) {
@@ -121,33 +115,32 @@ class PropertyPhotosFragment : Fragment(R.layout.fragment_property_photos) {
             }
         }
 
-        // 1. Agregar las que sí pasaron al ViewModel
         if (fotosValidas.isNotEmpty()) {
             viewModel.agregarFotos(fotosValidas)
         }
 
-        // 2. Mostrar errores si hubo alguno
         if (errores.isNotEmpty()) {
             val mensajeBase = getString(R.string.error_invalid_image)
-            // Si es un solo error mostramos detalle, si son muchos mostramos resumen
             val detalle = if (errores.size == 1) errores[0] else "${errores.size} archivos inválidos"
             Toast.makeText(requireContext(), "$mensajeBase: $detalle", Toast.LENGTH_LONG).show()
         }
     }
 
-    // Clase auxiliar simple para el resultado
     data class ResultadoValidacion(val esValido: Boolean, val mensajeError: String = "")
 
+    /**
+     * Verifica metadatos del archivo usando ContentResolver sin cargarlo en memoria.
+     */
     private fun verificarArchivo(uri: Uri): ResultadoValidacion {
         val contentResolver = requireContext().contentResolver
 
-        // A) Validar TIPO (MIME Type)
+        // Validación de MIME Type
         val type = contentResolver.getType(uri)
         if (type == null || !ALLOWED_TYPES.contains(type)) {
             return ResultadoValidacion(false, getString(R.string.error_format_not_allowed))
         }
 
-        // B) Validar TAMAÑO
+        // Validación de Tamaño (Size)
         val cursor = contentResolver.query(uri, null, null, null, null)
         cursor?.use {
             if (it.moveToFirst()) {
@@ -171,11 +164,9 @@ class PropertyPhotosFragment : Fragment(R.layout.fragment_property_photos) {
             return
         }
 
+        // Construcción del resumen para el diálogo de confirmación
         val resumen = StringBuilder()
-
-        // Resumen detallado usando Strings resources
         resumen.append("${getString(R.string.summary_type)} ${viewModel.tipoPropiedad.value ?: getString(R.string.text_not_defined)}\n\n")
-
         resumen.append("${getString(R.string.summary_title)} ${viewModel.titulo.value ?: getString(R.string.text_no_title)}\n")
         resumen.append("${getString(R.string.summary_price)} ${viewModel.precio.value ?: "0"}\n")
 
@@ -214,6 +205,33 @@ class PropertyPhotosFragment : Fragment(R.layout.fragment_property_photos) {
     }
 
     private fun enviarDatosReales() {
+        val titulo = viewModel.titulo.value ?: "Sin título"
+        val precio = viewModel.precio.value ?: "0"
+        val direccion = viewModel.direccionTexto.value ?: "Ubicación desconocida"
+        val tipo = viewModel.tipoPropiedad.value ?: "Casa"
+
+        val huespedes = viewModel.huespedes.value ?: 0
+        val habs = viewModel.habitaciones.value ?: 0
+        val capacidad = "$huespedes huéspedes • $habs habs"
+
+        val fotos = viewModel.fotosSeleccionadas.value
+        val fotoPortada = if (!fotos.isNullOrEmpty()) fotos[0].toString() else ""
+
+        // Creación del objeto DTO/Modelo para persistencia
+        val nuevaPropiedad = Property(
+            id = UUID.randomUUID().toString(),
+            titulo = titulo,
+            precio = precio,
+            direccion = direccion,
+            tipo = tipo,
+            capacidad = capacidad,
+            imagenUri = fotoPortada,
+            esMio = true
+        )
+
+        // Persistencia mediante repositorio (SharedPreferences/GSON)
+        PropertyRepository.saveProperty(requireContext(), nuevaPropiedad)
+
         Toast.makeText(requireContext(), getString(R.string.msg_publish_success), Toast.LENGTH_LONG).show()
         requireActivity().finish()
     }
