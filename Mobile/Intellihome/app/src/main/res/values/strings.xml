@@ -3,6 +3,21 @@
     <string name="logo_desc">Logo de la aplicación</string>
     <string name="data_not_available">N/A</string>
     <string name="welcome_user">Bienvenido/a,</string>
+    <string name="nav_explore">Explorar</string>
+    <string name="nav_rentals">Alquileres</string>
+    <string name="nav_profile">Perfil</string>
+
+    <string name="title_explore_properties">Explorar Alojamientos</string>
+    <string name="hint_search_destination">Buscar destino...</string>
+
+    <string name="title_rentals">Alojamientos Rentados</string>
+    <string name="text_no_rentals">No tienes reservas activas</string>
+
+    <string name="title_profile">Perfil</string>
+    <string name="text_loading_user">Cargando usuario...</string>
+    <string name="text_user_verified">Usuario verificado</string>
+    <string name="btn_add_new_rental">Añadir nuevo alquiler</string>
+    <string name="title_my_properties">Mis propiedades publicadas:</string>
 
     <string name="btn_next">Siguiente</string>
     <string name="btn_finish">Terminar y Publicar</string>
@@ -13,7 +28,7 @@
 
     <string name="login">Iniciar sesión</string>
     <string name="signup">¿No tienes cuenta? Regístrate</string>
-    <string name="logout">Cerrar sesión</string>
+    <string name="logout">Cerrar\nsesión</string>
 
     <string name="username_hint">Usuario, correo o teléfono</string>
     <string name="password_hint">Contraseña</string>
@@ -219,7 +234,7 @@
     <string name="text_not_defined">No definido</string>
     <string name="text_no_title">Sin título</string>
     <string name="text_no_address">Sin dirección</string>
-</resources>
+
     <!--  Controlador de luces  -->
     <string name="light_control_title">Control de Luces</string>
     <string name="btn_all_lights">Todas las luces</string>
