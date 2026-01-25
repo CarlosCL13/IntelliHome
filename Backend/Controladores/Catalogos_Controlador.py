@@ -4,6 +4,7 @@ from Base_de_Datos.db_session import get_db
 from Modelos.Hobby import Hobby
 from Modelos.TipoCasa import TipoCasa
 from Modelos.PreguntaRecuperacion import PreguntaRecuperacion
+from Modelos.Amenidad import Amenidad
 
 router = APIRouter(prefix="/catalogos", tags=["catálogos"])
 
@@ -21,3 +22,8 @@ def get_tipos_casa(db: Session = Depends(get_db)):
 @router.get("/preguntas-recuperacion")
 def get_preguntas_recuperacion(db: Session = Depends(get_db)):
     return [{"id": p.id, "texto": p.texto} for p in db.query(PreguntaRecuperacion).all()]
+
+# Endpoint para obtener la lista de amenidades
+@router.get("/amenidades")
+def get_amenidades(db: Session = Depends(get_db)):
+    return [{"id": a.id, "nombre": a.nombre} for a in db.query(Amenidad).all()]

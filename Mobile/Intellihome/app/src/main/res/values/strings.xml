@@ -220,3 +220,20 @@
     <string name="text_no_title">Sin título</string>
     <string name="text_no_address">Sin dirección</string>
 </resources>
+    <!--  Controlador de luces  -->
+    <string name="light_control_title">Control de Luces</string>
+    <string name="btn_all_lights">Todas las luces</string>
+    <string name="btn_turn_on_all_lights">Encender luces</string>
+    <string name="btn_turn_off_all_lights">Apagar luces</string>
+    <string name="btn_toggle_all_lights">Encender / Apagar</string>
+    <!--  Nombre de habitaciones  -->
+    <string name="room_bathroom_1">Baño\n1</string>
+    <string name="room_bedroom_3">Habitación\n3</string>
+    <string name="room_kitchen">Cocina</string>
+    <string name="room_bedroom_2">Habitación\n2</string>
+    <string name="room_bathroom_2">Baño\n2</string>
+    <string name="room_living_room">Sala</string>
+    <string name="room_bedroom_1">Habitación\n1</string>
+    <string name="room_garage">Garaje</string>
+
+</resources>

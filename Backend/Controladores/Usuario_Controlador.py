@@ -59,6 +59,7 @@ def registrar_usuario(
         raise HTTPException(status_code=422, detail=resultado['errores'])
     return resultado
 
+# Endpoint para el login de un usuario
 @router.post("/login")
 def login_usuario(
     identificador: str = Form(...),
@@ -70,6 +71,7 @@ def login_usuario(
         raise HTTPException(status_code=401, detail=resultado["errores"])
     return resultado
 
+# Endpoint para obtener la pregunta de recuperación de contraseña
 @router.post("/recuperar-contrasena")
 def recuperar_contrasena(
     identificador: str = Form(...),
@@ -82,6 +84,7 @@ def recuperar_contrasena(
         raise HTTPException(status_code=400, detail=resultado["errores"])
     return resultado
 
+# Endpoint para restablecer la contraseña
 @router.post("/restablecer-contrasena")
 def restablecer_contrasena(
     identificador: str = Form(...),
