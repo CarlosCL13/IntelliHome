@@ -27,6 +27,9 @@ from Modelos.PreguntaRecuperacion import PreguntaRecuperacion
 from Modelos.UsuarioTipoCasa import UsuarioTipoCasa
 from Modelos.Propiedad import Propiedad
 from Modelos.FotoPropiedad import FotoPropiedad
+from Modelos.Amenidad import Amenidad
+from Modelos.Arrendamiento import Arrendamiento
+from Modelos.Dispositivo import Dispositivo, EstadoDispositivo
 target_metadata = db.Model.metadata
 
 # other values from the config, defined by the needs of env.py,

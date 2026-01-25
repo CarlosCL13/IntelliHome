@@ -148,6 +148,44 @@ object RegisterHelper {
     }
 
     /**
+     * Muestra un diálogo para seleccionar mes y año en formato MM/AA para tarjetas de crédito
+     */
+    fun mostrarSelectorMesAnioTarjeta(context: Context, onDateSelected: (month: String, year: String) -> Unit) {
+        val dialogView = LayoutInflater.from(context).inflate(R.layout.dialog_month_year_picker, null)
+
+        val selectorMes = dialogView.findViewById<NumberPicker>(R.id.monthPicker)
+        val selectorAnio = dialogView.findViewById<NumberPicker>(R.id.yearPicker)
+
+        // Configurar mes picker (01-12 con formato)
+        val meses = arrayOf("01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12")
+        selectorMes.minValue = 0
+        selectorMes.maxValue = 11
+        selectorMes.displayedValues = meses
+        selectorMes.wrapSelectorWheel = true
+        selectorMes.value = Calendar.getInstance().get(Calendar.MONTH)
+
+        // Configurar año picker (año actual + 20 años, formato YY)
+        val anioActual = Calendar.getInstance().get(Calendar.YEAR)
+        val anios = Array(21) { (anioActual + it).toString().substring(2) }
+        selectorAnio.minValue = 0
+        selectorAnio.maxValue = 20
+        selectorAnio.displayedValues = anios
+        selectorAnio.wrapSelectorWheel = false
+        selectorAnio.value = 0
+
+        AlertDialog.Builder(context)
+            .setTitle("Fecha de expiración")
+            .setView(dialogView)
+            .setPositiveButton("Aceptar") { _, _ ->
+                val mesSeleccionado = meses[selectorMes.value]
+                val anioSeleccionado = anios[selectorAnio.value]
+                onDateSelected(mesSeleccionado, anioSeleccionado)
+            }
+            .setNegativeButton("Cancelar", null)
+            .show()
+    }
+
+    /**
      * Muestra un diálogo de términos y condiciones con scroll obligatorio
      */
     fun mostrarDialogoTerminos(context: Context, terminosRawId: Int, onAceptar: () -> Unit) {
