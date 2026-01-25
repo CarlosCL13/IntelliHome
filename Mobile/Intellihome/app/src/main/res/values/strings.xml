@@ -150,4 +150,28 @@
     <string name="room_bedroom_1">Habitación\n1</string>
     <string name="room_garage">Garaje</string>
 
+
+    <!-- Property Detail -->
+    <string name="property_detail_title">Detalles de la Propiedad</string>
+    <string name="property_image_desc">Imágenes de la propiedad</string>
+    <string name="property_name_placeholder">Nombre de la propiedad</string>
+    <string name="property_amenities_label">Lista de amenidades:</string>
+    <string name="property_host_label">Anfitrión:</string>
+    <string name="host_icon_desc">Nombre del usuario</string>
+    <string name="property_description_label">Descripción:</string>
+    <string name="property_activities_label">Actividades:</string>
+    <string name="property_amenities_list_label">Comodidades:</string>
+    <string name="property_rules_label">Reglas de uso:</string>
+    <string name="btn_rent">Alquilar</string>
+    <!-- Payment -->
+    <string name="payment_title">Proceso de pago</string>
+    <string name="payment_use_new_card">Usar nueva tarjeta</string>
+    <string name="payment_saved_card_label">Utilizaré tarjeta terminada en 4422</string>
+    <string name="payment_cvv_label">Ingrese el código CVV de la tarjeta</string>
+    <string name="payment_cvv_hint">CVV</string>
+    <string name="payment_card_number_hint">Número de tarjeta</string>
+    <string name="payment_cardholder_name_hint">Nombre del titular</string>
+    <string name="payment_expiry_date_hint">MM/AA</string>
+    <string name="btn_process_payment">Procesar pago</string>
+
 </resources>

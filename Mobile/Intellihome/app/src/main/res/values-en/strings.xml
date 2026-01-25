@@ -151,4 +151,27 @@
     <string name="room_bedroom_1">Bedroom\n1</string>
     <string name="room_garage">Garage</string>
 
+    <!-- Property Detail -->
+    <string name="property_detail_title">Property Details</string>
+    <string name="property_image_desc">Property images</string>
+    <string name="property_name_placeholder">Property name</string>
+    <string name="property_amenities_label">Amenities list:</string>
+    <string name="property_host_label">Host:</string>
+    <string name="host_icon_desc">Username</string>
+    <string name="property_description_label">Description:</string>
+    <string name="property_activities_label">Activities:</string>
+    <string name="property_amenities_list_label">Amenities:</string>
+    <string name="property_rules_label">Usage rules:</string>
+    <string name="btn_rent">Rent</string>
+    <!-- Payment -->
+    <string name="payment_title">Payment process</string>
+    <string name="payment_use_new_card">Use new card</string>
+    <string name="payment_saved_card_label">I will use card ending in 4422</string>
+    <string name="payment_cvv_label">Enter the CVV code of the card</string>
+    <string name="payment_cvv_hint">CVV</string>
+    <string name="payment_card_number_hint">Card number</string>
+    <string name="payment_cardholder_name_hint">Cardholder name</string>
+    <string name="payment_expiry_date_hint">MM/YY</string>
+    <string name="btn_process_payment">Process payment</string>
+
 </resources>
