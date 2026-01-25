@@ -40,11 +40,10 @@ class PropertyDetailsFragment : Fragment(R.layout.fragment_property_details) {
         })
 
         // 2. Configurar Contadores (Usando el ID del include)
-        setupCounter(view.findViewById(R.id.rowHuespedes), "Huéspedes", viewModel.huespedes)
-        setupCounter(view.findViewById(R.id.rowHabitaciones), "Habitaciones", viewModel.habitaciones)
-        setupCounter(view.findViewById(R.id.rowCamas), "Camas", viewModel.camas)
-        setupCounter(view.findViewById(R.id.rowBanos), "Baños", viewModel.banos)
-
+        setupCounter(view.findViewById(R.id.rowHuespedes), getString(R.string.label_guests), viewModel.huespedes)
+        setupCounter(view.findViewById(R.id.rowHabitaciones), getString(R.string.label_bedrooms), viewModel.habitaciones)
+        setupCounter(view.findViewById(R.id.rowCamas), getString(R.string.label_beds), viewModel.camas)
+        setupCounter(view.findViewById(R.id.rowBanos), getString(R.string.label_bathrooms), viewModel.banos)
         // 3. Botón Siguiente
         val btnSiguiente = view.findViewById<Button>(R.id.btnSiguienteDetalles)
         viewModel.sonDetallesValidos.observe(viewLifecycleOwner) { esValido ->

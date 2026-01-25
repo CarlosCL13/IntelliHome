@@ -13,42 +13,11 @@ class PropertyAmenitiesFragment : Fragment(R.layout.fragment_property_amenities)
 
     private val viewModel: AddPropertyViewModel by activityViewModels()
 
-    // Tu lista exacta copiada del documento PDF
-    private val listaAmenidades = listOf(
-        "Cocina equipada (con electrodomésticos modernos)", // [cite: 2]
-        "Aire acondicionado", // [cite: 3]
-        "Calefacción", // [cite: 4]
-        "Wi-Fi gratuito", // [cite: 5]
-        "Televisión por cable o satélite", // [cite: 6]
-        "Lavadora y secadora", // [cite: 7]
-        "Piscina", // [cite: 8]
-        "Jardín o patio", // [cite: 9]
-        "Barbacoa o parrilla", // [cite: 10]
-        "Terraza o balcón", // [cite: 11]
-        "Gimnasio en casa", // [cite: 12]
-        "Garaje o espacio de estacionamiento", // [cite: 13]
-        "Sistema de seguridad", // [cite: 14]
-        "Habitaciones con baño en suite", // [cite: 15]
-        "Muebles de exterior", // [cite: 16]
-        "Microondas", // [cite: 17]
-        "Lavavajillas", // [cite: 18]
-        "Cafetera", // [cite: 19]
-        "Ropa de cama y toallas incluidas", // [cite: 20]
-        "Acceso a áreas comunes (piscina, gimnasio)", // [cite: 21]
-        "Camas adicionales o sofá cama", // [cite: 22]
-        "Servicios de limpieza opcionales", // [cite: 23]
-        "Acceso a transporte público cercano", // [cite: 24]
-        "Mascotas permitidas", // [cite: 25]
-        "Cercanía a tiendas y restaurantes", // [cite: 26]
-        "Sistema de calefacción por suelo radiante", // [cite: 27]
-        "Escritorio o área de trabajo", // [cite: 28]
-        "Sistemas de entretenimiento (videojuegos, etc.)", // [cite: 29]
-        "Chimenea", //
-        "Acceso a internet de alta velocidad" // [cite: 31]
-    )
-
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        // CARGAMOS LA LISTA AUTOMÁTICAMENTE (Español o Inglés)
+        val listaAmenidades = resources.getStringArray(R.array.amenities_list).toList()
 
         val container = view.findViewById<LinearLayout>(R.id.containerAmenities)
         val btnSiguiente = view.findViewById<Button>(R.id.btnSiguienteAmenities)

@@ -14,7 +14,7 @@
         android:layout_marginTop="60dp"
         android:fontFamily="@font/poppins_medium"
         android:gravity="center"
-        android:text="¿Qué actividades se relacionan con tu alojamiento?"
+        android:text="@string/title_activities"
         android:textColor="@android:color/black"
         android:textSize="22sp"
         android:textStyle="bold"
@@ -66,7 +66,7 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="HIKING\n(SENDERISMO)"
+                        android:text="@string/activity_hiking"
                         android:textAlignment="center"
                         android:textStyle="bold"
                         android:textSize="12sp" />
@@ -96,7 +96,7 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="VER TV"
+                        android:text="@string/activity_tv"
                         android:textStyle="bold"
                         android:textSize="12sp" />
                 </LinearLayout>
@@ -125,7 +125,7 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="DEPORTES"
+                        android:text="@string/activity_sports"
                         android:textStyle="bold"
                         android:textSize="12sp" />
                 </LinearLayout>
@@ -154,7 +154,7 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="ESNÓRQUEL"
+                        android:text="@string/activity_snorkeling"
                         android:textStyle="bold"
                         android:textSize="12sp" />
                 </LinearLayout>
@@ -183,7 +183,7 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="JUEGOS DE MESA"
+                        android:text="@string/activity_board_games"
                         android:textStyle="bold"
                         android:textSize="12sp" />
                 </LinearLayout>
@@ -198,7 +198,7 @@
         android:layout_height="wrap_content"
         android:layout_marginBottom="24dp"
         android:enabled="false"
-        android:text="Siguiente"
+        android:text="@string/btn_next"
         android:fontFamily="@font/poppins_regular"
         android:textSize="18sp"
         android:textStyle="bold"

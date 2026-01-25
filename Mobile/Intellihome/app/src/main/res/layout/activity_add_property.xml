@@ -8,7 +8,7 @@
     tools:context=".AddPropertyActivity">
 
     <TextView
-        android:text="Agregar Propiedad"
+        android:text="@string/title_add_property_flow"
         android:textSize="22sp"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -21,7 +21,5 @@
         android:id="@+id/fragmentContainer"
         android:layout_width="match_parent"
         android:layout_height="match_parent"/>
-
-
 
 </androidx.constraintlayout.widget.ConstraintLayout>
