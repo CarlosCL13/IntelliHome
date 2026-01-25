@@ -10,6 +10,8 @@ from Modelos.TipoCasa import TipoCasa
 from Modelos.Amenidad import Amenidad
 from Modelos.Propiedad import Propiedad
 from Modelos.FotoPropiedad import FotoPropiedad
+from Modelos.Dispositivo import Dispositivo
+from Modelos.Dispositivo import EstadoDispositivo
 
 class Propiedad_Servicio:
 
@@ -90,6 +92,9 @@ class Propiedad_Servicio:
             )
             db.add(nueva_propiedad)
             db.commit()
+
+            # Crear luces predeterminadas para la propiedad
+            Propiedad_Servicio.crear_luces_predeterminadas(db, nueva_propiedad.id)
 
             # Se almacenan las fotos de la propiedad
             for foto in fotos_propiedad:
@@ -206,3 +211,32 @@ class Propiedad_Servicio:
                 buffer.write(imagen_propiedad.file.read())
             return imagen_path
         return None
+    
+    # Crear luces predeterminadas para una propiedad
+    @staticmethod
+    def crear_luces_predeterminadas(db, propiedad_id):
+        habitaciones = [
+            "Sala",
+            "Cocina",
+            "Habitacion 1",
+            "Habitacion 2",
+            "Habitacion 3",
+            "Bano 1",
+            "Bano 2",
+            "Garaje"
+        ]
+        for nombre_habitacion in habitaciones:
+            dispositivo = Dispositivo(
+                nombre=f"Luz {nombre_habitacion}",
+                tipo="led",
+                propiedad_id=propiedad_id,
+                habitacion=nombre_habitacion
+            )
+            db.add(dispositivo)
+            db.flush()  # Para obtener el id antes del commit
+            estado = EstadoDispositivo(
+                dispositivo_id=dispositivo.id,
+                estado="apagado"
+            )
+            db.add(estado)
+        db.commit()

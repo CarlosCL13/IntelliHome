@@ -1,8 +1,15 @@
-from fastapi import APIRouter, Depends, UploadFile, File, Form, HTTPException
-from sqlalchemy.orm import Session
+from fastapi import APIRouter, Depends, UploadFile, File, Form, HTTPException, Request
+from sqlalchemy.orm import Session, joinedload
 from Servicios.Propiedad_Servicio import Propiedad_Servicio
+from Modelos.Propiedad import Propiedad
+from Modelos.FotoPropiedad import FotoPropiedad
+from Modelos.Amenidad import Amenidad, PropiedadAmenidad
+from Modelos.TipoCasa import TipoCasa
+from Modelos.Usuario import Usuario
+from Modelos.Hobby import Hobby, PropiedadHobby
 from typing import Optional
 from Base_de_Datos.db_session import get_db
+import os
 
 router = APIRouter(prefix="/propiedades", tags=["propiedades"])
 
@@ -51,4 +58,102 @@ def registrar_propiedad(
     )
     if 'errores' in resultado:
         raise HTTPException(status_code=422, detail=resultado['errores'])
+    return resultado
+
+# Endpoint para obtener todas las propiedades con detalles resumidos y una imagen
+@router.get("/todas", summary="Obtener todas las propiedades con detalles resumidos y una imagen")
+def get_todas_propiedades(request: Request, db: Session = Depends(get_db)):
+    propiedades = db.query(Propiedad).all()
+    resultado = []
+    base_url = str(request.base_url).rstrip('/')
+    for prop in propiedades:
+        # Obtener solo la primera foto
+        foto = db.query(FotoPropiedad).filter(FotoPropiedad.propiedad_id == prop.id).first()
+        foto_url = None
+        if foto:
+            nombre_archivo = os.path.basename(foto.url_foto)
+            foto_url = f"{base_url}/uploads/{nombre_archivo}"
+        resultado.append({
+            "id": prop.id,
+            "titulo_publicacion": prop.titulo_publicacion,
+            "precio_noche": prop.precio_noche,
+            "huespedes": prop.huespedes,
+            "habitaciones": prop.habitaciones,
+            "camas": prop.camas,
+            "banos": prop.banos,
+            "imagen": foto_url
+        })
+    return resultado
+
+# Endpoint para obtener una propiedad por id, incluyendo fotos (URL completa) y amenidades
+@router.get("/{propiedad_id}", summary="Obtener una propiedad por id con fotos y amenidades")
+def get_propiedad_por_id(propiedad_id: int, request: Request, db: Session = Depends(get_db)):
+    prop = db.query(Propiedad).filter(Propiedad.id == propiedad_id).first()
+    if not prop:
+        raise HTTPException(status_code=404, detail="Propiedad no encontrada")
+    base_url = str(request.base_url).rstrip('/')
+    # Fotos
+    fotos = db.query(FotoPropiedad).filter(FotoPropiedad.propiedad_id == prop.id).all()
+    fotos_urls = []
+    for foto in fotos:
+        nombre_archivo = os.path.basename(foto.url_foto)
+        url = f"{base_url}/uploads/{nombre_archivo}"
+        fotos_urls.append(url)
+    # Amenidades
+    amenidades_ids = db.query(PropiedadAmenidad.amenidad_id).filter(PropiedadAmenidad.propiedad_id == prop.id).all()
+    amenidades = db.query(Amenidad).filter(Amenidad.id.in_([a[0] for a in amenidades_ids])).all()
+    amenidades_list = [{"id": a.id, "nombre": a.nombre} for a in amenidades]
+    # Hobbies
+    hobbies_ids = db.query(PropiedadHobby.hobby_id).filter(PropiedadHobby.propiedad_id == prop.id).all()
+    hobbies = db.query(Hobby).filter(Hobby.id.in_([h[0] for h in hobbies_ids])).all()
+    hobbies_list = [{"id": h.id, "nombre": h.nombre} for h in hobbies]
+    # Nombres relacionados
+    tipo_casa = db.query(TipoCasa).filter(TipoCasa.id == prop.tipo_casa_id).first()
+    usuario = db.query(Usuario).filter(Usuario.id == prop.usuario_id).first()
+    resultado = {
+        "id": prop.id,
+        "usuario": usuario.nombre if usuario else None,
+        "tipo_casa": tipo_casa.nombre if tipo_casa else None,
+        "latitud": prop.latitud,
+        "longitud": prop.longitud,
+        "titulo_publicacion": prop.titulo_publicacion,
+        "descripcion_publicacion": prop.descripcion_publicacion,
+        "precio_noche": prop.precio_noche,
+        "huespedes": prop.huespedes,
+        "habitaciones": prop.habitaciones,
+        "camas": prop.camas,
+        "banos": prop.banos,
+        "cocina": prop.cocina,
+        "reglas_uso": prop.reglas_uso,
+        "vehiculos": prop.vehiculos,
+        "estado": prop.estado,
+        "fotos": fotos_urls,
+        "amenidades": amenidades_list,
+        "hobbies": hobbies_list
+    }
+    return resultado
+
+# Endpoint para obtener todas las propiedades de un usuario por su user id, incluyendo fotos, amenidades y hobbies
+@router.get("/usuario/{user_id}", summary="Obtener todas las propiedades de un usuario por su id (resumido)")
+def get_propiedades_por_usuario(user_id: int, request: Request, db: Session = Depends(get_db)):
+    propiedades = db.query(Propiedad).filter(Propiedad.usuario_id == user_id).all()
+    resultado = []
+    base_url = str(request.base_url).rstrip('/')
+    for prop in propiedades:
+        # Obtener solo la primera foto
+        foto = db.query(FotoPropiedad).filter(FotoPropiedad.propiedad_id == prop.id).first()
+        foto_url = None
+        if foto:
+            nombre_archivo = os.path.basename(foto.url_foto)
+            foto_url = f"{base_url}/uploads/{nombre_archivo}"
+        resultado.append({
+            "id": prop.id,
+            "titulo_publicacion": prop.titulo_publicacion,
+            "precio_noche": prop.precio_noche,
+            "huespedes": prop.huespedes,
+            "habitaciones": prop.habitaciones,
+            "camas": prop.camas,
+            "banos": prop.banos,
+            "imagen": foto_url
+        })
     return resultado
