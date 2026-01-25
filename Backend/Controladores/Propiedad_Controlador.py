@@ -20,6 +20,7 @@ def registrar_propiedad(
     usuario_id: int = Form(...),
     tipo_casa_id: int = Form(...),
     hobbies_ids: str = Form(...),
+    amenidades_ids: str = Form(...),
     latitud: float = Form(...),
     longitud: float = Form(...),
     titulo_publicacion: str = Form(...),
@@ -37,6 +38,8 @@ def registrar_propiedad(
     db: Session = Depends(get_db)
     ):
     hobbies_ids_list = [int(i) for i in hobbies_ids.split(",")] if hobbies_ids else []
+    amenidades_ids_list = [int(i) for i in amenidades_ids.split(",")] if amenidades_ids else []
+    # Se registra la propiedad usando el servicio
     resultado = Propiedad_Servicio.registrar_propiedad(
         db=db,
         usuario_id=usuario_id,
@@ -53,6 +56,7 @@ def registrar_propiedad(
         banos=banos,
         cocina=cocina,
         hobbies_ids=hobbies_ids_list,
+        amenidades_ids=amenidades_ids_list,
         reglas_uso=reglas_uso,
         vehiculos=vehiculos,
         estado=estado
