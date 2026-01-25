@@ -1,97 +1,65 @@
 package com.intelliworks.intellihome
 
-import android.content.Intent
 import android.os.Bundle
-import android.util.Log
-import com.intelliworks.intellihome.utils.BaseActivity
+import androidx.fragment.app.Fragment
 import com.intelliworks.intellihome.databinding.ActivityMainBinding
-import com.intelliworks.intellihome.data.model.LoginResponseDto
-import com.google.gson.Gson
+import com.intelliworks.intellihome.utils.BaseActivity
 
+/**
+ * Controlador principal de la aplicación post-login.
+ * Gestiona la navegación inferior y la inyección de fragmentos.
+ */
 class MainActivity : BaseActivity() {
 
-    private lateinit var enlace: ActivityMainBinding
+    private lateinit var binding: ActivityMainBinding
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enlace = ActivityMainBinding.inflate(layoutInflater)
-        setContentView(enlace.root)
+        binding = ActivityMainBinding.inflate(layoutInflater)
+        setContentView(binding.root)
 
-        enlace.btnCerrarSesion.setOnClickListener {
-            cerrarSesion()
+        // Habilita el botón de ajustes en la barra superior base
+        showSettingsButton(true)
+
+        // Carga la vista inicial por defecto
+        if (savedInstanceState == null) {
+            cambiarFragmento(ExploreFragment())
         }
-        enlace.btnAgregarPropiedad.setOnClickListener {
-            val intent = Intent(this, AddPropertyActivity::class.java)
-            startActivity(intent)
-        }
 
-
-        // Recuperar datos del Intent (enviados desde Login)
-        val datosUsuarioJson = intent.getStringExtra("user_data")
-
-        if (!datosUsuarioJson.isNullOrEmpty()) {
-            try {
-                val usuario = Gson().fromJson(datosUsuarioJson, LoginResponseDto::class.java)
-                desplegarInformacionServidor(usuario)
-            } catch (e: Exception) {
-                Log.e("MainActivity", "Error al procesar datos del servidor")
-            }
-        } else {
-            Log.e("MainActivity", "No se recibieron datos del servidor")
-        }
+        configurarNavegacion()
     }
-
-    private fun desplegarInformacionServidor(u: LoginResponseDto) {
-        enlace.apply {
-            // El nombre y apellido se muestran igual en cualquier idioma
-            txtNombre.text = "${u.nombre ?: ""} ${u.apellidos ?: ""}".trim()
-
-            // --- Uso de recursos traducibles con parámetros ---
-
-            // @string/label_username -> "Usuario: @%1$s" o "Username: @%1$s"
-            txtUsername.text = getString(R.string.label_username, u.username ?: "")
-
-            // @string/label_user_id -> "ID de Usuario: %1$d" o "User ID: %1$d"
-            txtUserId.text = getString(R.string.label_user_id, u.id ?: 0)
-
-            // @string/label_email -> "Correo: %1$s" o "Email: %1$s"
-            txtCorreo.text = getString(R.string.label_email, u.correo ?: getString(R.string.data_not_available))
-
-            // @string/label_phone -> "Teléfono: %1$s" o "Phone: %1$s"
-            txtTelefono.text = getString(R.string.label_phone, u.telefono ?: getString(R.string.data_not_available))
-
-            // Estado de cuenta
-            val estado = u.estadoCuenta?.uppercase() ?: getString(R.string.data_not_available)
-            txtEstadoCuenta.text = getString(R.string.label_status, estado)
-
-            // --- Traducción lógica del Rol ---
-            val nombreRol = when (u.rolId) {
-                1 -> getString(R.string.role_admin)
-                2 -> getString(R.string.role_user)
-                3 -> getString(R.string.role_tech)
-                else -> getString(R.string.role_guest)
-            }
-
-            // @string/label_role -> "Rol: %1$s" o "Role: %1$s"
-            txtRol.text = getString(R.string.label_role, nombreRol)
-        }
-    }
-    private fun cerrarSesion() {
-        // Limpiar preferencias de login (remember me)
-        val prefs = getSharedPreferences("login_prefs", MODE_PRIVATE)
-        prefs.edit().clear().apply()
-
-        // Ir a Login y limpiar back stack
-        val intent = Intent(this, Login::class.java).apply {
-            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-        }
-        startActivity(intent)
-        finish()
-    }
-
 
     override fun onResume() {
         super.onResume()
-        applyAppAppearance(enlace.root)
+        applyAppAppearance(binding.root)
+    }
+
+    /**
+     * Configura los listeners del BottomNavigationView para intercambiar fragmentos.
+     */
+    private fun configurarNavegacion() {
+        binding.bottomNavigation.setOnItemSelectedListener { item ->
+            when (item.itemId) {
+                R.id.nav_explore -> {
+                    cambiarFragmento(ExploreFragment())
+                    true
+                }
+                R.id.nav_rentals -> {
+                    cambiarFragmento(RentalsFragment())
+                    true
+                }
+                R.id.nav_profile -> {
+                    cambiarFragmento(ProfileFragment())
+                    true
+                }
+                else -> false
+            }
+        }
+    }
+
+    private fun cambiarFragmento(fragmento: Fragment) {
+        supportFragmentManager.beginTransaction()
+            .replace(R.id.nav_host_fragment, fragmento)
+            .commit()
     }
 }

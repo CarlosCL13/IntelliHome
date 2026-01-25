@@ -16,6 +16,7 @@ import com.intelliworks.intellihome.utils.BaseActivity
 import kotlinx.coroutines.launch
 import com.intelliworks.intellihome.utils.BiometricCryptoHelper.desencriptarClave
 import com.intelliworks.intellihome.utils.BiometricCryptoHelper.desencriptarToken
+import com.intelliworks.intellihome.utils.SessionManager
 
 class Login : BaseActivity() {
 
@@ -181,9 +182,16 @@ class Login : BaseActivity() {
         }
     }
 
-
     private fun navegarAMain(loginData: LoginResponseDto) {
+        // Persistencia de la sesión para acceso global en la aplicación
+        // Se asume que LoginResponseDto posee un campo 'id' (Int/Long) o se usa el 'username' como fallback
+        val userIdReal = loginData.id?.toString() ?: loginData.username ?: "unknown_user"
+        val nombreReal = loginData.nombre ?: "Usuario"
+
+        SessionManager.iniciarSesion(this, userIdReal, nombreReal)
+
         val intent = Intent(this, MainActivity::class.java)
+        // Se mantiene el extra user_data por compatibilidad con lógica existente
         intent.putExtra("user_data", Gson().toJson(loginData))
         startActivity(intent)
         finish()

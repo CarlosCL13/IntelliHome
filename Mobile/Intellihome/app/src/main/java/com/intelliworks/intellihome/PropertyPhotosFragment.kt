@@ -18,6 +18,7 @@ import com.google.android.material.card.MaterialCardView
 import com.intelliworks.intellihome.data.repository.PropertyRepository
 import com.intelliworks.intellihome.utils.PhotosAdapter
 import com.intelliworks.intellihome.utils.Property
+import com.intelliworks.intellihome.utils.SessionManager
 import java.util.UUID
 
 class PropertyPhotosFragment : Fragment(R.layout.fragment_property_photos) {
@@ -217,19 +218,20 @@ class PropertyPhotosFragment : Fragment(R.layout.fragment_property_photos) {
         val fotos = viewModel.fotosSeleccionadas.value
         val fotoPortada = if (!fotos.isNullOrEmpty()) fotos[0].toString() else ""
 
-        // Creación del objeto DTO/Modelo para persistencia
+        // Obtención del ID del usuario autenticado para asociación de propiedad
+        val idUsuarioActual = SessionManager.obtenerUserId(requireContext())
+
         val nuevaPropiedad = Property(
             id = UUID.randomUUID().toString(),
+            userId = idUsuarioActual, // Vinculación con sesión
             titulo = titulo,
             precio = precio,
             direccion = direccion,
             tipo = tipo,
             capacidad = capacidad,
-            imagenUri = fotoPortada,
-            esMio = true
+            imagenUri = fotoPortada
         )
 
-        // Persistencia mediante repositorio (SharedPreferences/GSON)
         PropertyRepository.saveProperty(requireContext(), nuevaPropiedad)
 
         Toast.makeText(requireContext(), getString(R.string.msg_publish_success), Toast.LENGTH_LONG).show()

@@ -74,8 +74,6 @@ dependencies {
     implementation(libs.androidx.navigation.ui.ktx)
     implementation(libs.colorpickerview)
 
-    // Mapas y Places
-    // Nota: Eliminé la línea duplicada de 'libs.play.services.maps' para evitar conflictos
     implementation("com.google.android.gms:play-services-maps:18.2.0")
     implementation("com.google.android.libraries.places:places:3.3.0")
 

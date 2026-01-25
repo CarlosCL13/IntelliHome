@@ -3,6 +3,21 @@
     <string name="logo_desc">Application logo</string>
     <string name="data_not_available">N/A</string>
     <string name="welcome_user">Welcome,</string>
+    <string name="nav_explore">Explore</string>
+    <string name="nav_rentals">Rentals</string>
+    <string name="nav_profile">Profile</string>
+
+    <string name="title_explore_properties">Explore Properties</string>
+    <string name="hint_search_destination">Search destination...</string>
+
+    <string name="title_rentals">Rented Properties</string>
+    <string name="text_no_rentals">You have no active bookings</string>
+
+    <string name="title_profile">Profile</string>
+    <string name="text_loading_user">Loading user...</string>
+    <string name="text_user_verified">Verified User</string>
+    <string name="btn_add_new_rental">Add new rental</string>
+    <string name="title_my_properties">My published properties:</string>
 
     <string name="btn_next">Next</string>
     <string name="btn_finish">Finish and Publish</string>
@@ -13,7 +28,7 @@
 
     <string name="login">Login</string>
     <string name="signup">Don\'t have an account? Sign up</string>
-    <string name="logout">Log out</string>
+    <string name="logout">Log\nout</string>
 
     <string name="username_hint">Username, email or phone</string>
     <string name="password_hint">Password</string>
@@ -219,7 +234,7 @@
     <string name="text_not_defined">Not defined</string>
     <string name="text_no_title">No title</string>
     <string name="text_no_address">No address</string>
-</resources>
+
     <!--  Light Control  -->
     <string name="light_control_title">Light Control</string>
     <string name="btn_all_lights">All lights</string>
