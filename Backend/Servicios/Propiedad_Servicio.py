@@ -53,6 +53,7 @@ class Propiedad_Servicio:
         banos: int = 0,
         cocina: bool = False,
         hobbies_ids: list = None,
+        amenidades_ids: list = None,
         reglas_uso: str = None,
         vehiculos: int = None,
         estado: str = 'disponible'
@@ -65,7 +66,8 @@ class Propiedad_Servicio:
             Propiedad_Servicio._validar_titulo_publicacion(titulo_publicacion, errores)
             Propiedad_Servicio._validar_descripcion_publicacion(descripcion_publicacion, errores)
             Propiedad_Servicio._validar_huespedes(huespedes, errores)
-            Propiedad_Servicio._validar_hobbies(db, hobbies_ids, errores)
+            hobbies = Propiedad_Servicio._validar_hobbies(db, hobbies_ids, errores)
+            amenidades = Propiedad_Servicio._validar_amenidades(db, amenidades_ids, errores)
             Propiedad_Servicio._validar_reglas_uso(reglas_uso, errores)
             Propiedad_Servicio._validar_fotos_propiedad(fotos_propiedad, errores)
 
@@ -86,6 +88,8 @@ class Propiedad_Servicio:
                 camas=camas,
                 banos=banos,
                 cocina=cocina,
+                hobbies=hobbies,
+                amenidades=amenidades,
                 reglas_uso=reglas_uso,
                 vehiculos=vehiculos,
                 estado=estado
@@ -164,6 +168,19 @@ class Propiedad_Servicio:
                 errores["hobbies"] = "Uno o más hobbies no existen."
         return hobbies
     
+    # Validar amenidades relacionadas a la propiedad
+    @staticmethod
+    def _validar_amenidades(db: Session, amenidades_ids: list, errores: dict):
+        """
+        Verifica que las amenidades proporcionadas existan en la base de datos.
+        """
+        amenidades = []
+        if amenidades_ids:
+            amenidades = db.query(Amenidad).filter(Amenidad.id.in_(amenidades_ids)).all()
+            if len(amenidades) != len(amenidades_ids):
+                errores["amenidades"] = "Una o más amenidades no existen."
+        return amenidades
+
     # validar reglas de uso de la propiedad
     @staticmethod
     def _validar_reglas_uso(reglas_uso: str, errores: dict):
