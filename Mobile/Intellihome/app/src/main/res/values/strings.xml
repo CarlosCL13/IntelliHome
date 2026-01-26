@@ -252,9 +252,12 @@
     <string name="room_garage">Garaje</string>
 
 
+
     <!-- Property Detail -->
     <string name="property_detail_title">Detalles de la Propiedad</string>
     <string name="property_image_desc">Imágenes de la propiedad</string>
+    <string name="previous_photo">Foto anterior</string>
+    <string name="next_photo">Foto siguiente</string>
     <string name="property_name_placeholder">Nombre de la propiedad</string>
     <string name="property_amenities_label">Lista de amenidades:</string>
     <string name="property_host_label">Anfitrión:</string>
@@ -264,6 +267,7 @@
     <string name="property_amenities_list_label">Comodidades:</string>
     <string name="property_rules_label">Reglas de uso:</string>
     <string name="btn_rent">Alquilar</string>
+
     <!-- Payment -->
     <string name="payment_title">Proceso de pago</string>
     <string name="payment_use_new_card">Usar nueva tarjeta</string>
@@ -274,5 +278,7 @@
     <string name="payment_cardholder_name_hint">Nombre del titular</string>
     <string name="payment_expiry_date_hint">MM/AA</string>
     <string name="btn_process_payment">Procesar pago</string>
+
+
 
 </resources>

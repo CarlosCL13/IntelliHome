@@ -254,6 +254,8 @@
     <!-- Property Detail -->
     <string name="property_detail_title">Property Details</string>
     <string name="property_image_desc">Property images</string>
+    <string name="previous_photo">Previous photo</string>
+    <string name="next_photo">Next photo</string>
     <string name="property_name_placeholder">Property name</string>
     <string name="property_amenities_label">Amenities list:</string>
     <string name="property_host_label">Host:</string>
@@ -263,6 +265,7 @@
     <string name="property_amenities_list_label">Amenities:</string>
     <string name="property_rules_label">Usage rules:</string>
     <string name="btn_rent">Rent</string>
+
     <!-- Payment -->
     <string name="payment_title">Payment process</string>
     <string name="payment_use_new_card">Use new card</string>
