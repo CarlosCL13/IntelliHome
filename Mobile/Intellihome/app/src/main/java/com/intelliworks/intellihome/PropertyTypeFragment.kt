@@ -1,0 +1,76 @@
+package com.intelliworks.intellihome
+
+import android.os.Bundle
+import androidx.fragment.app.Fragment
+import android.view.View
+import android.widget.Button
+import androidx.fragment.app.activityViewModels
+import com.google.android.material.card.MaterialCardView
+
+class PropertyTypeFragment : Fragment(R.layout.fragment_property_type) {
+
+    private val viewModel: AddPropertyViewModel by activityViewModels()
+
+    private lateinit var cardContemporaneo: MaterialCardView
+    private lateinit var cardMinimalista: MaterialCardView
+    private lateinit var cardAventurero: MaterialCardView
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        cardContemporaneo = view.findViewById(R.id.cardContemporaneo)
+        cardMinimalista = view.findViewById(R.id.cardMinimalista)
+        cardAventurero = view.findViewById(R.id.cardAventurero)
+
+        cardContemporaneo.setOnClickListener {
+            seleccionar(cardContemporaneo, "CONTEMPORANEO")
+        }
+
+        cardMinimalista.setOnClickListener {
+            seleccionar(cardMinimalista, "MINIMALISTA")
+        }
+
+        cardAventurero.setOnClickListener {
+            seleccionar(cardAventurero, "AVENTURERO")
+        }
+
+        val btnSiguiente = view.findViewById<Button>(R.id.btnSiguiente)
+
+        viewModel.esTipoValido.observe(viewLifecycleOwner) { esValido ->
+            btnSiguiente.isEnabled = esValido
+            btnSiguiente.alpha = if (esValido) 1.0f else 0.5f
+        }
+
+        btnSiguiente.setOnClickListener {
+            parentFragmentManager.beginTransaction()
+                .replace(R.id.fragmentContainer, PropertyActivitiesFragment())
+                .addToBackStack(null)
+                .commit()
+        }
+    }
+
+    private fun seleccionar(cardSeleccionada: MaterialCardView, tipo: String) {
+        resetearCards()
+
+        // Resaltar visualmente la tarjeta seleccionada
+        cardSeleccionada.setCardBackgroundColor(requireContext().getColor(R.color.card_selected_bg))
+        cardSeleccionada.strokeColor = requireContext().getColor(R.color.card_selected_stroke)
+        cardSeleccionada.strokeWidth = 3
+        cardSeleccionada.cardElevation = 8f
+
+        viewModel.tipoPropiedad.value = tipo
+    }
+
+    private fun resetearCards() {
+        val cards = listOf(cardContemporaneo, cardMinimalista, cardAventurero)
+        val defaultBg = requireContext().getColor(R.color.card_default_bg)
+        val defaultStroke = requireContext().getColor(R.color.card_default_stroke)
+
+        cards.forEach { card ->
+            card.setCardBackgroundColor(defaultBg)
+            card.strokeColor = defaultStroke
+            card.strokeWidth = 1
+            card.cardElevation = 4f
+        }
+    }
+}

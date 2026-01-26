@@ -10,6 +10,8 @@ from Modelos.TipoCasa import TipoCasa
 from Modelos.Amenidad import Amenidad
 from Modelos.Propiedad import Propiedad
 from Modelos.FotoPropiedad import FotoPropiedad
+from Modelos.Dispositivo import Dispositivo
+from Modelos.Dispositivo import EstadoDispositivo
 
 class Propiedad_Servicio:
 
@@ -51,6 +53,7 @@ class Propiedad_Servicio:
         banos: int = 0,
         cocina: bool = False,
         hobbies_ids: list = None,
+        amenidades_ids: list = None,
         reglas_uso: str = None,
         vehiculos: int = None,
         estado: str = 'disponible'
@@ -63,7 +66,8 @@ class Propiedad_Servicio:
             Propiedad_Servicio._validar_titulo_publicacion(titulo_publicacion, errores)
             Propiedad_Servicio._validar_descripcion_publicacion(descripcion_publicacion, errores)
             Propiedad_Servicio._validar_huespedes(huespedes, errores)
-            Propiedad_Servicio._validar_hobbies(db, hobbies_ids, errores)
+            hobbies = Propiedad_Servicio._validar_hobbies(db, hobbies_ids, errores)
+            amenidades = Propiedad_Servicio._validar_amenidades(db, amenidades_ids, errores)
             Propiedad_Servicio._validar_reglas_uso(reglas_uso, errores)
             Propiedad_Servicio._validar_fotos_propiedad(fotos_propiedad, errores)
 
@@ -84,12 +88,17 @@ class Propiedad_Servicio:
                 camas=camas,
                 banos=banos,
                 cocina=cocina,
+                hobbies=hobbies,
+                amenidades=amenidades,
                 reglas_uso=reglas_uso,
                 vehiculos=vehiculos,
                 estado=estado
             )
             db.add(nueva_propiedad)
             db.commit()
+
+            # Crear luces predeterminadas para la propiedad
+            Propiedad_Servicio.crear_luces_predeterminadas(db, nueva_propiedad.id)
 
             # Se almacenan las fotos de la propiedad
             for foto in fotos_propiedad:
@@ -140,6 +149,9 @@ class Propiedad_Servicio:
     # Validar numero de huéspedes en la propiedad
     @staticmethod
     def _validar_huespedes(huespedes: int, errores: dict):
+        """
+        Verifica que el número de huéspedes sea mayor que cero.
+        """
         if huespedes <= 0:
             errores["huespedes"] = "El número de huéspedes debe ser mayor que cero."
 
@@ -156,6 +168,19 @@ class Propiedad_Servicio:
                 errores["hobbies"] = "Uno o más hobbies no existen."
         return hobbies
     
+    # Validar amenidades relacionadas a la propiedad
+    @staticmethod
+    def _validar_amenidades(db: Session, amenidades_ids: list, errores: dict):
+        """
+        Verifica que las amenidades proporcionadas existan en la base de datos.
+        """
+        amenidades = []
+        if amenidades_ids:
+            amenidades = db.query(Amenidad).filter(Amenidad.id.in_(amenidades_ids)).all()
+            if len(amenidades) != len(amenidades_ids):
+                errores["amenidades"] = "Una o más amenidades no existen."
+        return amenidades
+
     # validar reglas de uso de la propiedad
     @staticmethod
     def _validar_reglas_uso(reglas_uso: str, errores: dict):
@@ -206,3 +231,35 @@ class Propiedad_Servicio:
                 buffer.write(imagen_propiedad.file.read())
             return imagen_path
         return None
+    
+    # Crear luces predeterminadas para una propiedad
+    @staticmethod
+    def crear_luces_predeterminadas(db, propiedad_id):
+        """
+        Crea luces LED predeterminadas para una propiedad en habitaciones comunes.
+        """
+        habitaciones = [
+            "Sala",
+            "Cocina",
+            "Habitacion 1",
+            "Habitacion 2",
+            "Habitacion 3",
+            "Bano 1",
+            "Bano 2",
+            "Garaje"
+        ]
+        for nombre_habitacion in habitaciones:
+            dispositivo = Dispositivo(
+                nombre=f"Luz {nombre_habitacion}",
+                tipo="led",
+                propiedad_id=propiedad_id,
+                habitacion=nombre_habitacion
+            )
+            db.add(dispositivo)
+            db.flush()  # Para obtener el id antes del commit
+            estado = EstadoDispositivo(
+                dispositivo_id=dispositivo.id,
+                estado="apagado"
+            )
+            db.add(estado)
+        db.commit()

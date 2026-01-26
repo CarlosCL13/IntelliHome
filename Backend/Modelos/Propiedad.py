@@ -18,6 +18,8 @@ class Propiedad(db.Model):
     camas = db.Column(db.Integer, nullable=False)
     banos = db.Column(db.Integer, nullable=False)
     cocina = db.Column(db.Boolean, nullable=False) # Si o no
+    hobbies = db.relationship('Hobby', secondary='propiedad_hobbies', backref='propiedades')
+    amenidades = db.relationship('Amenidad', secondary='propiedad_amenidades', backref='propiedades')
     reglas_uso = db.Column(db.Text, nullable=True)
     vehiculos = db.Column(db.Integer, nullable=True)
     estado = db.Column(db.String(20), nullable=False, default='disponible') # puede ser 'disponible' o 'no disponible'

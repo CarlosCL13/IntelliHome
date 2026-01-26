@@ -7,7 +7,10 @@ from Servicios.Usuario_Servicio import Usuario_Servicio
 from Controladores.Usuario_Controlador import router as usuario_router
 from Controladores.Catalogos_Controlador import router as catalogos_router
 from Controladores.Propiedad_Controlador import router as propiedad_router
+from Controladores.Casa_Controlador import router as casa_router
+
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 from typing import Optional
 import uvicorn
 import os
@@ -16,7 +19,14 @@ import os
 from Base_de_Datos.db_session import get_db
 
 # Inicialización de FastAPI
+
 app = FastAPI(title="IntelliHome API", description="API para autenticación y gestión de propiedades")
+
+# Servir archivos estáticos (imágenes de propiedades)
+uploads_dir = os.path.join(os.getcwd(), "uploads")
+if not os.path.exists(uploads_dir):
+    os.makedirs(uploads_dir)
+app.mount("/uploads", StaticFiles(directory=uploads_dir), name="uploads")
 
 # Configuración de CORS (opcional, útil para desarrollo móvil)
 app.add_middleware(
@@ -37,6 +47,7 @@ def read_root():
 app.include_router(usuario_router)
 app.include_router(catalogos_router)
 app.include_router(propiedad_router)
+app.include_router(casa_router)
 
 # Para correr: uvicorn app:app --reload
 if __name__ == "__main__":
