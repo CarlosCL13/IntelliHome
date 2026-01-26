@@ -235,13 +235,11 @@
     <string name="text_no_title">No title</string>
     <string name="text_no_address">No address</string>
 
-    <!--  Light Control  -->
     <string name="light_control_title">Light Control</string>
     <string name="btn_all_lights">All lights</string>
     <string name="btn_turn_on_all_lights">Turn on lights</string>
     <string name="btn_turn_off_all_lights">Turn off lights</string>
     <string name="btn_toggle_all_lights">Turn On / Off</string>
-    <!--  Room names  -->
     <string name="room_bathroom_1">Bathroom\n1</string>
     <string name="room_bedroom_3">Bedroom\n3</string>
     <string name="room_kitchen">Kitchen</string>
@@ -251,7 +249,6 @@
     <string name="room_bedroom_1">Bedroom\n1</string>
     <string name="room_garage">Garage</string>
 
-    <!-- Property Detail -->
     <string name="property_detail_title">Property Details</string>
     <string name="property_image_desc">Property images</string>
     <string name="property_name_placeholder">Property name</string>
@@ -263,7 +260,8 @@
     <string name="property_amenities_list_label">Amenities:</string>
     <string name="property_rules_label">Usage rules:</string>
     <string name="btn_rent">Rent</string>
-    <!-- Payment -->
+    <string name="btn_domotica">Smart Home</string>
+
     <string name="payment_title">Payment process</string>
     <string name="payment_use_new_card">Use new card</string>
     <string name="payment_saved_card_label">I will use card ending in 4422</string>
@@ -273,5 +271,54 @@
     <string name="payment_cardholder_name_hint">Cardholder name</string>
     <string name="payment_expiry_date_hint">MM/YY</string>
     <string name="btn_process_payment">Process payment</string>
+
+    <string name="error_loading_property_data">Error loading property data</string>
+    <string name="error_limit_reached">Limit reached</string>
+    <string name="error_max_photos">Max %1$d photos</string>
+    <string name="error_added_partial_photos">Only the first %1$d photos were added.</string>
+    <string name="error_invalid_files_count">%1$d invalid files</string>
+    <string name="msg_publish_confirmation">Do you want to publish this property now?</string>
+
+    <string name="default_no_title">No title</string>
+    <string name="default_unknown_location">Unknown location</string>
+    <string name="default_property_type">House</string>
+    <string name="default_no_activities">No activities</string>
+    <string name="default_no_amenities">No amenities</string>
+    <string name="default_description">Enjoy this unique accommodation with style.</string>
+    <string name="default_rules">No smoking, No parties.</string>
+    <string name="default_no_description">No description</string>
+    <string name="default_no_rules">No specific rules</string>
+
+    <string name="fmt_host_name">Host: %1$s</string>
+    <string name="fmt_capacity_short">%1$d guests • %2$d bedrooms</string>
+    <string name="fmt_capacity_full">%1$d guests · %2$d bedrooms · %3$d beds · %4$d baths</string>
+
+    <string name="label_location">Location</string>
+    <string name="label_capacity">Capacity</string>
+    <string name="label_description">Description</string>
+    <string name="label_activities">Activities</string>
+    <string name="label_amenities">Amenities</string>
+    <string name="label_rules">House Rules</string>
+    <string name="label_iot_panel">IoT Panel</string>
+
+    <string name="label_description_long">Accommodation description</string>
+    <string name="hint_description">Tell guests about your space...</string>
+    <string name="label_rules_long">House rules</string>
+    <string name="hint_rules">Ex: No smoking, no parties, pets allowed...</string>
+
+    <string name="title_filters">Filters</string>
+    <string name="fmt_max_price">Max price per night: %1$s</string>
+    <string name="fmt_min_guests">Min guests: %1$d</string>
+    <string name="btn_reset">Reset</string>
+    <string name="btn_apply">Apply</string>
+
+    <string name="default_host">Host</string>
+    <string name="status_processing">Processing...</string>
+    <string name="error_payment_processing">Error processing payment</string>
+    <string name="error_user_unknown">Error: Unknown user. Please log in again.</string>
+    <string name="title_payment_success">Payment Successful!</string>
+    <string name="msg_payment_success">Property rented successfully.</string>
+    <string name="btn_go_home">Go to Home</string>
+    <string name="title_pay_amount">Pay %1$s</string>
 
 </resources>

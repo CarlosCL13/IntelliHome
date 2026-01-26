@@ -74,6 +74,8 @@ dependencies {
     implementation(libs.androidx.navigation.ui.ktx)
     implementation(libs.colorpickerview)
 
+    implementation("androidx.viewpager2:viewpager2:1.0.0")
+
     implementation("com.google.android.gms:play-services-maps:18.2.0")
     implementation("com.google.android.libraries.places:places:3.3.0")
 

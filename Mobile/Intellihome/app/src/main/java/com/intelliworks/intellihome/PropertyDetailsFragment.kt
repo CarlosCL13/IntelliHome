@@ -21,10 +21,17 @@ class PropertyDetailsFragment : Fragment(R.layout.fragment_property_details) {
 
         val etTitulo = view.findViewById<EditText>(R.id.etTituloPropiedad)
         val etPrecio = view.findViewById<EditText>(R.id.etPrecioPropiedad)
+        // NUEVO: Referencias a los campos de texto
+        val etDescripcion = view.findViewById<EditText>(R.id.etDescripcionPropiedad)
+        val etReglas = view.findViewById<EditText>(R.id.etReglasPropiedad)
 
+        // Cargar valores existentes
         etTitulo.setText(viewModel.titulo.value)
         etPrecio.setText(viewModel.precio.value)
+        etDescripcion.setText(viewModel.descripcion.value)
+        etReglas.setText(viewModel.reglas.value)
 
+        // Listeners para guardar cambios
         etTitulo.addTextChangedListener(object : SimpleTextWatcher() {
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
                 viewModel.titulo.value = s.toString()
@@ -35,8 +42,18 @@ class PropertyDetailsFragment : Fragment(R.layout.fragment_property_details) {
                 viewModel.precio.value = s.toString()
             }
         })
+        // NUEVO: Listeners para Descripción y Reglas
+        etDescripcion.addTextChangedListener(object : SimpleTextWatcher() {
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+                viewModel.descripcion.value = s.toString()
+            }
+        })
+        etReglas.addTextChangedListener(object : SimpleTextWatcher() {
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+                viewModel.reglas.value = s.toString()
+            }
+        })
 
-        // Configuración de filas de contadores reutilizando lógica
         setupCounter(view.findViewById(R.id.rowHuespedes), getString(R.string.label_guests), viewModel.huespedes)
         setupCounter(view.findViewById(R.id.rowHabitaciones), getString(R.string.label_bedrooms), viewModel.habitaciones)
         setupCounter(view.findViewById(R.id.rowCamas), getString(R.string.label_beds), viewModel.camas)
@@ -56,10 +73,6 @@ class PropertyDetailsFragment : Fragment(R.layout.fragment_property_details) {
         }
     }
 
-    /**
-     * Configura la lógica de incremento y decremento para un contador específico.
-     * Gestiona la actualización del LiveData y el estado (habilitado/deshabilitado) del botón de resta.
-     */
     private fun setupCounter(rowView: View, label: String, liveData: MutableLiveData<Int>) {
         val txtLabel = rowView.findViewById<TextView>(R.id.txtLabel)
         val btnMinus = rowView.findViewById<ImageButton>(R.id.btnMinus)
