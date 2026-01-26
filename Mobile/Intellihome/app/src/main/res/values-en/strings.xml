@@ -251,6 +251,8 @@
 
     <string name="property_detail_title">Property Details</string>
     <string name="property_image_desc">Property images</string>
+    <string name="previous_photo">Previous photo</string>
+    <string name="next_photo">Next photo</string>
     <string name="property_name_placeholder">Property name</string>
     <string name="property_amenities_label">Amenities list:</string>
     <string name="property_host_label">Host:</string>
@@ -262,6 +264,8 @@
     <string name="btn_rent">Rent</string>
     <string name="btn_domotica">Smart Home</string>
 
+
+    <!-- Payment -->
     <string name="payment_title">Payment process</string>
     <string name="payment_use_new_card">Use new card</string>
     <string name="payment_saved_card_label">I will use card ending in 4422</string>

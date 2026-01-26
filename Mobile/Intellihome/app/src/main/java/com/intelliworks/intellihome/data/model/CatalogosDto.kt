@@ -17,3 +17,9 @@ data class PreguntasRecuperacionDto(
     val id: Int,
     val texto: String
 )
+
+// DTO para amenidades
+data class AmenidadDto(
+    val id: Int,
+    val nombre: String
+)

@@ -20,6 +20,7 @@ def registrar_propiedad(
     usuario_id: int = Form(...),
     tipo_casa_id: int = Form(...),
     hobbies_ids: str = Form(...),
+    amenidades_ids: str = Form(...),
     latitud: float = Form(...),
     longitud: float = Form(...),
     titulo_publicacion: str = Form(...),
@@ -37,6 +38,8 @@ def registrar_propiedad(
     db: Session = Depends(get_db)
     ):
     hobbies_ids_list = [int(i) for i in hobbies_ids.split(",")] if hobbies_ids else []
+    amenidades_ids_list = [int(i) for i in amenidades_ids.split(",")] if amenidades_ids else []
+    # Se registra la propiedad usando el servicio
     resultado = Propiedad_Servicio.registrar_propiedad(
         db=db,
         usuario_id=usuario_id,
@@ -53,6 +56,7 @@ def registrar_propiedad(
         banos=banos,
         cocina=cocina,
         hobbies_ids=hobbies_ids_list,
+        amenidades_ids=amenidades_ids_list,
         reglas_uso=reglas_uso,
         vehiculos=vehiculos,
         estado=estado
@@ -118,11 +122,22 @@ def get_propiedad_por_id(propiedad_id: int, request: Request, db: Session = Depe
     # Nombres relacionados
     tipo_casa = db.query(TipoCasa).filter(TipoCasa.id == prop.tipo_casa_id).first()
     usuario = db.query(Usuario).filter(Usuario.id == prop.usuario_id).first()
+    # Imagen de perfil del usuario
+    imagen_perfil_url = None
+    if usuario and hasattr(usuario, 'imagen_perfil') and usuario.imagen_perfil:
+        nombre_archivo = os.path.basename(usuario.imagen_perfil)
+        base_url_img = base_url
+        # Si la imagen está en la carpeta uploads, servirla por /uploads
+        if 'uploads' in usuario.imagen_perfil:
+            imagen_perfil_url = f"{base_url_img}/uploads/{nombre_archivo}"
+        else:
+            imagen_perfil_url = usuario.imagen_perfil
     resultado = {
         "id": prop.id,
         "usuario": usuario.nombre if usuario else None,
         "usuario_nombre_completo": f"{usuario.nombre} {usuario.apellidos}".strip() if usuario and hasattr(usuario, 'nombre') and hasattr(usuario, 'apellidos') else None,
         "usuario_telefono": usuario.telefono if usuario and hasattr(usuario, 'telefono') else None,
+        "usuario_imagen_perfil": imagen_perfil_url,
         "tipo_casa": tipo_casa.nombre if tipo_casa else None,
         "latitud": prop.latitud,
         "longitud": prop.longitud,
