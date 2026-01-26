@@ -4,6 +4,10 @@ from Modelos import db
 class CasaServicio:
     @staticmethod
     def cambiar_led(db, propiedad_id, habitacion=None, accion=None):
+        """
+        Cambia el estado de un LED de una habitación o todos.
+        accion: "encender", "apagar", "todos_encender", "todos_apagar"
+        """
         if accion not in ["encender", "apagar", "todos_encender", "todos_apagar"]:
             return {"error": "Acción no válida"}
 
