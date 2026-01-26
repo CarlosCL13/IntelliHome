@@ -7,6 +7,8 @@ from Modelos.Amenidad import Amenidad, PropiedadAmenidad
 from Modelos.TipoCasa import TipoCasa
 from Modelos.Usuario import Usuario
 from Modelos.Hobby import Hobby, PropiedadHobby
+from Modelos.Arrendamiento import ArrendamientoPropiedad
+from datetime import date
 from typing import Optional
 from Base_de_Datos.db_session import get_db
 import os
@@ -71,6 +73,7 @@ def get_todas_propiedades(request: Request, db: Session = Depends(get_db)):
     if "localhost" in base_url or "127.0.0.1" in base_url:
         ip = get_local_ip()
         base_url = base_url.replace("localhost", ip).replace("127.0.0.1", ip)
+    
     for prop in propiedades:
         # Obtener solo la primera foto
         foto = db.query(FotoPropiedad).filter(FotoPropiedad.propiedad_id == prop.id).first()
@@ -97,10 +100,12 @@ def get_propiedad_por_id(propiedad_id: int, request: Request, db: Session = Depe
     prop = db.query(Propiedad).filter(Propiedad.id == propiedad_id).first()
     if not prop:
         raise HTTPException(status_code=404, detail="Propiedad no encontrada")
+    
     base_url = str(request.base_url).rstrip('/')
     if "localhost" in base_url or "127.0.0.1" in base_url:
         ip = get_local_ip()
         base_url = base_url.replace("localhost", ip).replace("127.0.0.1", ip)
+    
     # Fotos
     fotos = db.query(FotoPropiedad).filter(FotoPropiedad.propiedad_id == prop.id).all()
     fotos_urls = []
@@ -108,6 +113,7 @@ def get_propiedad_por_id(propiedad_id: int, request: Request, db: Session = Depe
         nombre_archivo = os.path.basename(foto.url_foto)
         url = f"{base_url}/uploads/{nombre_archivo}"
         fotos_urls.append(url)
+    
     # Amenidades
     amenidades_ids = db.query(PropiedadAmenidad.amenidad_id).filter(PropiedadAmenidad.propiedad_id == prop.id).all()
     amenidades = db.query(Amenidad).filter(Amenidad.id.in_([a[0] for a in amenidades_ids])).all()
@@ -129,6 +135,17 @@ def get_propiedad_por_id(propiedad_id: int, request: Request, db: Session = Depe
             imagen_perfil_url = f"{base_url_img}/uploads/{nombre_archivo}"
         else:
             imagen_perfil_url = usuario.imagen_perfil
+
+    # Se obtiene el Inquilino actual de la propiedad (hoy)
+    inquilino_actual = obtener_inquilino_actual(propiedad_id, db)
+    inquilino_actual_id = None
+    # Se obtiene el id del inquilino actual
+    if inquilino_actual:
+        inquilino_actual_id = inquilino_actual.id
+
+    # Se obtiene los arrendamientos futuros de la propiedad
+    futuros_arrendamientos = obtener_arrendamientos_futuros(propiedad_id, db)
+
     resultado = {
         "id": prop.id,
         "usuario": usuario.nombre if usuario else None,
@@ -149,7 +166,9 @@ def get_propiedad_por_id(propiedad_id: int, request: Request, db: Session = Depe
         "estado": prop.estado,
         "fotos": fotos_urls,
         "amenidades": amenidades_list,
-        "hobbies": hobbies_list
+        "hobbies": hobbies_list,
+        "inquilino_actual_id": inquilino_actual_id,
+        "futuros_arrendamientos": futuros_arrendamientos
     }
     return resultado
 
@@ -193,3 +212,38 @@ def get_local_ip():
     finally:
         s.close()
     return ip
+
+# Función para obtener el inquilino actual (hoy) de una propiedad
+def obtener_inquilino_actual(propiedad_id: int, db: Session) -> Optional[Usuario]:
+    hoy = date.today()
+    # Se obtiene el arrendamiento actual
+    arrendamiento_actual = db.query(ArrendamientoPropiedad).filter(
+        ArrendamientoPropiedad.propiedad_id == propiedad_id,
+        ArrendamientoPropiedad.fecha_inicio <= hoy,
+        ArrendamientoPropiedad.fecha_fin >= hoy
+    ).first()
+
+    if arrendamiento_actual:
+        # Se obtiene el usuario inquilino asociado a dicho arrendamiento
+        inquilino = db.query(Usuario).filter(Usuario.id == arrendamiento_actual.inquilino_id).first()
+        return inquilino
+    return None
+
+# Función para obtener los arrendamientos futuros de una propiedad
+def obtener_arrendamientos_futuros(propiedad_id: int, db: Session):
+    arrendamientos = db.query(ArrendamientoPropiedad).filter(
+        ArrendamientoPropiedad.propiedad_id == propiedad_id
+    ).all()
+
+    futuros_arrendamientos = []
+    hoy = date.today()
+    for arrendamientos_aux in arrendamientos:
+        # Se omiten los arredamientos que ya hayan finalizado hasta hoy
+        if arrendamientos_aux.fecha_fin >= hoy:
+            futuros_arrendamientos.append({
+                "arrendamiento_id": arrendamientos_aux.id,
+                "fecha_inicio": arrendamientos_aux.fecha_inicio,
+                "fecha_fin": arrendamientos_aux.fecha_fin
+            })
+    
+    return futuros_arrendamientos
