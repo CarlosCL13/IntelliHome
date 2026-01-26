@@ -235,13 +235,11 @@
     <string name="text_no_title">Sin título</string>
     <string name="text_no_address">Sin dirección</string>
 
-    <!--  Controlador de luces  -->
     <string name="light_control_title">Control de Luces</string>
     <string name="btn_all_lights">Todas las luces</string>
     <string name="btn_turn_on_all_lights">Encender luces</string>
     <string name="btn_turn_off_all_lights">Apagar luces</string>
     <string name="btn_toggle_all_lights">Encender / Apagar</string>
-    <!--  Nombre de habitaciones  -->
     <string name="room_bathroom_1">Baño\n1</string>
     <string name="room_bedroom_3">Habitación\n3</string>
     <string name="room_kitchen">Cocina</string>
@@ -267,6 +265,8 @@
     <string name="property_amenities_list_label">Comodidades:</string>
     <string name="property_rules_label">Reglas de uso:</string>
     <string name="btn_rent">Alquilar</string>
+    <string name="btn_domotica">Smart Home</string>
+
 
     <!-- Payment -->
     <string name="payment_title">Proceso de pago</string>
@@ -279,6 +279,54 @@
     <string name="payment_expiry_date_hint">MM/AA</string>
     <string name="btn_process_payment">Procesar pago</string>
 
+    <string name="error_loading_property_data">Error al cargar datos de la propiedad</string>
+    <string name="error_limit_reached">Límite alcanzado</string>
+    <string name="error_max_photos">Máximo %1$d fotos</string>
+    <string name="error_added_partial_photos">Solo se agregaron las primeras %1$d fotos.</string>
+    <string name="error_invalid_files_count">%1$d archivos inválidos</string>
+    <string name="msg_publish_confirmation">¿Deseas publicar esta propiedad ahora?</string>
 
+    <string name="default_no_title">Sin título</string>
+    <string name="default_unknown_location">Ubicación desconocida</string>
+    <string name="default_property_type">Casa</string>
+    <string name="default_no_activities">Sin actividades</string>
+    <string name="default_no_amenities">Sin comodidades</string>
+    <string name="default_description">Disfruta de este alojamiento único con estilo.</string>
+    <string name="default_rules">No fumar, No fiestas.</string>
+    <string name="default_no_description">Sin descripción</string>
+    <string name="default_no_rules">Sin reglas específicas</string>
+
+    <string name="fmt_host_name">Anfitrión: %1$s</string>
+    <string name="fmt_capacity_short">%1$d huéspedes • %2$d habs</string>
+    <string name="fmt_capacity_full">%1$d huéspedes · %2$d habitaciones · %3$d camas · %4$d baños</string>
+
+    <string name="label_location">Ubicación</string>
+    <string name="label_capacity">Capacidad</string>
+    <string name="label_description">Descripción</string>
+    <string name="label_activities">Actividades</string>
+    <string name="label_amenities">Comodidades</string>
+    <string name="label_rules">Reglas de uso</string>
+    <string name="label_iot_panel">Panel IoT</string>
+
+    <string name="label_description_long">Descripción del alojamiento</string>
+    <string name="hint_description">Cuéntales a los huéspedes sobre tu espacio...</string>
+    <string name="label_rules_long">Reglas de la casa</string>
+    <string name="hint_rules">Ej: No fumar, no fiestas, mascotas permitidas...</string>
+
+    <string name="title_filters">Filtros</string>
+    <string name="fmt_max_price">Precio máx. por noche: %1$s</string>
+    <string name="fmt_min_guests">Huéspedes mínimos: %1$d</string>
+    <string name="btn_reset">Restablecer</string>
+    <string name="btn_apply">Aplicar</string>
+
+    <string name="default_host">Host</string>
+    <string name="status_processing">Processing...</string>
+    <string name="error_payment_processing">Error processing payment</string>
+    <string name="error_user_unknown">Error: Unknown user. Please log in again.</string>
+    <string name="title_payment_success">Payment Successful!</string>
+    <string name="msg_payment_success">Property rented successfully.</string>
+    <string name="btn_go_home">Go to Home</string>
+    <string name="title_pay_amount">Pay %1$s</string>
 
 </resources>
+

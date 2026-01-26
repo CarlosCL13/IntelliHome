@@ -5,7 +5,6 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@android:color/white"
     android:padding="16dp">
 
     <ImageView
@@ -23,8 +22,7 @@
         android:id="@+id/txtTituloExplore"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="20dp"
-        android:fontFamily="@font/poppins_medium"
+        android:layout_marginTop="10dp"
         android:text="@string/title_explore_properties"
         android:textColor="@android:color/black"
         android:textSize="24sp"
@@ -41,6 +39,9 @@
         android:layout_marginTop="16dp"
         android:hint="@string/hint_search_destination"
         app:startIconDrawable="@android:drawable/ic_menu_search"
+        app:endIconDrawable="@android:drawable/ic_menu_preferences"
+        app:endIconMode="custom"
+        app:endIconTint="@android:color/black"
         app:boxCornerRadiusTopStart="12dp"
         app:boxCornerRadiusTopEnd="12dp"
         app:boxCornerRadiusBottomStart="12dp"
@@ -48,10 +49,12 @@
         app:layout_constraintTop_toBottomOf="@id/txtTituloExplore">
 
         <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/etSearch"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:inputType="text"
-            android:focusable="false"
+            android:maxLines="1"
+            android:focusable="true"
             android:clickable="true"/>
     </com.google.android.material.textfield.TextInputLayout>
 
@@ -62,9 +65,7 @@
         android:layout_marginTop="16dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/searchLayout"
-        app:layout_constraintVertical_bias="1.0" />
+        app:layout_constraintTop_toBottomOf="@id/searchLayout" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

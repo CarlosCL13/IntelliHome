@@ -2,17 +2,19 @@ package com.intelliworks.intellihome.utils
 
 import java.util.UUID
 
-/**
- * Modelo de dominio que representa una propiedad inmobiliaria.
- * @property userId Identificador del usuario propietario del inmueble.
- */
 data class Property(
     val id: String = UUID.randomUUID().toString(),
-    val userId: String,
+    val userId: String,          // El id del dueño (Host)
+    val nombreUsuario: String,   // Nombre del dueño
     val titulo: String,
     val precio: String,
     val direccion: String,
     val tipo: String,
     val capacidad: String,
-    val imagenUri: String
+    val imagenes: List<String>,
+    val descripcion: String,
+    val actividades: String,
+    val comodidades: String,
+    val reglas: String,
+    var rentedByUserId: String? = null
 )

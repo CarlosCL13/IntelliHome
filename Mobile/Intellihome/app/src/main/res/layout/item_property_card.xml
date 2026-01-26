@@ -19,7 +19,8 @@
             android:layout_height="200dp"
             android:scaleType="centerCrop"
             android:background="#E0E0E0"
-            android:src="@android:drawable/ic_menu_gallery"/>
+            android:src="@android:drawable/ic_menu_gallery"
+            android:contentDescription="@string/property_image_desc"/>
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -31,7 +32,7 @@
                 android:id="@+id/txtTitle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Título de la Propiedad"
+                android:text="@string/property_name_placeholder"
                 android:textSize="18sp"
                 android:textStyle="bold"
                 android:textColor="@android:color/black"/>
@@ -41,7 +42,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="4dp"
-                android:text="Ubicación"
+                android:text="@string/label_location"
                 android:textSize="14sp"
                 android:textColor="#757575"/>
 
@@ -57,7 +58,7 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:text="Capacidad"
+                    android:text="@string/label_capacity"
                     android:textSize="12sp"
                     android:textColor="#616161"/>
 

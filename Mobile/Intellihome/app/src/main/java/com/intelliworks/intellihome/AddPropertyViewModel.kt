@@ -36,21 +36,29 @@ class AddPropertyViewModel : ViewModel() {
     val titulo = MutableLiveData<String>("")
     val precio = MutableLiveData<String>("")
 
+    // NUEVO: Campos para descripción y reglas
+    val descripcion = MutableLiveData<String>("")
+    val reglas = MutableLiveData<String>("")
+
     val huespedes = MutableLiveData<Int>(4)
     val habitaciones = MutableLiveData<Int>(2)
     val camas = MutableLiveData<Int>(2)
     val banos = MutableLiveData<Int>(1)
 
-    // MediatorLiveData observa cambios en título y precio para habilitar el botón "Siguiente"
-    // solo cuando ambos campos contienen texto.
+    // MediatorLiveData observa cambios en título, precio Y DESCRIPCIÓN para habilitar el botón "Siguiente"
     val sonDetallesValidos = androidx.lifecycle.MediatorLiveData<Boolean>().apply {
         fun validar() {
             val t = titulo.value
             val p = precio.value
-            value = !t.isNullOrEmpty() && !p.isNullOrEmpty()
+            val d = descripcion.value
+
+            // Validamos que título, precio y descripción no estén vacíos.
+            // Las reglas pueden ser opcionales.
+            value = !t.isNullOrEmpty() && !p.isNullOrEmpty() && !d.isNullOrEmpty()
         }
         addSource(titulo) { validar() }
         addSource(precio) { validar() }
+        addSource(descripcion) { validar() }
     }
 
     // --- COMODIDADES ---

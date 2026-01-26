@@ -16,9 +16,25 @@ object PropertyRepository {
 
     // Guarda una nueva propiedad al inicio de la lista existente
     fun saveProperty(context: Context, property: Property) {
+        val sharedPreferences = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        val gson = Gson()
+
+        // 1. Obtener lista actual
         val properties = getProperties(context).toMutableList()
-        properties.add(0, property)
-        saveList(context, properties)
+
+        // 2. BUSCAR Y ELIMINAR la versión vieja si existe (Para evitar duplicados)
+        val index = properties.indexOfFirst { it.id == property.id }
+        if (index != -1) {
+            properties[index] = property // Reemplazar (Actualizar)
+        } else {
+            properties.add(property) // Agregar nueva
+        }
+
+        // 3. Guardar lista actualizada
+        val editor = sharedPreferences.edit()
+        val jsonString = gson.toJson(properties)
+        editor.putString(KEY_PROPERTIES, jsonString)
+        editor.apply()
     }
 
     // Recupera todas las propiedades almacenadas
