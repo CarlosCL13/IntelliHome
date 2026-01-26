@@ -8,6 +8,7 @@ from Controladores.Usuario_Controlador import router as usuario_router
 from Controladores.Catalogos_Controlador import router as catalogos_router
 from Controladores.Propiedad_Controlador import router as propiedad_router
 from Controladores.Casa_Controlador import router as casa_router
+from Controladores.Arrendamiento_Controlador import router as arrendamiento_router
 
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
@@ -48,6 +49,7 @@ app.include_router(usuario_router)
 app.include_router(catalogos_router)
 app.include_router(propiedad_router)
 app.include_router(casa_router)
+app.include_router(arrendamiento_router)
 
 # Para correr: uvicorn app:app --reload
 if __name__ == "__main__":
