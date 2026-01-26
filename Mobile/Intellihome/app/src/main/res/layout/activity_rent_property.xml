@@ -17,7 +17,7 @@
             android:id="@+id/img_contenedor"
             android:layout_width="379dp"
             android:layout_height="200dp"
-            android:layout_marginTop="80dp"
+            android:layout_marginTop="70dp"
             app:cardCornerRadius="12dp"
             app:cardElevation="4dp"
             app:layout_constraintEnd_toEndOf="parent"
@@ -32,6 +32,50 @@
                 android:scaleType="centerCrop"
                 android:src="@drawable/ic_launcher_foreground" />
 
+            <!-- Botón anterior -->
+
+            <!-- Botón siguiente -->
+            <ImageButton
+                android:id="@+id/btn_prev_foto"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:layout_gravity="start|center_vertical"
+                android:layout_margin="8dp"
+                android:alpha="0.8"
+                android:background="@android:color/transparent"
+                android:contentDescription="@string/previous_photo"
+                android:scaleType="fitCenter"
+                android:src="@android:drawable/ic_media_previous" />
+
+            <ImageButton
+                android:id="@+id/btn_next_foto"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:layout_gravity="end|center_vertical"
+                android:layout_margin="8dp"
+                android:background="@android:color/transparent"
+                android:contentDescription="@string/next_photo"
+                android:src="@android:drawable/ic_media_next"
+                android:scaleType="fitCenter"
+                android:alpha="0.8" />
+
+            <!-- Indicador de posición -->
+            <TextView
+                android:id="@+id/tv_indicador_fotos"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="bottom|center_horizontal"
+                android:layout_margin="8dp"
+                android:background="#AA000000"
+                android:paddingStart="12dp"
+                android:paddingTop="4dp"
+                android:paddingEnd="12dp"
+                android:paddingBottom="4dp"
+                android:text=""
+                android:textColor="@android:color/white"
+                android:textSize="12sp"
+                android:textStyle="bold" />
+
         </androidx.cardview.widget.CardView>
 
         <!-- Título de la propiedad -->
@@ -39,7 +83,7 @@
             android:id="@+id/tv_titulo_propiedad"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginTop="15dp"
+            android:layout_marginTop="12dp"
             android:gravity="center"
             android:text="@string/property_name_placeholder"
             android:textColor="@android:color/black"
@@ -54,11 +98,11 @@
             android:id="@+id/tv_amenidades_propiedad"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginTop="15dp"
+            android:layout_marginTop="10dp"
             android:gravity="center"
             android:text="@string/property_amenities_label"
-            android:textColor="@android:color/darker_gray"
-            android:textSize="16sp"
+            android:textColor="@color/black"
+            android:textSize="14sp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/tv_titulo_propiedad" />
@@ -66,9 +110,9 @@
         <!-- Linea divisoria -->
         <View
             android:id="@+id/divider0"
-            android:layout_width="379dp"
+            android:layout_width="0dp"
             android:layout_height="1dp"
-            android:layout_marginTop="15dp"
+            android:layout_marginTop="10dp"
             android:background="@android:color/black"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
@@ -79,15 +123,15 @@
             android:id="@+id/info_propietario_contenedor"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginTop="5dp"
-            android:background="@android:drawable/dialog_holo_light_frame"
+            android:layout_marginTop="2dp"
             android:gravity="center_vertical"
             android:orientation="horizontal"
             android:padding="12dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.0"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/divider0">
+            app:layout_constraintTop_toBottomOf="@id/divider0"
+            tools:ignore="UseCompoundDrawables">
 
             <ImageView
                 android:id="@+id/img_propietario"
@@ -111,9 +155,9 @@
         <!-- Linea divisoria -->
         <View
             android:id="@+id/divider1"
-            android:layout_width="379dp"
+            android:layout_width="0dp"
             android:layout_height="1dp"
-            android:layout_marginTop="5dp"
+            android:layout_marginTop="2dp"
             android:background="@android:color/black"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
@@ -136,7 +180,7 @@
         <!-- Linea divisoria -->
         <View
             android:id="@+id/divider2"
-            android:layout_width="379dp"
+            android:layout_width="0dp"
             android:layout_height="1dp"
             android:layout_marginTop="15dp"
             android:background="@android:color/black"
@@ -233,7 +277,7 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/divider5"
             app:layout_constraintVertical_bias="0.032" />
-        
+
     </androidx.constraintlayout.widget.ConstraintLayout>
 
 </ScrollView>
