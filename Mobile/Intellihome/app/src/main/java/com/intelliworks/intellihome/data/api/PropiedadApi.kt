@@ -1,5 +1,6 @@
 package com.intelliworks.intellihome.data.api
 
+import com.intelliworks.intellihome.data.model.PropiedadAlquiladaDto
 import com.intelliworks.intellihome.data.model.PropiedadDetalleDto
 import com.intelliworks.intellihome.data.model.PropiedadRegistroResponseDto
 import com.intelliworks.intellihome.data.model.PropiedadResumenDto // Importar el nuevo DTO
@@ -13,6 +14,12 @@ import retrofit2.http.Part
 import retrofit2.http.Path
 
 interface PropiedadApi {
+
+    @GET("arrendamientos/alquiladas/{user_id}")
+    suspend fun obtenerPropiedadesAlquiladas(
+        @Path("user_id") userId: Int
+    ): Response<List<PropiedadAlquiladaDto>>
+
 
     @GET("propiedades/{id}")
     suspend fun obtenerDetallePropiedad(@Path("id") id: Int): Response<PropiedadDetalleDto>

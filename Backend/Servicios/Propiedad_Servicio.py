@@ -51,11 +51,9 @@ class Propiedad_Servicio:
         habitaciones: int = 0,
         camas: int = 0,
         banos: int = 0,
-        cocina: bool = False,
         hobbies_ids: list = None,
         amenidades_ids: list = None,
         reglas_uso: str = None,
-        vehiculos: int = None,
         estado: str = 'disponible'
     ):
         errores = {}
@@ -87,11 +85,9 @@ class Propiedad_Servicio:
                 habitaciones=habitaciones,
                 camas=camas,
                 banos=banos,
-                cocina=cocina,
                 hobbies=hobbies,
                 amenidades=amenidades,
                 reglas_uso=reglas_uso,
-                vehiculos=vehiculos,
                 estado=estado
             )
             db.add(nueva_propiedad)

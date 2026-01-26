@@ -3,6 +3,7 @@ package com.intelliworks.intellihome.data.repository
 import android.content.Context
 import android.net.Uri
 import com.intelliworks.intellihome.data.api.PropiedadApi
+import com.intelliworks.intellihome.data.model.PropiedadAlquiladaDto
 import com.intelliworks.intellihome.data.model.PropiedadDetalleDto
 import com.intelliworks.intellihome.data.model.PropiedadRegistroResponseDto
 import com.intelliworks.intellihome.data.model.PropiedadResumenDto
@@ -16,6 +17,10 @@ import retrofit2.Response
 import java.io.File
 
 class PropiedadRepository(private val api: PropiedadApi) {
+
+    suspend fun obtenerAlquiladasPorUsuario(userId: Int): Response<List<PropiedadAlquiladaDto>> {
+        return api.obtenerPropiedadesAlquiladas(userId)
+    }
 
     suspend fun obtenerDetalle(id: Int): Response<PropiedadDetalleDto> {
         return api.obtenerDetallePropiedad(id)
