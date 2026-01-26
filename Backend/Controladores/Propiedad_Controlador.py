@@ -90,7 +90,9 @@ def get_todas_propiedades(request: Request, db: Session = Depends(get_db)):
             "habitaciones": prop.habitaciones,
             "camas": prop.camas,
             "banos": prop.banos,
-            "imagen": foto_url
+            "imagen": foto_url,
+            "latitud": prop.latitud,
+            "longitud": prop.longitud
         })
     return resultado
 
