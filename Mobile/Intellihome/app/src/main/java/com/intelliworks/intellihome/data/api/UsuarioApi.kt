@@ -4,6 +4,7 @@ import com.intelliworks.intellihome.data.model.UsuarioRegistroResponseDto
 import com.intelliworks.intellihome.data.model.LoginResponseDto
 import com.intelliworks.intellihome.data.model.PreguntaResponseDto
 import com.intelliworks.intellihome.data.model.RecoveryResultDto
+import com.intelliworks.intellihome.data.model.Ultimos4TarjetaDto
 import okhttp3.MultipartBody
 import okhttp3.RequestBody
 import retrofit2.Response
@@ -72,4 +73,14 @@ interface UsuarioApi {
     suspend fun buscarPorToken(
         @Field("token_publico") tokenPublico: String
     ): Response<LoginResponseDto>
+
+    /**
+     * Obtiene los últimos 4 dígitos de la tarjeta de un usuario
+     * Sincronizado con @router.get("/tarjeta/ultimos4/{user_id}") en Python.
+     */
+    @GET("usuarios/tarjeta/ultimos4/{user_id}")
+    suspend fun obtenerUltimos4Tarjeta(
+        @Path("user_id") userId: Int
+    ): Response<Ultimos4TarjetaDto>
+
 }

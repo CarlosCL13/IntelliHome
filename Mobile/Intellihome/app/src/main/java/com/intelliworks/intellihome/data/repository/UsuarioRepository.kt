@@ -6,6 +6,7 @@ import okhttp3.MultipartBody
 import okhttp3.RequestBody
 import retrofit2.Response
 import com.intelliworks.intellihome.data.model.LoginResponseDto
+import com.intelliworks.intellihome.data.model.Ultimos4TarjetaDto
 
 class UsuarioRepository(private val api: UsuarioApi) {
     suspend fun registrarUsuario(
@@ -54,4 +55,9 @@ class UsuarioRepository(private val api: UsuarioApi) {
     }
     // Función para buscar usuario por token público
     suspend fun buscarPorToken(tokenPublico: String) = api.buscarPorToken(tokenPublico)
+
+    // Obtiene los últimos 4 dígitos de la tarjeta de un usuario
+    suspend fun obtenerUltimos4Tarjeta(userId: Int): Response<Ultimos4TarjetaDto> {
+        return api.obtenerUltimos4Tarjeta(userId)
+    }
 }
