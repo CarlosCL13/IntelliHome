@@ -16,30 +16,34 @@ class PropertyAmenitiesFragment : Fragment(R.layout.fragment_property_amenities)
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // Carga la lista desde recursos para soportar internacionalización (strings.xml)
-        val listaAmenidades = resources.getStringArray(R.array.amenities_list).toList()
-
         val container = view.findViewById<LinearLayout>(R.id.containerAmenities)
         val btnSiguiente = view.findViewById<Button>(R.id.btnSiguienteAmenities)
 
-        // Generación programática de CheckBoxes para evitar redundancia en XML
-        listaAmenidades.forEach { nombreAmenidad ->
-            val checkBox = LayoutInflater.from(context)
-                .inflate(R.layout.item_amenity_checkbox, container, false) as CheckBox
+        // 1. Observamos la lista REAL que viene de la base de datos (Python)
+        viewModel.listaAmenidades.observe(viewLifecycleOwner) { lista ->
+            container.removeAllViews() // Limpiamos la lista para evitar duplicados al volver
 
-            checkBox.text = nombreAmenidad
-            checkBox.tag = nombreAmenidad
+            lista.forEach { amenidad ->
+                // Inflamos tu diseño de checkbox existente
+                val checkBox = LayoutInflater.from(context)
+                    .inflate(R.layout.item_amenity_checkbox, container, false) as CheckBox
 
-            checkBox.setOnClickListener {
-                viewModel.toggleComodidad(nombreAmenidad)
+                checkBox.text = amenidad.nombre
+
+                // 2. Verificamos si este ID ya estaba seleccionado en el ViewModel
+                val idsSeleccionados = viewModel.amenidadesSeleccionadasIds.value ?: emptySet()
+                checkBox.isChecked = idsSeleccionados.contains(amenidad.id)
+
+                // 3. Al hacer clic, guardamos el ID (no el nombre)
+                checkBox.setOnClickListener {
+                    viewModel.toggleAmenidad(amenidad.id)
+                }
+
+                container.addView(checkBox)
             }
-
-            val seleccionadas = viewModel.comodidadesSeleccionadas.value ?: emptySet()
-            checkBox.isChecked = seleccionadas.contains(nombreAmenidad)
-
-            container.addView(checkBox)
         }
 
+        // El botón siguiente siempre está habilitado en amenidades (suelen ser opcionales)
         btnSiguiente.isEnabled = true
 
         btnSiguiente.setOnClickListener {

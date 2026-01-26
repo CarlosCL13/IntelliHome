@@ -43,6 +43,7 @@ class LightControlActivity : BaseActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityLightControlBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        showSettingsButton(false)
 
         configurarBotones()
         cargarEstadoInicial()

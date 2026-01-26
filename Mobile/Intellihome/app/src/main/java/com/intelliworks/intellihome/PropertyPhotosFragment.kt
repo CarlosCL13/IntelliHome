@@ -11,14 +11,17 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.lifecycleScope // Importante para corrutinas
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.card.MaterialCardView
-import com.intelliworks.intellihome.data.repository.PropertyRepository
+import com.intelliworks.intellihome.data.api.PropiedadApi
+import com.intelliworks.intellihome.data.api.RetrofitInstance
+import com.intelliworks.intellihome.data.repository.PropiedadRepository
 import com.intelliworks.intellihome.utils.PhotosAdapter
-import com.intelliworks.intellihome.utils.Property
 import com.intelliworks.intellihome.utils.SessionManager
+import kotlinx.coroutines.launch
 import java.io.File
 import java.io.FileOutputStream
 import java.util.UUID
@@ -27,7 +30,6 @@ class PropertyPhotosFragment : Fragment(R.layout.fragment_property_photos) {
 
     private val viewModel: AddPropertyViewModel by activityViewModels()
     private lateinit var adapter: PhotosAdapter
-
     private lateinit var txtContador: TextView
     private lateinit var btnTerminar: MaterialButton
 
@@ -39,9 +41,7 @@ class PropertyPhotosFragment : Fragment(R.layout.fragment_property_photos) {
     private val pickMultipleMedia = registerForActivityResult(
         ActivityResultContracts.PickMultipleVisualMedia(MAX_PHOTOS)
     ) { uris ->
-        if (uris.isNotEmpty()) {
-            validarYAgregarFotos(uris)
-        }
+        if (uris.isNotEmpty()) validarYAgregarFotos(uris)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -61,15 +61,12 @@ class PropertyPhotosFragment : Fragment(R.layout.fragment_property_photos) {
             val hayFotos = lista.isNotEmpty()
             btnTerminar.isEnabled = hayFotos
             btnTerminar.alpha = if (hayFotos) 1.0f else 0.5f
-            val textoBase = getString(R.string.text_photo_requirements)
-            txtContador.text = "$textoBase\n(${lista.size}/$MAX_PHOTOS)"
+            txtContador.text = "${getString(R.string.text_photo_requirements)}\n(${lista.size}/$MAX_PHOTOS)"
         }
 
         btnAddPhotos.setOnClickListener {
-            val cantidadActual = viewModel.fotosSeleccionadas.value?.size ?: 0
-            if (cantidadActual >= MAX_PHOTOS) {
-                val mensaje = "${getString(R.string.error_limit_reached)} (${getString(R.string.error_max_photos, MAX_PHOTOS)})"
-                Toast.makeText(requireContext(), mensaje, Toast.LENGTH_SHORT).show()
+            if ((viewModel.fotosSeleccionadas.value?.size ?: 0) >= MAX_PHOTOS) {
+                Toast.makeText(requireContext(), getString(R.string.error_limit_reached), Toast.LENGTH_SHORT).show()
             } else {
                 pickMultipleMedia.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
             }
@@ -79,25 +76,10 @@ class PropertyPhotosFragment : Fragment(R.layout.fragment_property_photos) {
     }
 
     private fun validarYAgregarFotos(uris: List<Uri>) {
-        val fotosActuales = viewModel.fotosSeleccionadas.value ?: emptyList()
-        val espacioDisponible = MAX_PHOTOS - fotosActuales.size
-        if (espacioDisponible <= 0) return
-
-        val urisAProcesar = uris.take(espacioDisponible)
-        val fotosValidas = mutableListOf<Uri>()
-
-        for (uri in urisAProcesar) {
-            val validacion = verificarArchivo(uri)
-            if (validacion.esValido) {
-                fotosValidas.add(uri)
-            }
-        }
-        if (fotosValidas.isNotEmpty()) {
-            viewModel.agregarFotos(fotosValidas)
-        }
+        val currentSize = viewModel.fotosSeleccionadas.value?.size ?: 0
+        val space = MAX_PHOTOS - currentSize
+        if (space > 0) viewModel.agregarFotos(uris.take(space))
     }
-
-    data class ResultadoValidacion(val esValido: Boolean, val mensajeError: String = "")
 
     private fun verificarArchivo(uri: Uri): ResultadoValidacion {
         val contentResolver = requireContext().contentResolver
@@ -108,13 +90,53 @@ class PropertyPhotosFragment : Fragment(R.layout.fragment_property_photos) {
         return ResultadoValidacion(true)
     }
 
+    data class ResultadoValidacion(val esValido: Boolean, val mensajeError: String = "")
+
     private fun finalizarPublicacion() {
         val fotos = viewModel.fotosSeleccionadas.value
         if (fotos.isNullOrEmpty()) {
             Toast.makeText(requireContext(), getString(R.string.error_no_photos), Toast.LENGTH_SHORT).show()
             return
         }
-        mostrarDialogoConfirmacion(getString(R.string.msg_publish_confirmation))
+        val resumen = construirResumen()
+        mostrarDialogoConfirmacion(resumen)
+    }
+
+    /**
+     * CORREGIDO: Ahora usa los helpers del ViewModel para obtener los nombres reales
+     * en lugar de acceder a variables antiguas que ya no existen.
+     */
+    private fun construirResumen(): String {
+        val sb = StringBuilder()
+
+        // 1. Datos Básicos (Usamos el helper getNombreTipoSeleccionado)
+        val tipo = viewModel.getNombreTipoSeleccionado()
+        val titulo = viewModel.titulo.value ?: getString(R.string.text_no_title)
+        val precio = viewModel.precio.value ?: "0"
+
+        sb.append("${getString(R.string.summary_type)} $tipo\n")
+        sb.append("${getString(R.string.summary_title)} $titulo\n")
+        sb.append("${getString(R.string.summary_price)} $precio\n\n")
+
+        // 2. Capacidad
+        val nHuespedes = viewModel.huespedes.value ?: 0
+        sb.append("${getString(R.string.summary_capacity)}: $nHuespedes huéspedes\n\n")
+
+        // 3. Ubicación
+        val ubicacion = viewModel.direccionTexto.value ?: getString(R.string.text_no_address)
+        sb.append("${getString(R.string.summary_location)} $ubicacion\n\n")
+
+        // 4. Actividades (Usamos helper)
+        val actividadesStr = viewModel.getNombresHobbiesSeleccionados()
+        val finalAct = if (actividadesStr.isNotEmpty()) actividadesStr else getString(R.string.text_none)
+        sb.append("${getString(R.string.summary_activities)} $finalAct\n\n")
+
+        // 5. Comodidades (Usamos helper)
+        val comodidadesStr = viewModel.getNombresAmenidadesSeleccionadas()
+        val finalCom = if (comodidadesStr.isNotEmpty()) comodidadesStr else getString(R.string.text_none)
+        sb.append("${getString(R.string.summary_amenities)} $finalCom\n\n")
+
+        return sb.toString()
     }
 
     private fun mostrarDialogoConfirmacion(mensaje: String) {
@@ -128,81 +150,73 @@ class PropertyPhotosFragment : Fragment(R.layout.fragment_property_photos) {
     }
 
     private fun enviarDatosReales() {
+        btnTerminar.isEnabled = false // Evitar doble clic
         val context = requireContext()
-        val titulo = viewModel.titulo.value ?: getString(R.string.default_no_title)
-        val precio = viewModel.precio.value ?: "0"
-        val direccion = viewModel.direccionTexto.value ?: getString(R.string.default_unknown_location)
-        val tipo = viewModel.tipoPropiedad.value ?: getString(R.string.default_property_type)
+        val userId = SessionManager.obtenerUserId(context).toIntOrNull() ?: 0
 
+        // --- RECOLECCIÓN DE DATOS (Usando IDs) ---
+        // Aquí usamos los IDs que el ViewModel guardó al seleccionar los Chips
+
+        val tipoCasaId = viewModel.tipoSeleccionadoId.value ?: 1 // Default 1 si falla
+        val hobbiesIds = viewModel.hobbiesSeleccionadosIds.value?.toList() ?: emptyList()
+        val amenidadesIds = viewModel.amenidadesSeleccionadasIds.value?.toList() ?: emptyList()
+
+        // Resto de datos
+        val titulo = viewModel.titulo.value ?: "Sin título"
+        val descripcion = viewModel.descripcion.value ?: ""
+        val precio = (viewModel.precio.value ?: "0").toDoubleOrNull() ?: 0.0
         val huespedes = viewModel.huespedes.value ?: 0
-        val habs = viewModel.habitaciones.value ?: 0
+        val habitaciones = viewModel.habitaciones.value ?: 0
         val camas = viewModel.camas.value ?: 0
         val banos = viewModel.banos.value ?: 0
+        val reglas = viewModel.reglas.value ?: ""
+        val latitud = viewModel.latitud.value ?: 0.0
+        val longitud = viewModel.longitud.value ?: 0.0
 
-        val idUsuarioActual = SessionManager.obtenerUserId(context)
-        val nombreAnfitrion = SessionManager.obtenerNombreUsuario(context) ?: getString(R.string.default_host)
+        val api = RetrofitInstance.retrofit.create(PropiedadApi::class.java)
+        val repo = PropiedadRepository(api) // Asegúrate de importar tu repo correcto
 
-        /**
-         * Almacenamiento en formato CSV (Raw Data) para permitir localización dinámica.
-         * Estructura: "huéspedes,habitaciones,camas,baños"
-         */
-        val capacidadRaw = "$huespedes,$habs,$camas,$banos"
+        lifecycleScope.launch {
+            try {
+                Toast.makeText(context, "Publicando...", Toast.LENGTH_SHORT).show()
 
-        // Persistencia de imágenes en almacenamiento interno
-        val listaUrisOriginales = viewModel.fotosSeleccionadas.value ?: emptyList()
-        val listaRutasPersistentes = listaUrisOriginales.mapNotNull { uriOriginal ->
-            copiarImagenAInternalStorage(context, uriOriginal)
-        }
+                val response = repo.registrarPropiedad(
+                    context = context,
+                    usuarioId = userId,
+                    tipoCasaId = tipoCasaId,
+                    hobbiesIds = hobbiesIds,
+                    amenidadesIds = amenidadesIds,
+                    latitud = latitud,
+                    longitud = longitud,
+                    titulo = titulo,
+                    descripcion = descripcion,
+                    precio = precio,
+                    huespedes = huespedes,
+                    habitaciones = habitaciones,
+                    camas = camas,
+                    banos = banos,
+                    cocina = true, // O lógica si cocina está en amenidades
+                    reglas = reglas,
+                    vehiculos = 1,
+                    fotosUris = viewModel.fotosSeleccionadas.value ?: emptyList()
+                )
 
-        val actividadesStr = viewModel.actividadesSeleccionadas.value?.joinToString(", ") ?: getString(R.string.default_no_activities)
-        val comodidadesStr = viewModel.comodidadesSeleccionadas.value?.joinToString(", ") ?: getString(R.string.default_no_amenities)
-        val descripcionStr = viewModel.descripcion.value ?: getString(R.string.default_no_description)
-        val reglasStr = viewModel.reglas.value ?: getString(R.string.default_no_rules)
-
-        val nuevaPropiedad = Property(
-            id = UUID.randomUUID().toString(),
-            userId = idUsuarioActual,
-            nombreUsuario = nombreAnfitrion,
-            titulo = titulo,
-            precio = precio,
-            direccion = direccion,
-            tipo = tipo,
-            capacidad = capacidadRaw,
-            imagenes = listaRutasPersistentes,
-            descripcion = descripcionStr,
-            actividades = actividadesStr,
-            comodidades = comodidadesStr,
-            reglas = reglasStr
-        )
-
-        PropertyRepository.saveProperty(context, nuevaPropiedad)
-
-        Toast.makeText(context, getString(R.string.msg_publish_success), Toast.LENGTH_LONG).show()
-        requireActivity().finish()
-    }
-
-    /**
-     * Copia la imagen seleccionada al almacenamiento privado de la aplicación
-     * para asegurar su persistencia.
-     */
-    private fun copiarImagenAInternalStorage(context: Context, uri: Uri): String? {
-        return try {
-            val inputStream = context.contentResolver.openInputStream(uri) ?: return null
-            val imagesDir = File(context.filesDir, "property_images")
-            if (!imagesDir.exists()) imagesDir.mkdirs()
-
-            val fileName = "img_${UUID.randomUUID()}.jpg"
-            val file = File(imagesDir, fileName)
-            val outputStream = FileOutputStream(file)
-
-            inputStream.copyTo(outputStream)
-            inputStream.close()
-            outputStream.close()
-
-            Uri.fromFile(file).toString()
-        } catch (e: Exception) {
-            e.printStackTrace()
-            null
+                if (response.isSuccessful) {
+                    Toast.makeText(context, getString(R.string.msg_publish_success), Toast.LENGTH_LONG).show()
+                    requireActivity().finish()
+                } else {
+                    val errorStr = response.errorBody()?.string() ?: "Error desconocido"
+                    Toast.makeText(context, "Error: $errorStr", Toast.LENGTH_LONG).show()
+                    btnTerminar.isEnabled = true
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+                Toast.makeText(context, "Error de conexión", Toast.LENGTH_SHORT).show()
+                btnTerminar.isEnabled = true
+            }
         }
     }
+
+    // El método copiarImagenAInternalStorage ya no se llama directamente aquí,
+    // lo maneja el repositorio (PropiedadRepository) usando FileUtils.
 }
