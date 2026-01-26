@@ -30,9 +30,7 @@ def registrar_propiedad(
     habitaciones: int = Form(...),
     camas: int = Form(...),
     banos: int = Form(...),
-    cocina: bool = Form(...), # Se quita
     reglas_uso: str = Form(None),
-    vehiculos: Optional[int] = Form(None), # Se quita
     estado: str = Form('disponible'),
     fotos_propiedad: list[UploadFile] = File(...),
     db: Session = Depends(get_db)
@@ -54,11 +52,9 @@ def registrar_propiedad(
         habitaciones=habitaciones,
         camas=camas,
         banos=banos,
-        cocina=cocina,
         hobbies_ids=hobbies_ids_list,
         amenidades_ids=amenidades_ids_list,
         reglas_uso=reglas_uso,
-        vehiculos=vehiculos,
         estado=estado
     )
     if 'errores' in resultado:
@@ -149,9 +145,7 @@ def get_propiedad_por_id(propiedad_id: int, request: Request, db: Session = Depe
         "habitaciones": prop.habitaciones,
         "camas": prop.camas,
         "banos": prop.banos,
-        "cocina": prop.cocina,
         "reglas_uso": prop.reglas_uso,
-        "vehiculos": prop.vehiculos,
         "estado": prop.estado,
         "fotos": fotos_urls,
         "amenidades": amenidades_list,
