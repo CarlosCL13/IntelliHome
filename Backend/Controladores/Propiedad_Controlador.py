@@ -7,7 +7,7 @@ from Modelos.Amenidad import Amenidad, PropiedadAmenidad
 from Modelos.TipoCasa import TipoCasa
 from Modelos.Usuario import Usuario
 from Modelos.Hobby import Hobby, PropiedadHobby
-from Modelos.Arrendamiento import ArrendamientoPropiedad
+from Modelos.Arrendamiento import Arrendamiento
 from datetime import date
 from typing import Optional
 from Base_de_Datos.db_session import get_db
@@ -217,10 +217,10 @@ def get_local_ip():
 def obtener_inquilino_actual(propiedad_id: int, db: Session) -> Optional[Usuario]:
     hoy = date.today()
     # Se obtiene el arrendamiento actual
-    arrendamiento_actual = db.query(ArrendamientoPropiedad).filter(
-        ArrendamientoPropiedad.propiedad_id == propiedad_id,
-        ArrendamientoPropiedad.fecha_inicio <= hoy,
-        ArrendamientoPropiedad.fecha_fin >= hoy
+    arrendamiento_actual = db.query(Arrendamiento).filter(
+        Arrendamiento.propiedad_id == propiedad_id,
+        Arrendamiento.fecha_inicio <= hoy,
+        Arrendamiento.fecha_fin >= hoy
     ).first()
 
     if arrendamiento_actual:
@@ -231,8 +231,8 @@ def obtener_inquilino_actual(propiedad_id: int, db: Session) -> Optional[Usuario
 
 # Función para obtener los arrendamientos futuros de una propiedad
 def obtener_arrendamientos_futuros(propiedad_id: int, db: Session):
-    arrendamientos = db.query(ArrendamientoPropiedad).filter(
-        ArrendamientoPropiedad.propiedad_id == propiedad_id
+    arrendamientos = db.query(Arrendamiento).filter(
+        Arrendamiento.propiedad_id == propiedad_id
     ).all()
 
     futuros_arrendamientos = []
