@@ -30,9 +30,9 @@ def registrar_propiedad(
     habitaciones: int = Form(...),
     camas: int = Form(...),
     banos: int = Form(...),
-    cocina: bool = Form(...),
+    cocina: bool = Form(...), # Se quita
     reglas_uso: str = Form(None),
-    vehiculos: Optional[int] = Form(None),
+    vehiculos: Optional[int] = Form(None), # Se quita
     estado: str = Form('disponible'),
     fotos_propiedad: list[UploadFile] = File(...),
     db: Session = Depends(get_db)
@@ -96,7 +96,8 @@ def get_todas_propiedades(request: Request, db: Session = Depends(get_db)):
         })
     return resultado
 
-# Endpoint para obtener una propiedad por id, incluyendo fotos (URL completa) y amenidades
+# Renta de hoy (id del inquilino)
+# Endpoint para obtener una propiedad por id, incluyendo fotos (URL completa) y amenidades (información completa de una propiedad en concreto)
 @router.get("/{propiedad_id}", summary="Obtener una propiedad por id con fotos y amenidades")
 def get_propiedad_por_id(propiedad_id: int, request: Request, db: Session = Depends(get_db)):
     prop = db.query(Propiedad).filter(Propiedad.id == propiedad_id).first()
