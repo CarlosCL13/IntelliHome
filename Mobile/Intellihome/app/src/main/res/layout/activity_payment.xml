@@ -12,7 +12,8 @@
         android:layout_height="wrap_content"
         android:padding="16dp">
 
-        <!-- Título de sección de pago -->
+
+        <!-- Cambiar forma de pago -->
         <TextView
             android:id="@+id/tv_titulo_alquilar"
             android:layout_width="0dp"
@@ -32,21 +33,106 @@
             android:id="@+id/cb_confirmar_tarjeta"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginTop="50dp"
+            android:layout_marginTop="20dp"
             android:checked="true"
             android:text="@string/payment_saved_card_label"
             android:textColor="@android:color/black"
             android:textSize="16sp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/tv_titulo_alquilar" />
+            app:layout_constraintTop_toBottomOf="@id/contenedor_fechas_alquiler" />
+
+        <!-- Sección de selección de fechas -->
+        <androidx.cardview.widget.CardView
+            android:id="@+id/contenedor_fechas_alquiler"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="30dp"
+            app:cardCornerRadius="8dp"
+            app:cardElevation="2dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/tv_titulo_alquilar">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="16dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/payment_rental_dates_title"
+                    android:textColor="@android:color/black"
+                    android:textSize="16sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:text="@string/payment_rental_dates_subtitle"
+                    android:textColor="@android:color/darker_gray"
+                    android:textSize="14sp" />
+
+                <Button
+                    android:id="@+id/btn_seleccionar_fechas"
+                    style="@style/Widget.Material3.Button.OutlinedButton"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:padding="12dp"
+                    android:text="@string/payment_select_dates_button"
+                    android:textSize="14sp"
+                    app:cornerRadius="8dp" />
+
+                <TextView
+                    android:id="@+id/tv_fechas_seleccionadas"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:background="#F5F5F5"
+                    android:padding="12dp"
+                    android:text="@string/payment_no_dates_selected"
+                    android:textColor="@android:color/darker_gray"
+                    android:textSize="14sp"
+                    android:visibility="gone" />
+
+                <TextView
+                    android:id="@+id/tv_total_noches"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:text="@string/payment_total_nights"
+                    android:textColor="@android:color/black"
+                    android:textSize="14sp"
+                    android:textStyle="bold"
+                    android:visibility="gone" />
+
+                <TextView
+                    android:id="@+id/tv_total_pagar"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:background="#E8F5E9"
+                    android:padding="12dp"
+                    android:text="Total a pagar: $0"
+                    android:textColor="#2E7D32"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    android:visibility="gone" />
+
+            </LinearLayout>
+
+        </androidx.cardview.widget.CardView>
 
         <!-- Contenedor tarjeta guardada (solo CVV) -->
         <androidx.cardview.widget.CardView
             android:id="@+id/contenedor_tajeta_guardada"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginTop="50dp"
+            android:layout_marginTop="10dp"
             app:cardCornerRadius="8dp"
             app:cardElevation="2dp"
             app:layout_constraintEnd_toEndOf="parent"
@@ -98,7 +184,7 @@
             android:id="@+id/contenedor_tarjeta_nueva"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginTop="50dp"
+            android:layout_marginTop="10dp"
             android:visibility="gone"
             app:cardCornerRadius="8dp"
             app:cardElevation="2dp"
@@ -215,7 +301,7 @@
             app:barrierDirection="bottom"
             app:constraint_referenced_ids="contenedor_tajeta_guardada,contenedor_tarjeta_nueva" />
 
-        <!-- Botón de pago -->
+        <!-- Botón de procesar pago -->
         <Button
             android:id="@+id/btn_procesar_pago"
             android:layout_width="0dp"

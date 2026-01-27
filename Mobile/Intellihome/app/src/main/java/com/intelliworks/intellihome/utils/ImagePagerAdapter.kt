@@ -1,22 +1,19 @@
 package com.intelliworks.intellihome.utils
 
-import android.net.Uri
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import androidx.recyclerview.widget.RecyclerView
+import com.bumptech.glide.Glide
 import com.intelliworks.intellihome.R
 
 /**
- * Adaptador versátil para mostrar imágenes en un ViewPager2.
- * @param images Lista de URIs (Strings) de las imágenes.
- * @param layoutId El ID del recurso R.layout que se usará para cada ítem (ej. R.layout.item_image_slider).
- * @param onItemClick Listener opcional para manejar clics en la imagen.
+ * Adaptador para mostrar imágenes en ViewPager2 usando Glide.
  */
 class ImagePagerAdapter(
     private val images: List<String>,
-    private val layoutId: Int, // <--- NUEVO PARÁMETRO
+    private val layoutId: Int,
     private val onItemClick: ((Int) -> Unit)? = null
 ) : RecyclerView.Adapter<ImagePagerAdapter.ImageViewHolder>() {
 
@@ -31,18 +28,28 @@ class ImagePagerAdapter(
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ImageViewHolder {
-        // Usamos el layoutId que recibimos en el constructor
         val view = LayoutInflater.from(parent.context)
             .inflate(layoutId, parent, false)
         return ImageViewHolder(view)
     }
 
     override fun onBindViewHolder(holder: ImageViewHolder, position: Int) {
-        try {
-            holder.imageView.setImageURI(Uri.parse(images[position]))
-        } catch (e: Exception) {
-            holder.imageView.setImageResource(R.drawable.ic_launcher_foreground)
+        val url = images[position]
+
+        // --- CORRECCIÓN: Usamos Glide para cargar desde URL ---
+        val request = Glide.with(holder.itemView.context)
+            .load(url)
+            .placeholder(android.R.drawable.ic_menu_gallery)
+            .error(android.R.drawable.ic_delete)
+
+        // Ajuste de escala según si es pantalla completa o slider
+        if (layoutId == R.layout.item_full_screen_image) {
+            request.fitCenter()
+        } else {
+            request.centerCrop()
         }
+
+        request.into(holder.imageView)
     }
 
     override fun getItemCount(): Int = images.size

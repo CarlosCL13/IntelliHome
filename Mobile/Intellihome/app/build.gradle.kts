@@ -39,8 +39,11 @@ android {
 
         // 4. Inyectar a Kotlin (BuildConfig)
         buildConfigField("String", "MAPS_API_KEY", "\"$mapsApiKey\"")
-        // --- FIN CÓDIGO DE SEGURIDAD ---
-    }
+        buildConfigField(
+            "String",
+            "GOOGLE_MAPS_API_KEY",
+            "\"${project.findProperty("MAPS_API_KEY")}\""
+        )    }
 
     buildTypes {
         release {
