@@ -1,41 +1,44 @@
 package com.intelliworks.intellihome
 
 import android.os.Bundle
-import androidx.fragment.app.Fragment
 import android.view.View
 import android.widget.Button
+import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
-import com.google.android.material.card.MaterialCardView
+import androidx.recyclerview.widget.GridLayoutManager
+import androidx.recyclerview.widget.RecyclerView
+import com.intelliworks.intellihome.utils.PropertyTypeAdapter
 
 class PropertyTypeFragment : Fragment(R.layout.fragment_property_type) {
 
     private val viewModel: AddPropertyViewModel by activityViewModels()
-
-    private lateinit var cardContemporaneo: MaterialCardView
-    private lateinit var cardMinimalista: MaterialCardView
-    private lateinit var cardAventurero: MaterialCardView
+    private lateinit var adapter: PropertyTypeAdapter
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        cardContemporaneo = view.findViewById(R.id.cardContemporaneo)
-        cardMinimalista = view.findViewById(R.id.cardMinimalista)
-        cardAventurero = view.findViewById(R.id.cardAventurero)
-
-        cardContemporaneo.setOnClickListener {
-            seleccionar(cardContemporaneo, "CONTEMPORANEO")
-        }
-
-        cardMinimalista.setOnClickListener {
-            seleccionar(cardMinimalista, "MINIMALISTA")
-        }
-
-        cardAventurero.setOnClickListener {
-            seleccionar(cardAventurero, "AVENTURERO")
-        }
-
+        val recycler = view.findViewById<RecyclerView>(R.id.recyclerTipos)
         val btnSiguiente = view.findViewById<Button>(R.id.btnSiguiente)
 
+        // Configuración del RecyclerView
+        adapter = PropertyTypeAdapter { idSeleccionado ->
+            viewModel.setTipo(idSeleccionado)
+        }
+        // Usamos GridLayoutManager con 2 columnas para imitar tu diseño original
+        recycler.layoutManager = GridLayoutManager(requireContext(), 2)
+        recycler.adapter = adapter
+
+        // 1. Cargar lista desde la BD
+        viewModel.listaTipos.observe(viewLifecycleOwner) { lista ->
+            adapter.submitList(lista)
+        }
+
+        // 2. Restaurar selección previa (si el usuario regresa)
+        viewModel.tipoSeleccionadoId.observe(viewLifecycleOwner) { id ->
+            adapter.setSelected(id)
+        }
+
+        // 3. Habilitar botón "Siguiente"
         viewModel.esTipoValido.observe(viewLifecycleOwner) { esValido ->
             btnSiguiente.isEnabled = esValido
             btnSiguiente.alpha = if (esValido) 1.0f else 0.5f
@@ -46,31 +49,6 @@ class PropertyTypeFragment : Fragment(R.layout.fragment_property_type) {
                 .replace(R.id.fragmentContainer, PropertyActivitiesFragment())
                 .addToBackStack(null)
                 .commit()
-        }
-    }
-
-    private fun seleccionar(cardSeleccionada: MaterialCardView, tipo: String) {
-        resetearCards()
-
-        // Resaltar visualmente la tarjeta seleccionada
-        cardSeleccionada.setCardBackgroundColor(requireContext().getColor(R.color.card_selected_bg))
-        cardSeleccionada.strokeColor = requireContext().getColor(R.color.card_selected_stroke)
-        cardSeleccionada.strokeWidth = 3
-        cardSeleccionada.cardElevation = 8f
-
-        viewModel.tipoPropiedad.value = tipo
-    }
-
-    private fun resetearCards() {
-        val cards = listOf(cardContemporaneo, cardMinimalista, cardAventurero)
-        val defaultBg = requireContext().getColor(R.color.card_default_bg)
-        val defaultStroke = requireContext().getColor(R.color.card_default_stroke)
-
-        cards.forEach { card ->
-            card.setCardBackgroundColor(defaultBg)
-            card.strokeColor = defaultStroke
-            card.strokeWidth = 1
-            card.cardElevation = 4f
         }
     }
 }

@@ -1,42 +1,97 @@
 package com.intelliworks.intellihome
 
 import android.net.Uri
+import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.map
+import androidx.lifecycle.viewModelScope
+import com.intelliworks.intellihome.data.api.CatalogosApi
+import com.intelliworks.intellihome.data.api.RetrofitInstance
+import com.intelliworks.intellihome.data.model.AmenidadDto
+import com.intelliworks.intellihome.data.model.HobbyDto
+import com.intelliworks.intellihome.data.model.TipoCasaDto
+import com.intelliworks.intellihome.data.repository.CatalogosRepository
+import kotlinx.coroutines.launch
 
 class AddPropertyViewModel : ViewModel() {
 
-    // --- TIPO DE PROPIEDAD ---
-    val tipoPropiedad = MutableLiveData<String>()
-    val esTipoValido = tipoPropiedad.map { !it.isNullOrEmpty() }
+    // --- CONEXIÓN CON EL SERVIDOR ---
+    private val catalogosApi = RetrofitInstance.retrofit.create(CatalogosApi::class.java)
+    private val repoCatalogos = CatalogosRepository(catalogosApi)
 
-    // --- ACTIVIDADES ---
-    // Se utiliza un Set para evitar duplicados automáticamente al seleccionar/deseleccionar
-    val actividadesSeleccionadas = MutableLiveData<MutableSet<String>>(mutableSetOf())
-    val hayActividades = actividadesSeleccionadas.map { it.isNotEmpty() }
+    // --- LISTAS DISPONIBLES (Vienen de la Base de Datos) ---
+    private val _listaTipos = MutableLiveData<List<TipoCasaDto>>()
+    val listaTipos: LiveData<List<TipoCasaDto>> = _listaTipos
 
-    fun toggleActividad(actividad: String) {
-        val actual = actividadesSeleccionadas.value ?: mutableSetOf()
-        if (actual.contains(actividad)) {
-            actual.remove(actividad)
-        } else {
-            actual.add(actividad)
-        }
-        actividadesSeleccionadas.value = actual
+    private val _listaHobbies = MutableLiveData<List<HobbyDto>>()
+    val listaHobbies: LiveData<List<HobbyDto>> = _listaHobbies
+
+    private val _listaAmenidades = MutableLiveData<List<AmenidadDto>>()
+    val listaAmenidades: LiveData<List<AmenidadDto>> = _listaAmenidades
+
+    // --- SELECCIONES DEL USUARIO (Guardamos IDs para enviar al Backend) ---
+
+    // TIPO DE PROPIEDAD
+    val tipoSeleccionadoId = MutableLiveData<Int>()
+    val esTipoValido = tipoSeleccionadoId.map { it != null && it > 0 }
+
+    // ACTIVIDADES (HOBBIES)
+    val hobbiesSeleccionadosIds = MutableLiveData<MutableSet<Int>>(mutableSetOf())
+    val hayActividades = hobbiesSeleccionadosIds.map { it.isNotEmpty() }
+
+    // COMODIDADES (AMENIDADES)
+    val amenidadesSeleccionadasIds = MutableLiveData<MutableSet<Int>>(mutableSetOf())
+
+    // --- INICIALIZACIÓN: Descargar listas al abrir ---
+    init {
+        cargarCatalogos()
     }
 
-    // --- UBICACIÓN ---
+    private fun cargarCatalogos() {
+        viewModelScope.launch {
+            // Descargamos las 3 listas en paralelo (o secuencial rápido)
+            _listaTipos.value = repoCatalogos.obtenerTipos()
+            _listaHobbies.value = repoCatalogos.obtenerHobbies()
+            _listaAmenidades.value = repoCatalogos.obtenerAmenidades()
+        }
+    }
+
+    // --- FUNCIONES DE SELECCIÓN ---
+
+    fun setTipo(id: Int) {
+        tipoSeleccionadoId.value = id
+    }
+
+    fun toggleHobby(id: Int) {
+        val actual = hobbiesSeleccionadosIds.value ?: mutableSetOf()
+        if (actual.contains(id)) {
+            actual.remove(id)
+        } else {
+            actual.add(id)
+        }
+        hobbiesSeleccionadosIds.value = actual // Notifica a la vista
+    }
+
+    fun toggleAmenidad(id: Int) {
+        val actual = amenidadesSeleccionadasIds.value ?: mutableSetOf()
+        if (actual.contains(id)) {
+            actual.remove(id)
+        } else {
+            actual.add(id)
+        }
+        amenidadesSeleccionadasIds.value = actual
+    }
+
+    // --- UBICACIÓN (Se mantiene igual) ---
     val direccionTexto = MutableLiveData<String>()
     val latitud = MutableLiveData<Double>()
     val longitud = MutableLiveData<Double>()
     val esDireccionValida = direccionTexto.map { !it.isNullOrEmpty() }
 
-    // --- DETALLES ---
+    // --- DETALLES DE LA PUBLICACIÓN (Se mantiene igual) ---
     val titulo = MutableLiveData<String>("")
     val precio = MutableLiveData<String>("")
-
-    // NUEVO: Campos para descripción y reglas
     val descripcion = MutableLiveData<String>("")
     val reglas = MutableLiveData<String>("")
 
@@ -45,15 +100,12 @@ class AddPropertyViewModel : ViewModel() {
     val camas = MutableLiveData<Int>(2)
     val banos = MutableLiveData<Int>(1)
 
-    // MediatorLiveData observa cambios en título, precio Y DESCRIPCIÓN para habilitar el botón "Siguiente"
+    // Validación para habilitar botón "Siguiente"
     val sonDetallesValidos = androidx.lifecycle.MediatorLiveData<Boolean>().apply {
         fun validar() {
             val t = titulo.value
             val p = precio.value
             val d = descripcion.value
-
-            // Validamos que título, precio y descripción no estén vacíos.
-            // Las reglas pueden ser opcionales.
             value = !t.isNullOrEmpty() && !p.isNullOrEmpty() && !d.isNullOrEmpty()
         }
         addSource(titulo) { validar() }
@@ -61,20 +113,7 @@ class AddPropertyViewModel : ViewModel() {
         addSource(descripcion) { validar() }
     }
 
-    // --- COMODIDADES ---
-    val comodidadesSeleccionadas = MutableLiveData<MutableSet<String>>(mutableSetOf())
-
-    fun toggleComodidad(comodidad: String) {
-        val actual = comodidadesSeleccionadas.value ?: mutableSetOf()
-        if (actual.contains(comodidad)) {
-            actual.remove(comodidad)
-        } else {
-            actual.add(comodidad)
-        }
-        comodidadesSeleccionadas.value = actual
-    }
-
-    // --- FOTOS ---
+    // --- FOTOS (Se mantiene igual) ---
     val fotosSeleccionadas = MutableLiveData<List<Uri>>(emptyList())
 
     fun agregarFotos(nuevasUris: List<Uri>) {
@@ -85,5 +124,23 @@ class AddPropertyViewModel : ViewModel() {
     fun eliminarFoto(uri: Uri) {
         val actual = fotosSeleccionadas.value ?: emptyList()
         fotosSeleccionadas.value = actual - uri
+    }
+
+    // --- HELPER PARA OBTENER NOMBRES (Útil para el Resumen Final) ---
+    fun getNombreTipoSeleccionado(): String {
+        val id = tipoSeleccionadoId.value ?: return "No seleccionado"
+        return _listaTipos.value?.find { it.id == id }?.nombre ?: "Desconocido"
+    }
+
+    fun getNombresHobbiesSeleccionados(): String {
+        val ids = hobbiesSeleccionadosIds.value ?: emptySet()
+        val lista = _listaHobbies.value ?: emptyList()
+        return lista.filter { ids.contains(it.id) }.joinToString(", ") { it.nombre }
+    }
+
+    fun getNombresAmenidadesSeleccionadas(): String {
+        val ids = amenidadesSeleccionadasIds.value ?: emptySet()
+        val lista = _listaAmenidades.value ?: emptyList()
+        return lista.filter { ids.contains(it.id) }.joinToString(", ") { it.nombre }
     }
 }

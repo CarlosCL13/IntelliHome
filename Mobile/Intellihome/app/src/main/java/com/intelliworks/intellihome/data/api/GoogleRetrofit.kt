@@ -2,18 +2,15 @@ package com.intelliworks.intellihome.data.api
 
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
-import okhttp3.OkHttpClient
 
-object RetrofitInstance {
-    const val BASE_URL = "http://10.117.59.223:8000/"
+object GoogleRetrofit {
+    private const val BASE_URL = "https://maps.googleapis.com/"
 
-    private val client = OkHttpClient.Builder().build()
-
-    val retrofit: Retrofit by lazy {
+    val api: GeocodingApi by lazy {
         Retrofit.Builder()
             .baseUrl(BASE_URL)
-            .client(client)
             .addConverterFactory(GsonConverterFactory.create())
             .build()
+            .create(GeocodingApi::class.java)
     }
 }

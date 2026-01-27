@@ -249,10 +249,19 @@
     <string name="room_bedroom_1">Bedroom\n1</string>
     <string name="room_garage">Garage</string>
 
+    <!-- Property Detail -->
     <string name="property_detail_title">Property Details</string>
     <string name="property_image_desc">Property images</string>
     <string name="previous_photo">Previous photo</string>
     <string name="next_photo">Next photo</string>
+    <string name="payment_rental_dates_title">Rental dates</string>
+    <string name="payment_rental_dates_subtitle">Select check-in and check-out dates for your reservation</string>
+    <string name="payment_select_dates_button">Select dates</string>
+    <string name="payment_no_dates_selected">No dates selected</string>
+    <string name="payment_total_nights">Total nights: %1$d</string>
+    <string name="payment_dates_selected">From: %1$s\nTo: %2$s</string>
+    <string name="payment_error_no_dates">Please select rental dates</string>
+    <string name="payment_error_blocked_dates">Selected dates include unavailable days</string>
     <string name="property_name_placeholder">Property name</string>
     <string name="property_amenities_label">Amenities list:</string>
     <string name="property_host_label">Host:</string>
@@ -263,7 +272,6 @@
     <string name="property_rules_label">Usage rules:</string>
     <string name="btn_rent">Rent</string>
     <string name="btn_domotica">Smart Home</string>
-
 
     <!-- Payment -->
     <string name="payment_title">Payment process</string>

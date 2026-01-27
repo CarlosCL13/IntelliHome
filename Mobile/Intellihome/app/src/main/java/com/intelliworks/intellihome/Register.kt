@@ -386,31 +386,36 @@ class Register : BaseActivity() {
 
     // Carga la lista de hobbies
     private suspend fun cargarHobbies(catalogosRepository: CatalogosRepository) {
-        val response = catalogosRepository.getHobbies()
-        if (response.isSuccessful) {
-            val hobbies = response.body() ?: emptyList()
+        // CORRECCIÓN: El repositorio ya devuelve la lista limpia, no un "Response"
+        val hobbies = catalogosRepository.obtenerHobbies()
+
+        if (hobbies.isNotEmpty()) {
             val llHobbies = findViewById<ViewGroup>(R.id.ll_hobbies)
+            // Limpiamos los checkboxes anteriores (excepto el título o primer elemento si lo hay)
             while (llHobbies.childCount > 1) llHobbies.removeViewAt(1)
+
             hobbies.forEach { hobby ->
                 val checkBox = CheckBox(this@Register)
                 checkBox.id = View.generateViewId()
-                checkBox.text = hobby.nombre
-                checkBox.tag = hobby.id
+                checkBox.text = hobby.nombre // Ahora sí reconoce 'nombre'
+                checkBox.tag = hobby.id      // Ahora sí reconoce 'id'
                 checkBox.textSize = 14f
                 llHobbies.addView(checkBox)
             }
         } else {
-            Toast.makeText(this@Register, "Error al obtener hobbies", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this@Register, "No se pudieron cargar los hobbies", Toast.LENGTH_SHORT).show()
         }
     }
 
     // Carga la lista de tipos de casa
     private suspend fun cargarTiposCasa(catalogosRepository: CatalogosRepository) {
-        val response = catalogosRepository.getTiposCasa()
-        if (response.isSuccessful) {
-            val tiposCasa = response.body() ?: emptyList()
+        // CORRECCIÓN: Usamos obtenerTipos() que devuelve List<TipoCasaDto>
+        val tiposCasa = catalogosRepository.obtenerTipos()
+
+        if (tiposCasa.isNotEmpty()) {
             val llCasa = findViewById<ViewGroup>(R.id.ll_casa_preferencia)
             while (llCasa.childCount > 1) llCasa.removeViewAt(1)
+
             tiposCasa.forEach { tipo ->
                 val checkBox = CheckBox(this@Register)
                 checkBox.id = View.generateViewId()
@@ -420,26 +425,29 @@ class Register : BaseActivity() {
                 llCasa.addView(checkBox)
             }
         } else {
-            Toast.makeText(this@Register, "Error al obtener tipos de casa", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this@Register, "No se pudieron cargar los tipos de casa", Toast.LENGTH_SHORT).show()
         }
     }
 
     // Carga la lista de preguntas de recuperación
     private suspend fun cargarPreguntasRecuperacion(catalogosRepository: CatalogosRepository) {
-        val response = catalogosRepository.getPreguntasRecuperacion()
+        // Nota: Asegúrate de tener esta función en tu repositorio.
+        // Si no la tienes, usa la api directa o agrégala al repo.
+        // Aquí asumo que usas la API directa para preguntas si no está en el repo:
+        val api = RetrofitInstance.retrofit.create(CatalogosApi::class.java)
+        val response = api.getPreguntasRecuperacion()
+
         if (response.isSuccessful) {
             val preguntas = response.body() ?: emptyList()
-            val textos = preguntas.filterNotNull().map { it.texto }
+            val textos = preguntas.map { it.texto } // Mapeamos a solo texto
+
             if (textos.isNotEmpty()) {
                 val adapter = ArrayAdapter(this@Register, android.R.layout.simple_spinner_dropdown_item, textos)
                 binding.spPregunta.adapter = adapter
                 binding.spPregunta.isEnabled = true
-            } else {
-                Toast.makeText(this@Register, "No hay preguntas de recuperación disponibles", Toast.LENGTH_SHORT).show()
-                binding.spPregunta.isEnabled = false
             }
         } else {
-            Toast.makeText(this@Register, "Error al obtener preguntas de recuperación", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this@Register, "Error al cargar preguntas", Toast.LENGTH_SHORT).show()
         }
     }
 

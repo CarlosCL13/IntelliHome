@@ -14,33 +14,50 @@ import com.intelliworks.intellihome.utils.BaseActivity
 import com.intelliworks.intellihome.utils.Property
 import com.intelliworks.intellihome.utils.RegisterHelper
 import com.intelliworks.intellihome.utils.SessionManager
+import android.content.SharedPreferences
+import androidx.core.util.Pair
+import androidx.lifecycle.lifecycleScope
+import com.google.android.material.datepicker.CalendarConstraints
+import com.google.android.material.datepicker.DateValidatorPointForward
+import com.google.android.material.datepicker.MaterialDatePicker
+import com.intelliworks.intellihome.data.api.RetrofitInstance
+import com.intelliworks.intellihome.data.repository.ArrendamientoRepository
+import com.intelliworks.intellihome.data.repository.UsuarioRepository
+import kotlinx.coroutines.launch
+import java.text.SimpleDateFormat
+import java.util.*
 
 class PaymentActivity : BaseActivity() {
 
     private lateinit var binding: ActivityPaymentBinding
     private var usarTarjetaGuardada = true
     private var currentProperty: Property? = null
+    private lateinit var arrendamientoRepository: ArrendamientoRepository
+    private lateinit var usuarioRepository: UsuarioRepository
+    private lateinit var sharedPreferences: SharedPreferences
+    private var fechaInicioSeleccionada: Long? = null
+    private var fechaFinSeleccionada: Long? = null
+    private var precioPorNoche: Double = 0.0
+    private var propiedadId: Int = 0
+    private val dateFormat = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
+    private val backendDateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityPaymentBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        val propertyJson = intent.getStringExtra("property_data")
-        if (propertyJson != null) {
-            currentProperty = Gson().fromJson(propertyJson, Property::class.java)
-            // CORREGIDO: Usa el string formateado "Pay $XXXX"
-            val precio = currentProperty?.precio ?: "0"
-            binding.tvTituloAlquilar.text = getString(R.string.title_pay_amount, precio)
-        } else {
-            // CORREGIDO: Error genérico
-            Toast.makeText(this, getString(R.string.error_loading_property_data), Toast.LENGTH_SHORT).show()
-            finish()
-        }
+        arrendamientoRepository = ArrendamientoRepository()
+        usuarioRepository = UsuarioRepository(RetrofitInstance.retrofit.create(com.intelliworks.intellihome.data.api.UsuarioApi::class.java))
+        sharedPreferences = getSharedPreferences("user_session", MODE_PRIVATE)
+
+        precioPorNoche = intent.getDoubleExtra("PROPERTY_PRICE", 0.0)
+        propiedadId = intent.getIntExtra("PROPERTY_ID", 0)
 
         configurarCheckbox()
         configurarBotonPagar()
         configurarSelectorFecha()
+        configurarSelectorFechasAlquiler()
         cargarDatosTarjetaGuardada()
     }
 
@@ -49,13 +66,94 @@ class PaymentActivity : BaseActivity() {
         applyAppAppearance(binding.root)
     }
 
+    private fun configurarSelectorFechasAlquiler() {
+        binding.btnSeleccionarFechas.setOnClickListener {
+            mostrarSelectorRangoFechas()
+        }
+    }
+
+    private fun mostrarSelectorRangoFechas() {
+
+        val constraintsBuilder = CalendarConstraints.Builder()
+            .setValidator(DateValidatorPointForward.now())
+
+        val dateRangePicker = MaterialDatePicker.Builder.dateRangePicker()
+            .setTitleText("Seleccionar fechas de alquiler")
+            .setInputMode(MaterialDatePicker.INPUT_MODE_CALENDAR)
+            .setCalendarConstraints(constraintsBuilder.build())
+            .build()
+
+        dateRangePicker.addOnPositiveButtonClickListener { selection ->
+            val startDate = selection.first
+            val endDate = selection.second
+
+            // Validar que no sean el mismo día
+            if (startDate == endDate) {
+                Toast.makeText(
+                    this,
+                    "La fecha de inicio y fin no pueden ser el mismo día",
+                    Toast.LENGTH_SHORT
+                ).show()
+                return@addOnPositiveButtonClickListener
+            }
+
+            // Se debe de obtener fechas bloqueadas que vienen de RentPropertyActivity y validar con validarFechasDisponibles()
+            // Por ahora solo guardar las fechas seleccionadas
+            fechaInicioSeleccionada = startDate
+            fechaFinSeleccionada = endDate
+            mostrarFechasSeleccionadas()
+        }
+
+        dateRangePicker.show(supportFragmentManager, "DATE_RANGE_PICKER")
+    }
+
+    private fun validarFechasDisponibles(inicio: Long, fin: Long, fechasBloqueadas: List<Pair<Long, Long>>): Boolean {
+        for (bloqueo in fechasBloqueadas) {
+            val bloqueoInicio = bloqueo.first
+            val bloqueoFin = bloqueo.second
+
+            // Verificar si hay superposición de fechas
+            if (inicio <= bloqueoFin && fin >= bloqueoInicio) {
+                return false
+            }
+        }
+        return true
+    }
+
+    // Muestra las fechas seleccionadas en la UI
+    private fun mostrarFechasSeleccionadas() {
+        if (fechaInicioSeleccionada != null && fechaFinSeleccionada != null) {
+            val fechaInicio = dateFormat.format(Date(fechaInicioSeleccionada!!))
+            val fechaFin = dateFormat.format(Date(fechaFinSeleccionada!!))
+
+            val textoFechas = getString(R.string.payment_dates_selected, fechaInicio, fechaFin)
+            binding.tvFechasSeleccionadas.text = textoFechas
+            binding.tvFechasSeleccionadas.visibility = View.VISIBLE
+
+            val noches = calcularNoches(fechaInicioSeleccionada!!, fechaFinSeleccionada!!)
+            binding.tvTotalNoches.text = getString(R.string.payment_total_nights, noches)
+            binding.tvTotalNoches.visibility = View.VISIBLE
+
+            val totalPagar = precioPorNoche * noches
+            binding.tvTotalPagar.text = "Total a pagar: ₡%.2f".format(totalPagar)
+            binding.tvTotalPagar.visibility = View.VISIBLE
+        }
+    }
+
+    private fun calcularNoches(inicio: Long, fin: Long): Int {
+        val diferenciaMs = fin - inicio
+        return (diferenciaMs / (1000 * 60 * 60 * 24)).toInt()
+    }
+
     private fun configurarCheckbox() {
         binding.cbConfirmarTarjeta.setOnCheckedChangeListener { _, isChecked ->
             usarTarjetaGuardada = isChecked
             if (isChecked) {
+                // Mostrar sección de tarjeta guardada (CVV)
                 binding.contenedorTajetaGuardada.visibility = View.VISIBLE
                 binding.contenedorTarjetaNueva.visibility = View.GONE
             } else {
+                // Mostrar formulario de nueva tarjeta
                 binding.contenedorTajetaGuardada.visibility = View.GONE
                 binding.contenedorTarjetaNueva.visibility = View.VISIBLE
             }
@@ -72,8 +170,40 @@ class PaymentActivity : BaseActivity() {
         }
     }
 
+
     private fun cargarDatosTarjetaGuardada() {
-        // Simulación
+        val userId = sharedPreferences.getInt("usuario_id", 0)
+
+        if (userId == 0) {
+            return
+        }
+
+        lifecycleScope.launch {
+            try {
+                val response = usuarioRepository.obtenerUltimos4Tarjeta(userId)
+
+                if (response.isSuccessful) {
+                    val ultimos4 = response.body()?.ultimos_4
+
+                    if (!ultimos4.isNullOrEmpty()) {
+                        binding.cbConfirmarTarjeta.text = "Usar tarjeta guardada (**** $ultimos4)"
+                    } else {
+                        // No hay tarjeta guardada, ocultar la opción
+                        binding.cbConfirmarTarjeta.isChecked = false
+                        binding.cbConfirmarTarjeta.visibility = View.GONE
+                        binding.contenedorTajetaGuardada.visibility = View.GONE
+                        binding.contenedorTarjetaNueva.visibility = View.VISIBLE
+                        usarTarjetaGuardada = false
+                    }
+                }
+            } catch (e: Exception) {
+                binding.cbConfirmarTarjeta.isChecked = false
+                binding.cbConfirmarTarjeta.visibility = View.GONE
+                binding.contenedorTajetaGuardada.visibility = View.GONE
+                binding.contenedorTarjetaNueva.visibility = View.VISIBLE
+                usarTarjetaGuardada = false
+            }
+        }
     }
 
     private fun configurarBotonPagar() {
@@ -85,60 +215,124 @@ class PaymentActivity : BaseActivity() {
     }
 
     private fun validarDatosPago(): Boolean {
+
+        if (fechaInicioSeleccionada == null || fechaFinSeleccionada == null) {
+            Toast.makeText(this, getString(R.string.payment_error_no_dates), Toast.LENGTH_SHORT).show()
+            return false
+        }
+
         if (usarTarjetaGuardada) {
+
             val cvv = binding.etCvv.text.toString()
             if (cvv.isEmpty() || cvv.length < 3) {
-                // Podrías agregar un string específico para esto, o usar uno genérico
-                binding.contenedorCvv.error = "Invalid CVV"
+                binding.contenedorCvv.error = "Ingrese un CVV válido"
                 return false
             }
             binding.contenedorCvv.error = null
             return true
+
         } else {
+
             var esValido = true
 
-            val numero = binding.etNumeroNuevaTarjeta.text.toString()
-            if (numero.length < 16) {
-                binding.contenedorNumeroNuevaTarjeta.error = "Invalid Card"
+            val numeroTarjeta = binding.etNumeroNuevaTarjeta.text.toString()
+            if (numeroTarjeta.isEmpty() || numeroTarjeta.length < 16) {
+                binding.contenedorNumeroNuevaTarjeta.error = "Ingrese un número de tarjeta válido"
                 esValido = false
-            } else binding.contenedorNumeroNuevaTarjeta.error = null
+            } else {
+                binding.contenedorNumeroNuevaTarjeta.error = null
+            }
 
-            if (binding.etTitularNuevaTarjeta.text.isNullOrEmpty()) {
-                binding.contenedorTitularNuevaTarjeta.error = getString(R.string.error_empty_fields)
+            val nombreTitular = binding.etTitularNuevaTarjeta.text.toString()
+            if (nombreTitular.isEmpty()) {
+                binding.contenedorTitularNuevaTarjeta.error = "Ingrese el nombre del titular"
                 esValido = false
-            } else binding.contenedorTitularNuevaTarjeta.error = null
+            } else {
+                binding.contenedorTitularNuevaTarjeta.error = null
+            }
 
-            if (binding.etFechaNuevaTarjeta.text.isNullOrEmpty()) {
-                binding.contenedorFechaNuevaTarjeta.error = getString(R.string.error_empty_fields)
+            val fechaExpiracion = binding.etFechaNuevaTarjeta.text.toString()
+            if (fechaExpiracion.isEmpty() || fechaExpiracion.length < 5) {
+                binding.contenedorFechaNuevaTarjeta.error = "Ingrese fecha válida (MM/AA)"
                 esValido = false
-            } else binding.contenedorFechaNuevaTarjeta.error = null
+            } else {
+                binding.contenedorFechaNuevaTarjeta.error = null
+            }
 
-            if (binding.etCvvNuevaTarjeta.text.toString().length < 3) {
-                binding.contenedorCvvNuevaTarjeta.error = "Invalid CVV"
+            val cvv = binding.etCvvNuevaTarjeta.text.toString()
+            if (cvv.isEmpty() || cvv.length < 3) {
+                binding.contenedorCvvNuevaTarjeta.error = "Ingrese un CVV válido"
                 esValido = false
-            } else binding.contenedorCvvNuevaTarjeta.error = null
+            } else {
+                binding.contenedorCvvNuevaTarjeta.error = null
+            }
 
             return esValido
         }
     }
 
     private fun procesarPago() {
-        binding.btnProcesarPago.isEnabled = false
-        // CORREGIDO: String "Processing..."
-        binding.btnProcesarPago.text = getString(R.string.status_processing)
 
-        Handler(Looper.getMainLooper()).postDelayed({
+        val inquilinoId = sharedPreferences.getInt("usuario_id", 0)
+
+        if (inquilinoId == 0) {
+            Toast.makeText(this, "Error: Usuario no identificado", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        if (propiedadId == 0) {
+            Toast.makeText(this, "Error: Propiedad no identificada", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        val fechaInicio = backendDateFormat.format(Date(fechaInicioSeleccionada!!))
+        val fechaFin = backendDateFormat.format(Date(fechaFinSeleccionada!!))
+
+        binding.btnProcesarPago.isEnabled = false
+        binding.btnProcesarPago.text = "Procesando..."
+
+        lifecycleScope.launch {
             try {
-                realizarRenta()
+                val response = arrendamientoRepository.registrarArrendamiento(
+                    propiedadId = propiedadId,
+                    inquilinoId = inquilinoId,
+                    fechaInicio = fechaInicio,
+                    fechaFin = fechaFin
+                )
+
+                if (response.isSuccessful) {
+                    val resultado = response.body()
+                    Toast.makeText(
+                        this@PaymentActivity,
+                        resultado?.mensaje ?: "Arrendamiento registrado exitosamente",
+                        Toast.LENGTH_LONG
+                    ).show()
+
+                    // Navegar a pantalla principal o de confirmación
+                    finish()
+                } else {
+                    val errorBody = response.errorBody()?.string()
+                    Toast.makeText(
+                        this@PaymentActivity,
+                        "Error al procesar: ${errorBody ?: "Error desconocido"}",
+                        Toast.LENGTH_LONG
+                    ).show()
+                    binding.btnProcesarPago.isEnabled = true
+                    binding.btnProcesarPago.text = "Procesar Pago"
+                }
             } catch (e: Exception) {
-                // CORREGIDO: Error genérico
-                Toast.makeText(this, getString(R.string.error_payment_processing), Toast.LENGTH_SHORT).show()
+                Toast.makeText(
+                    this@PaymentActivity,
+                    "Error de conexión: ${e.message}",
+                    Toast.LENGTH_LONG
+                ).show()
                 binding.btnProcesarPago.isEnabled = true
-                binding.btnProcesarPago.text = getString(R.string.btn_process_payment)
+                binding.btnProcesarPago.text = "Procesar Pago"
             }
-        }, 2000)
+        }
     }
 
+    /*
     private fun realizarRenta() {
         val propiedad = currentProperty ?: return
         val currentUserId = SessionManager.obtenerUserId(this)
@@ -168,4 +362,5 @@ class PaymentActivity : BaseActivity() {
             }
             .show()
     }
+    */
 }
