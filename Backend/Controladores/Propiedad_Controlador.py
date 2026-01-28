@@ -17,6 +17,11 @@ from Modelos.TipoCasa import TipoCasa
 from Modelos.Usuario import Usuario
 from Modelos.Hobby import Hobby, PropiedadHobby
 from Modelos.Arrendamiento import Arrendamiento
+from datetime import date
+from typing import Optional
+from Base_de_Datos.db_session import get_db
+import os
+import socket
 
 # Configuración del router para los endpoints de propiedades
 router = APIRouter(prefix="/propiedades", tags=["propiedades"])
@@ -163,6 +168,7 @@ def get_todas_propiedades(request: Request, db: Session = Depends(get_db)):
         ip = get_local_ip()
         base_url = base_url.replace("localhost", ip).replace("127.0.0.1", ip)
 
+    
     for prop in propiedades:
         # Recuperar solo la primera foto para la vista de tarjeta/resumen
         foto = db.query(FotoPropiedad).filter(FotoPropiedad.propiedad_id == prop.id).first()
@@ -310,3 +316,51 @@ def get_propiedades_por_usuario(user_id: int, request: Request, db: Session = De
             "longitud": prop.longitud
         })
     return resultado
+
+# Función para obtener la IP local de la máquina
+def get_local_ip():
+    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    try:
+        # No importa si no hay internet, solo queremos la IP local
+        s.connect(('10.255.255.255', 1))
+        ip = s.getsockname()[0]
+    except Exception:
+        ip = '127.0.0.1'
+    finally:
+        s.close()
+    return ip
+
+# Función para obtener el inquilino actual (hoy) de una propiedad
+def obtener_inquilino_actual(propiedad_id: int, db: Session) -> Optional[Usuario]:
+    hoy = date.today()
+    # Se obtiene el arrendamiento actual
+    arrendamiento_actual = db.query(Arrendamiento).filter(
+        Arrendamiento.propiedad_id == propiedad_id,
+        Arrendamiento.fecha_inicio <= hoy,
+        Arrendamiento.fecha_fin >= hoy
+    ).first()
+
+    if arrendamiento_actual:
+        # Se obtiene el usuario inquilino asociado a dicho arrendamiento
+        inquilino = db.query(Usuario).filter(Usuario.id == arrendamiento_actual.inquilino_id).first()
+        return inquilino
+    return None
+
+# Función para obtener los arrendamientos futuros de una propiedad
+def obtener_arrendamientos_futuros(propiedad_id: int, db: Session):
+    arrendamientos = db.query(Arrendamiento).filter(
+        Arrendamiento.propiedad_id == propiedad_id
+    ).all()
+
+    futuros_arrendamientos = []
+    hoy = date.today()
+    for arrendamientos_aux in arrendamientos:
+        # Se omiten los arredamientos que ya hayan finalizado hasta hoy
+        if arrendamientos_aux.fecha_fin >= hoy:
+            futuros_arrendamientos.append({
+                "arrendamiento_id": arrendamientos_aux.id,
+                "fecha_inicio": arrendamientos_aux.fecha_inicio,
+                "fecha_fin": arrendamientos_aux.fecha_fin
+            })
+    
+    return futuros_arrendamientos
