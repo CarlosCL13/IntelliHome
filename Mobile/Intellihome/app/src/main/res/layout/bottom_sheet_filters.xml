@@ -29,8 +29,7 @@
         android:layout_height="wrap_content"
         android:valueFrom="0"
         android:valueTo="1000"
-        android:value="500"
-        android:stepSize="10" />
+        android:value="500"/>
 
     <TextView
         android:id="@+id/lblGuests"
