@@ -30,7 +30,13 @@ class PropertyTypeFragment : Fragment(R.layout.fragment_property_type) {
 
         // 1. Cargar lista desde la BD
         viewModel.listaTipos.observe(viewLifecycleOwner) { lista ->
-            adapter.submitList(lista)
+            // Creamos una copia de la lista con los nombres traducidos según el ID
+            val listaTraducida = lista.map { item ->
+                // Asumimos que tu DTO es un data class y tiene método .copy
+                // Si no es data class, tendrás que crear una nueva instancia manual
+                item.copy(nombre = obtenerNombreTipo(item.id, item.nombre))
+            }
+            adapter.submitList(listaTraducida)
         }
 
         // 2. Restaurar selección previa (si el usuario regresa)
@@ -49,6 +55,17 @@ class PropertyTypeFragment : Fragment(R.layout.fragment_property_type) {
                 .replace(R.id.fragmentContainer, PropertyActivitiesFragment())
                 .addToBackStack(null)
                 .commit()
+        }
+    }
+    /**
+     * Traduce el ID del Tipo de Casa (Base de datos) a R.string
+     */
+    private fun obtenerNombreTipo(id: Int, original: String): String {
+        return when (id) {
+            1 -> getString(R.string.house_adventurous)   // Aventurera
+            2 -> getString(R.string.house_contemporary)  // Contemporánea
+            3 -> getString(R.string.house_minimalist)    // Minimalista
+            else -> original
         }
     }
 }

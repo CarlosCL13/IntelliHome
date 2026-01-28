@@ -3,7 +3,6 @@ package com.intelliworks.intellihome.utils
 import android.content.Context
 
 object SessionManager {
-    // --- CONSTANTES ---
     // Estas son las "etiquetas" para guardar datos en la memoria del teléfono
     private const val PREF_NAME = "intellihome_prefs"
     private const val KEY_IS_LOGGED_IN = "is_logged_in"

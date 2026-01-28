@@ -21,4 +21,6 @@
     <color name="room_border">#455A64</color>
     <!--  Borde de habitaciones  -->
     <color name="exterior_light_on">#FFE082</color>
+
+    <color name="colorPrimary">#6200EE</color>
 </resources>

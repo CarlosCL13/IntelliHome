@@ -10,16 +10,18 @@ data class LoginResponseDto(
     val nombre: String?,
     val apellidos: String?,
 
+    val domicilio: String?,
+
     @SerializedName("rol_id")
     val rolId: Int?,
 
     @SerializedName("estado_cuenta")
     val estadoCuenta: String?,
 
-    // --- CAMBIO AQUÍ: Agregamos el campo de la imagen ---
-    // Asegúrate de que "imagen_perfil" sea el nombre exacto que devuelve tu API en Python
     @SerializedName("imagen_perfil")
     val imagenPerfil: String?,
+
+    val token: String?,
 
     val errores: Map<String, String>?,
     val mensaje: String?

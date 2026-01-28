@@ -4,7 +4,7 @@
     <string name="data_not_available">N/A</string>
     <string name="welcome_user">Welcome,</string>
     <string name="nav_explore">Explore</string>
-    <string name="nav_rentals">Rentals</string>
+    <string name="nav_rentals">History</string>
     <string name="nav_profile">Profile</string>
 
     <string name="title_explore_properties">Explore Properties</string>
@@ -16,8 +16,8 @@
     <string name="title_profile">Profile</string>
     <string name="text_loading_user">Loading user...</string>
     <string name="text_user_verified">Verified User</string>
-    <string name="btn_add_new_rental">Add new rental</string>
-    <string name="title_my_properties">My published properties:</string>
+    <string name="btn_add_new_rental">Publish New Property</string>
+    <string name="title_my_properties">My Published Properties:</string>
 
     <string name="btn_next">Next</string>
     <string name="btn_finish">Finish and Publish</string>
@@ -28,19 +28,19 @@
 
     <string name="login">Login</string>
     <string name="signup">Don\'t have an account? Sign up</string>
-    <string name="logout">Log\nout</string>
-
+    <string name="logout">Log Out</string>
     <string name="username_hint">Username, email or phone</string>
     <string name="password_hint">Password</string>
     <string name="rememberme">Remember me</string>
     <string name="forgot_password">Forgot password</string>
+    <string name="authenticate_to_continue">Authenticate to continue</string>
 
     <string name="login_failed">Login failed</string>
     <string name="enter_username_first">Enter username first</string>
     <string name="error_empty_fields">Please fill in all fields</string>
     <string name="error_invalid_credentials">Invalid username or password</string>
     <string name="error_network">Server connection error</string>
-    <string name="authenticate_to_continue">Authenticate to continue</string>
+    <string name="error_user_unknown">Error: Unknown user. Please log in again.</string>
 
     <string name="biometric_title">Biometric Access</string>
     <string name="biometric_subtitle">Use your fingerprint to continue</string>
@@ -150,16 +150,8 @@
     <string name="title_add_property_flow">Add Property</string>
 
     <string name="title_property_type">Which option best describes your place?</string>
-    <string name="type_contemporary">CONTEMPORARY</string>
-    <string name="type_minimalist">MINIMALIST</string>
-    <string name="type_adventurous">ADVENTUROUS</string>
 
     <string name="title_activities">What activities are related to your place?</string>
-    <string name="activity_hiking">HIKING</string>
-    <string name="activity_tv">WATCH TV</string>
-    <string name="activity_sports">SPORTS</string>
-    <string name="activity_snorkeling">SNORKELING</string>
-    <string name="activity_board_games">BOARD GAMES</string>
 
     <string name="title_address">Where is your place located?</string>
     <string name="hint_search_address">Search for your address...</string>
@@ -174,38 +166,40 @@
 
     <string name="title_amenities">Select amenities:</string>
 
-    <string-array name="amenities_list">
-        <item>Equipped kitchen (modern appliances)</item>
-        <item>Air conditioning</item>
-        <item>Heating</item>
-        <item>Free Wi-Fi</item>
-        <item>Cable or satellite TV</item>
-        <item>Washer and dryer</item>
-        <item>Pool</item>
-        <item>Garden or patio</item>
-        <item>BBQ or grill</item>
-        <item>Terrace or balcony</item>
-        <item>Home gym</item>
-        <item>Garage or parking space</item>
-        <item>Security system</item>
-        <item>En-suite bathrooms</item>
-        <item>Outdoor furniture</item>
-        <item>Microwave</item>
-        <item>Dishwasher</item>
-        <item>Coffee maker</item>
-        <item>Bed linen and towels included</item>
-        <item>Access to common areas (pool, gym)</item>
-        <item>Extra beds or sofa bed</item>
-        <item>Optional cleaning services</item>
-        <item>Access to nearby public transport</item>
-        <item>Pets allowed</item>
-        <item>Close to shops and restaurants</item>
-        <item>Underfloor heating system</item>
-        <item>Desk or workspace</item>
-        <item>Entertainment systems (video games, etc.)</item>
-        <item>Fireplace</item>
-        <item>High-speed internet access</item>
-    </string-array>
+
+
+    <string name="am_kitchen">Kitchen (Modern Appliances)</string>
+    <string name="am_ac">Air Conditioning</string>
+    <string name="am_heating">Heating</string>
+    <string name="am_wifi">Free Wi-Fi</string>
+    <string name="am_cable_tv">Cable or Satellite TV</string>
+    <string name="am_washer_dryer">Washer and Dryer</string>
+    <string name="am_pool">Pool</string>
+    <string name="am_garden">Garden or Patio</string>
+    <string name="am_bbq">BBQ Grill</string>
+    <string name="am_balcony">Terrace or Balcony</string>
+    <string name="am_gym">Home Gym</string>
+    <string name="am_parking">Garage or Parking Space</string>
+    <string name="am_security">Security System</string>
+    <string name="am_ensuite">En-suite Bathrooms</string>
+    <string name="am_outdoor_furniture">Outdoor Furniture</string>
+    <string name="am_microwave">Microwave</string>
+    <string name="am_dishwasher">Dishwasher</string>
+    <string name="am_coffee_maker">Coffee Maker</string>
+    <string name="am_linens">Linens and Towels Included</string>
+    <string name="am_common_areas">Access to Common Areas</string>
+    <string name="am_extra_beds">Extra Beds or Sofa Bed</string>
+    <string name="am_cleaning">Optional Cleaning Services</string>
+    <string name="am_public_transport">Near Public Transport</string>
+    <string name="am_pets">Pets Allowed</string>
+    <string name="am_shops">Near Shops and Restaurants</string>
+    <string name="am_floor_heating">Underfloor Heating</string>
+    <string name="am_workspace">Workspace / Desk</string>
+    <string name="am_entertainment">Entertainment Systems (Games, etc.)</string>
+    <string name="am_fireplace">Fireplace</string>
+    <string name="am_internet_high_speed">High-Speed Internet</string>
+
+    <string name="label_none">None</string>
 
     <string name="title_photos">Add photos of your place:</string>
     <string name="text_photo_requirements">Allowed formats: JPG, PNG, GIF, SVG.\nMax 1MB per image.</string>
@@ -221,7 +215,6 @@
     <string name="summary_title">TITLE:</string>
     <string name="summary_price">PRICE:</string>
     <string name="summary_capacity">CAPACITY:</string>
-    <string name="summary_guests">Guests:</string>
     <string name="summary_rooms">Bedrooms:</string>
     <string name="summary_beds">Beds:</string>
     <string name="summary_baths">Bathrooms:</string>
@@ -249,7 +242,6 @@
     <string name="room_bedroom_1">Bedroom\n1</string>
     <string name="room_garage">Garage</string>
 
-    <!-- Property Detail -->
     <string name="property_detail_title">Property Details</string>
     <string name="property_image_desc">Property images</string>
     <string name="previous_photo">Previous photo</string>
@@ -258,9 +250,6 @@
     <string name="payment_rental_dates_subtitle">Select check-in and check-out dates for your reservation</string>
     <string name="payment_select_dates_button">Select dates</string>
     <string name="payment_no_dates_selected">No dates selected</string>
-    <string name="payment_total_nights">Total nights: %1$d</string>
-    <string name="payment_dates_selected">From: %1$s\nTo: %2$s</string>
-    <string name="payment_error_no_dates">Please select rental dates</string>
     <string name="payment_error_blocked_dates">Selected dates include unavailable days</string>
     <string name="property_name_placeholder">Property name</string>
     <string name="property_amenities_label">Amenities list:</string>
@@ -273,16 +262,21 @@
     <string name="btn_rent">Rent</string>
     <string name="btn_domotica">Smart Home</string>
 
-    <!-- Payment -->
     <string name="payment_title">Payment process</string>
     <string name="payment_use_new_card">Use new card</string>
-    <string name="payment_saved_card_label">I will use card ending in 4422</string>
+    <string name="payment_saved_card_label">I\'ll use the card with the ending: </string>
     <string name="payment_cvv_label">Enter the CVV code of the card</string>
     <string name="payment_cvv_hint">CVV</string>
     <string name="payment_card_number_hint">Card number</string>
     <string name="payment_cardholder_name_hint">Cardholder name</string>
     <string name="payment_expiry_date_hint">MM/YY</string>
     <string name="btn_process_payment">Process payment</string>
+    <string name="title_payment_success">Payment Successful!</string>
+    <string name="msg_payment_success">Property rented successfully.</string>
+    <string name="btn_go_home">Go to Home</string>
+    <string name="title_pay_amount">Pay %1$s</string>
+    <string name="status_processing">Processing...</string>
+    <string name="error_payment_processing">Error processing payment</string>
 
     <string name="error_loading_property_data">Error loading property data</string>
     <string name="error_limit_reached">Limit reached</string>
@@ -300,6 +294,7 @@
     <string name="default_rules">No smoking, No parties.</string>
     <string name="default_no_description">No description</string>
     <string name="default_no_rules">No specific rules</string>
+    <string name="default_host">Host</string>
 
     <string name="fmt_host_name">Host: %1$s</string>
     <string name="fmt_capacity_short">%1$d guests • %2$d bedrooms</string>
@@ -324,13 +319,28 @@
     <string name="btn_reset">Reset</string>
     <string name="btn_apply">Apply</string>
 
-    <string name="default_host">Host</string>
-    <string name="status_processing">Processing...</string>
-    <string name="error_payment_processing">Error processing payment</string>
-    <string name="error_user_unknown">Error: Unknown user. Please log in again.</string>
-    <string name="title_payment_success">Payment Successful!</string>
-    <string name="msg_payment_success">Property rented successfully.</string>
-    <string name="btn_go_home">Go to Home</string>
-    <string name="title_pay_amount">Pay %1$s</string>
+    <string name="rec_travel">What was the first country you traveled to?</string>
+    <string name="rec_fruit">What is your favorite fruit?</string>
+    <string name="rec_birthplace">What is your place of birth?</string>
+    <string name="rec_teacher">What is your favorite teacher\'s name?</string>
+    <string name="rec_soccer">What is the best soccer team in Costa Rica?</string>
+    <string name="fmt_rental_dates">Rent: %1$s to %2$s</string>
+    <string name="selectDates">Select dates</string>
 
+    <string name="payment_min_one_night">Rental must be at least 1 night</string>
+    <string name="payment_dates_overlap">Selected range includes already reserved dates.</string>
+    <string name="payment_total_pay_fmt">Total to pay: ₡%1$s</string>
+    <string name="payment_cvv_req">CVV Required</string>
+    <string name="payment_card_num_req">Card number required</string>
+    <string name="payment_session_error">Session or property error</string>
+    <string name="payment_processing_btn">Processing...</string>
+    <string name="payment_success_msg">Rental Successful!</string>
+    <string name="payment_generic_error_fmt">Error: %1$s</string>
+    <string name="payment_process_btn_default">Process Payment</string>
+    <string name="payment_connection_error_fmt">Connection error: %1$s</string>
+    <string name="payment_unknown_user">User not identified</string>
+
+    <string name="payment_dates_selected">Selected: %1$s to %2$s</string>
+    <string name="payment_total_nights">Total nights: %1$d</string>
+    <string name="payment_error_no_dates">Please select dates first</string>
 </resources>

@@ -32,7 +32,11 @@ class PropertyActivitiesFragment : Fragment(R.layout.fragment_property_activitie
 
         // 1. Cargar lista de Hobbies (Datos del servidor)
         viewModel.listaHobbies.observe(viewLifecycleOwner) { lista ->
-            adapter.submitList(lista)
+            val listaTraducida = lista.map { item ->
+                // Usamos la traducción basada en ID
+                item.copy(nombre = obtenerNombreHobby(item.id, item.nombre))
+            }
+            adapter.submitList(listaTraducida)
         }
 
         // 2. Observar selecciones para actualizar botón y visuales
@@ -51,6 +55,16 @@ class PropertyActivitiesFragment : Fragment(R.layout.fragment_property_activitie
                 .replace(R.id.fragmentContainer, PropertyAddressFragment())
                 .addToBackStack(null)
                 .commit()
+        }
+    }
+    private fun obtenerNombreHobby(id: Int, original: String): String {
+        return when (id) {
+            1 -> getString(R.string.hobby_tv)           // Ver TV
+            2 -> getString(R.string.hobby_hiking)       // Hiking
+            3 -> getString(R.string.hobby_boardgames)   // Juegos de mesa
+            4 -> getString(R.string.hobby_snorkel)   // Esnórquel
+            5 -> getString(R.string.hobby_sports)       // Deportes
+            else -> original
         }
     }
 }

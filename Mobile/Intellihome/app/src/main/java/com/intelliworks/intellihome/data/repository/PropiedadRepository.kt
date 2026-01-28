@@ -3,39 +3,30 @@ package com.intelliworks.intellihome.data.repository
 import android.content.Context
 import android.net.Uri
 import com.intelliworks.intellihome.data.api.PropiedadApi
-import com.intelliworks.intellihome.data.model.PropiedadAlquiladaDto
-import com.intelliworks.intellihome.data.model.PropiedadDetalleDto
-import com.intelliworks.intellihome.data.model.PropiedadRegistroResponseDto
-import com.intelliworks.intellihome.data.model.PropiedadResumenDto
 import com.intelliworks.intellihome.utils.FileUtils
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
 import okhttp3.RequestBody
 import okhttp3.RequestBody.Companion.asRequestBody
 import okhttp3.RequestBody.Companion.toRequestBody
-import retrofit2.Response
-import java.io.File
 
 class PropiedadRepository(private val api: PropiedadApi) {
+    suspend fun obtenerDetalle(id: Int) = api.obtenerDetallePropiedad(id)
 
-    suspend fun obtenerAlquiladasPorUsuario(userId: Int): Response<List<PropiedadAlquiladaDto>> {
-        return api.obtenerPropiedadesAlquiladas(userId)
-    }
+    suspend fun obtenerPorUsuario(userId: Int) = api.obtenerPropiedadesPorUsuario(userId)
 
-    suspend fun obtenerDetalle(id: Int): Response<PropiedadDetalleDto> {
-        return api.obtenerDetallePropiedad(id)
-    }
+    suspend fun obtenerTodas() = api.obtenerTodasPropiedades()
 
-    suspend fun obtenerTodas(): Response<List<PropiedadResumenDto>> {
-        return api.obtenerTodasPropiedades()
-    }
-
+    /**
+     * Método Helper para simplificar el envío desde el Fragmento.
+     * Convierte los datos primitivos a RequestBody y procesa las imágenes.
+     */
     suspend fun registrarPropiedad(
-        context: Context,
+        context: Context, // Necesario para procesar las URIs de las fotos
         usuarioId: Int,
         tipoCasaId: Int,
         hobbiesIds: List<Int>,
-        amenidadesIds: List<Int>, // Necesitarás mapear esto en tu ViewModel
+        amenidadesIds: List<Int>,
         latitud: Double,
         longitud: Double,
         titulo: String,
@@ -49,67 +40,45 @@ class PropiedadRepository(private val api: PropiedadApi) {
         reglas: String,
         vehiculos: Int,
         fotosUris: List<Uri>
-    ): Response<PropiedadRegistroResponseDto> {
+    ) = api.registrarPropiedad(
+        usuarioId = toRequestBody(usuarioId.toString()),
+        tipoCasaId = toRequestBody(tipoCasaId.toString()),
+        // Convertimos las listas [1, 2] a String "1,2" para enviarlas
+        hobbiesIds = toRequestBody(hobbiesIds.joinToString(",")),
+        amenidadesIds = toRequestBody(amenidadesIds.joinToString(",")),
+        latitud = toRequestBody(latitud.toString()),
+        longitud = toRequestBody(longitud.toString()),
+        titulo = toRequestBody(titulo),
+        descripcion = toRequestBody(descripcion),
+        precio = toRequestBody(precio.toString()),
+        huespedes = toRequestBody(huespedes.toString()),
+        habitaciones = toRequestBody(habitaciones.toString()),
+        camas = toRequestBody(camas.toString()),
+        banos = toRequestBody(banos.toString()),
+        cocina = toRequestBody(if (cocina) "1" else "0"),
+        reglas = toRequestBody(reglas),
+        vehiculos = toRequestBody(vehiculos.toString()),
+        estado = toRequestBody("Disponible"), // Estado por defecto
+        fotos_propiedad = prepararFotos(context, fotosUris)
+    )
 
-        // 1. Preparar campos de texto (RequestBody)
-        val textType = "text/plain".toMediaTypeOrNull()
+    // Función privada para convertir Strings a RequestBody
+    private fun toRequestBody(value: String): RequestBody {
+        return value.toRequestBody("text/plain".toMediaTypeOrNull())
+    }
 
-        // Conversión de listas a String separado por comas: "1,2,3"
-        val hobbiesStr = hobbiesIds.joinToString(",")
-        val amenidadesStr = amenidadesIds.joinToString(",")
+    // Función privada para procesar la lista de URIs a MultipartBody.Part
+    private fun prepararFotos(context: Context, uris: List<Uri>): List<MultipartBody.Part> {
+        val partes = mutableListOf<MultipartBody.Part>()
 
-        val rbUsuarioId = usuarioId.toString().toRequestBody(textType)
-        val rbTipoCasa = tipoCasaId.toString().toRequestBody(textType)
-        val rbHobbies = hobbiesStr.toRequestBody(textType)
-        val rbAmenidades = amenidadesStr.toRequestBody(textType)
-        val rbLatitud = latitud.toString().toRequestBody(textType)
-        val rbLongitud = longitud.toString().toRequestBody(textType)
-        val rbTitulo = titulo.toRequestBody(textType)
-        val rbDescripcion = descripcion.toRequestBody(textType)
-        val rbPrecio = precio.toString().toRequestBody(textType)
-        val rbHuespedes = huespedes.toString().toRequestBody(textType)
-        val rbHabitaciones = habitaciones.toString().toRequestBody(textType)
-        val rbCamas = camas.toString().toRequestBody(textType)
-        val rbBanos = banos.toString().toRequestBody(textType)
-        // Cocina en Python es bool, enviamos "true" o "false" (o "1"/"0")
-        val rbCocina = cocina.toString().toRequestBody(textType)
-        val rbReglas = reglas.toRequestBody(textType)
-        val rbVehiculos = vehiculos.toString().toRequestBody(textType)
-        val rbEstado = "disponible".toRequestBody(textType)
-
-        // 2. Preparar Imágenes (MultipartBody.Part)
-        val partesFotos = mutableListOf<MultipartBody.Part>()
-
-        for (uri in fotosUris) {
-            // Usamos un helper para obtener el archivo real desde la URI
+        uris.forEachIndexed { index, uri ->
             val file = FileUtils.getFileFromUri(context, uri)
-            if (file != null && file.exists()) {
+            if (file != null) {
                 val requestFile = file.asRequestBody("image/*".toMediaTypeOrNull())
-                // IMPORTANTE: El nombre del campo debe coincidir con el backend: "fotos_propiedad"
-                val part = MultipartBody.Part.createFormData("fotos_propiedad", file.name, requestFile)
-                partesFotos.add(part)
+                val part = MultipartBody.Part.createFormData("fotos_propiedad", "foto_$index.jpg", requestFile)
+                partes.add(part)
             }
         }
-
-        return api.registrarPropiedad(
-            usuarioId = rbUsuarioId,
-            tipoCasaId = rbTipoCasa,
-            hobbiesIds = rbHobbies,
-            amenidadesIds = rbAmenidades,
-            latitud = rbLatitud,
-            longitud = rbLongitud,
-            titulo = rbTitulo,
-            descripcion = rbDescripcion,
-            precio = rbPrecio,
-            huespedes = rbHuespedes,
-            habitaciones = rbHabitaciones,
-            camas = rbCamas,
-            banos = rbBanos,
-            cocina = rbCocina,
-            reglas = rbReglas,
-            vehiculos = rbVehiculos,
-            estado = rbEstado,
-            fotos_propiedad = partesFotos
-        )
+        return partes
     }
 }

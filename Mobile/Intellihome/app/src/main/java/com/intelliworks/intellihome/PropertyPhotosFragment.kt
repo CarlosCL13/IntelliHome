@@ -3,6 +3,7 @@ package com.intelliworks.intellihome
 import android.content.Context
 import android.net.Uri
 import android.os.Bundle
+import android.provider.OpenableColumns
 import android.view.View
 import android.widget.TextView
 import android.widget.Toast
@@ -34,6 +35,7 @@ class PropertyPhotosFragment : Fragment(R.layout.fragment_property_photos) {
     private lateinit var btnTerminar: MaterialButton
 
     private val MAX_PHOTOS = 10
+    private val MAX_FILE_SIZE_MB = 1
     private val ALLOWED_TYPES = listOf(
         "image/jpeg", "image/png", "image/gif", "image/svg+xml"
     )
@@ -77,16 +79,64 @@ class PropertyPhotosFragment : Fragment(R.layout.fragment_property_photos) {
 
     private fun validarYAgregarFotos(uris: List<Uri>) {
         val currentSize = viewModel.fotosSeleccionadas.value?.size ?: 0
-        val space = MAX_PHOTOS - currentSize
-        if (space > 0) viewModel.agregarFotos(uris.take(space))
+        var spaceAvailable = MAX_PHOTOS - currentSize
+
+        if (spaceAvailable <= 0) return
+
+        val fotosValidas = mutableListOf<Uri>()
+        var errores = 0
+        var mensajeError = ""
+
+        for (uri in uris) {
+            if (spaceAvailable <= 0) break // Respetar límite de cantidad
+
+            val resultado = verificarArchivo(uri)
+            if (resultado.esValido) {
+                fotosValidas.add(uri)
+                spaceAvailable--
+            } else {
+                errores++
+                mensajeError = resultado.mensajeError // Guardamos el último error para mostrar
+            }
+        }
+
+        if (errores > 0) {
+            val msg = if (errores == 1) "Una foto fue rechazada: $mensajeError"
+            else "$errores fotos fueron rechazadas (Formato incorrecto o >${MAX_FILE_SIZE_MB}MB)"
+            Toast.makeText(requireContext(), msg, Toast.LENGTH_LONG).show()
+        }
+
+        if (fotosValidas.isNotEmpty()) {
+            viewModel.agregarFotos(fotosValidas)
+        }
     }
 
     private fun verificarArchivo(uri: Uri): ResultadoValidacion {
         val contentResolver = requireContext().contentResolver
+
+        // 1. Validar Tipo MIME
         val type = contentResolver.getType(uri)
         if (type == null || !ALLOWED_TYPES.contains(type)) {
-            return ResultadoValidacion(false, getString(R.string.error_format_not_allowed))
+            return ResultadoValidacion(false, "Formato no permitido (solo JPG/PNG)")
         }
+
+        // 2. Validar Tamaño (Consultando los metadatos del archivo)
+        var sizeInBytes: Long = 0
+        val cursor = contentResolver.query(uri, null, null, null, null)
+        cursor?.use {
+            if (it.moveToFirst()) {
+                val sizeIndex = it.getColumnIndex(OpenableColumns.SIZE)
+                if (sizeIndex != -1) {
+                    sizeInBytes = it.getLong(sizeIndex)
+                }
+            }
+        }
+
+        val sizeInMb = sizeInBytes / (1024.0 * 1024.0)
+        if (sizeInMb > MAX_FILE_SIZE_MB) {
+            return ResultadoValidacion(false, "La imagen es muy pesada (> ${MAX_FILE_SIZE_MB}MB)")
+        }
+
         return ResultadoValidacion(true)
     }
 
@@ -102,14 +152,8 @@ class PropertyPhotosFragment : Fragment(R.layout.fragment_property_photos) {
         mostrarDialogoConfirmacion(resumen)
     }
 
-    /**
-     * CORREGIDO: Ahora usa los helpers del ViewModel para obtener los nombres reales
-     * en lugar de acceder a variables antiguas que ya no existen.
-     */
     private fun construirResumen(): String {
         val sb = StringBuilder()
-
-        // 1. Datos Básicos (Usamos el helper getNombreTipoSeleccionado)
         val tipo = viewModel.getNombreTipoSeleccionado()
         val titulo = viewModel.titulo.value ?: getString(R.string.text_no_title)
         val precio = viewModel.precio.value ?: "0"
@@ -118,20 +162,16 @@ class PropertyPhotosFragment : Fragment(R.layout.fragment_property_photos) {
         sb.append("${getString(R.string.summary_title)} $titulo\n")
         sb.append("${getString(R.string.summary_price)} $precio\n\n")
 
-        // 2. Capacidad
         val nHuespedes = viewModel.huespedes.value ?: 0
         sb.append("${getString(R.string.summary_capacity)}: $nHuespedes huéspedes\n\n")
 
-        // 3. Ubicación
         val ubicacion = viewModel.direccionTexto.value ?: getString(R.string.text_no_address)
         sb.append("${getString(R.string.summary_location)} $ubicacion\n\n")
 
-        // 4. Actividades (Usamos helper)
         val actividadesStr = viewModel.getNombresHobbiesSeleccionados()
         val finalAct = if (actividadesStr.isNotEmpty()) actividadesStr else getString(R.string.text_none)
         sb.append("${getString(R.string.summary_activities)} $finalAct\n\n")
 
-        // 5. Comodidades (Usamos helper)
         val comodidadesStr = viewModel.getNombresAmenidadesSeleccionadas()
         val finalCom = if (comodidadesStr.isNotEmpty()) comodidadesStr else getString(R.string.text_none)
         sb.append("${getString(R.string.summary_amenities)} $finalCom\n\n")
@@ -150,18 +190,13 @@ class PropertyPhotosFragment : Fragment(R.layout.fragment_property_photos) {
     }
 
     private fun enviarDatosReales() {
-        btnTerminar.isEnabled = false // Evitar doble clic
+        btnTerminar.isEnabled = false
         val context = requireContext()
         val userId = SessionManager.obtenerUserId(context).toIntOrNull() ?: 0
 
-        // --- RECOLECCIÓN DE DATOS (Usando IDs) ---
-        // Aquí usamos los IDs que el ViewModel guardó al seleccionar los Chips
-
-        val tipoCasaId = viewModel.tipoSeleccionadoId.value ?: 1 // Default 1 si falla
+        val tipoCasaId = viewModel.tipoSeleccionadoId.value ?: 1
         val hobbiesIds = viewModel.hobbiesSeleccionadosIds.value?.toList() ?: emptyList()
         val amenidadesIds = viewModel.amenidadesSeleccionadasIds.value?.toList() ?: emptyList()
-
-        // Resto de datos
         val titulo = viewModel.titulo.value ?: "Sin título"
         val descripcion = viewModel.descripcion.value ?: ""
         val precio = (viewModel.precio.value ?: "0").toDoubleOrNull() ?: 0.0
@@ -174,7 +209,7 @@ class PropertyPhotosFragment : Fragment(R.layout.fragment_property_photos) {
         val longitud = viewModel.longitud.value ?: 0.0
 
         val api = RetrofitInstance.retrofit.create(PropiedadApi::class.java)
-        val repo = PropiedadRepository(api) // Asegúrate de importar tu repo correcto
+        val repo = PropiedadRepository(api)
 
         lifecycleScope.launch {
             try {
@@ -195,7 +230,7 @@ class PropertyPhotosFragment : Fragment(R.layout.fragment_property_photos) {
                     habitaciones = habitaciones,
                     camas = camas,
                     banos = banos,
-                    cocina = true, // O lógica si cocina está en amenidades
+                    cocina = true,
                     reglas = reglas,
                     vehiculos = 1,
                     fotosUris = viewModel.fotosSeleccionadas.value ?: emptyList()
@@ -216,7 +251,4 @@ class PropertyPhotosFragment : Fragment(R.layout.fragment_property_photos) {
             }
         }
     }
-
-    // El método copiarImagenAInternalStorage ya no se llama directamente aquí,
-    // lo maneja el repositorio (PropiedadRepository) usando FileUtils.
 }
