@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:gravity="center_vertical"
+    android:paddingVertical="12dp">
+
+    <TextView
+        android:id="@+id/txtLabel"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:text="Etiqueta"
+        android:textSize="16sp"
+        android:textColor="@android:color/black"/>
+
+    <ImageButton
+        android:id="@+id/btnMinus"
+        android:layout_width="32dp"
+        android:layout_height="32dp"
+        android:background="@drawable/circle_bg"
+        android:src="@android:drawable/ic_input_delete"
+        android:padding="8dp"/>
+    <TextView
+        android:id="@+id/txtValue"
+        android:layout_width="40dp"
+        android:layout_height="wrap_content"
+        android:text="0"
+        android:gravity="center"
+        android:textSize="18sp"
+        android:textStyle="bold"/>
+
+    <ImageButton
+        android:id="@+id/btnPlus"
+        android:layout_width="32dp"
+        android:layout_height="32dp"
+        android:background="@drawable/circle_bg"
+        android:src="@android:drawable/ic_input_add"
+        android:padding="8dp"/>
+
+</LinearLayout>

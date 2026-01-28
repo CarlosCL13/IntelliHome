@@ -16,6 +16,7 @@ import com.intelliworks.intellihome.utils.BaseActivity
 import kotlinx.coroutines.launch
 import com.intelliworks.intellihome.utils.BiometricCryptoHelper.desencriptarClave
 import com.intelliworks.intellihome.utils.BiometricCryptoHelper.desencriptarToken
+import com.intelliworks.intellihome.utils.SessionManager
 
 class Login : BaseActivity() {
 
@@ -153,14 +154,20 @@ class Login : BaseActivity() {
     }
 
     private fun verificarServidorYIrARegistro() {
+        // Creamos la instancia de la API
         val catalogosApi = RetrofitInstance.retrofit.create(
             com.intelliworks.intellihome.data.api.CatalogosApi::class.java
         )
-        val catalogosRepo = com.intelliworks.intellihome.data.repository.CatalogosRepository(catalogosApi)
+
+        // ELIMINAMOS ESTA LÍNEA (No necesitamos el repositorio para este chequeo)
+        // val catalogosRepo = com.intelliworks.intellihome.data.repository.CatalogosRepository(catalogosApi)
 
         lifecycleScope.launch {
             try {
-                val response = catalogosRepo.getHobbies()
+                // CORRECCIÓN: Usamos 'catalogosApi' en vez de 'catalogosRepo'
+                val response = catalogosApi.getHobbies()
+
+                // Ahora sí funciona .isSuccessful porque 'api' devuelve un 'Response'
                 if (response.isSuccessful) {
                     // ✅ Servidor disponible → navegar
                     startActivity(Intent(this@Login, Register::class.java))
@@ -181,12 +188,21 @@ class Login : BaseActivity() {
         }
     }
 
-
     private fun navegarAMain(loginData: LoginResponseDto) {
-        val intent = Intent(this, MainActivity::class.java)
-        intent.putExtra("user_data", Gson().toJson(loginData))
-        startActivity(intent)
-        finish()
+        val userIdReal = loginData.id?.toString() ?: loginData.username ?: ""
+        val nombreReal = loginData.nombre ?: "Usuario"
+
+        // Ahora 'imagenPerfil' ya es accesible
+        val fotoUrl = loginData.imagenPerfil
+
+        if (userIdReal.isNotEmpty()) {
+            // Guardamos en SessionManager incluyendo la URL de la foto
+            SessionManager.iniciarSesion(this, userIdReal, nombreReal, fotoUrl)
+
+            val intent = Intent(this, MainActivity::class.java)
+            startActivity(intent)
+            finish()
+        }
     }
 
     private fun gestionarRecordatorio(id: String, pass: String) {

@@ -1,9 +1,13 @@
+import java.util.Properties
+import java.io.FileInputStream
+
 plugins {
     alias(libs.plugins.android.application)
 }
 
 android {
     namespace = "com.intelliworks.intellihome"
+
     compileSdk {
         version = release(36)
     }
@@ -16,7 +20,24 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-    }
+
+        // --- INICIO CÓDIGO DE SEGURIDAD ---
+        // 1. Cargar el archivo local.properties
+        val properties = Properties()
+        val localPropertiesFile = project.rootProject.file("local.properties")
+        if (localPropertiesFile.exists()) {
+            properties.load(FileInputStream(localPropertiesFile))
+        }
+
+        // 2. Leer la clave
+        val mapsApiKey = properties.getProperty("MAPS_API_KEY") ?: ""
+
+        // 3. Inyectar al Manifest
+        manifestPlaceholders["MAPS_API_KEY"] = mapsApiKey
+
+        // 4. Inyectar a Kotlin (BuildConfig)
+        buildConfigField("String", "MAPS_API_KEY", "\"$mapsApiKey\"")
+        }
 
     buildTypes {
         release {
@@ -31,8 +52,11 @@ android {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
     }
+
+    // Activamos buildConfig junto con viewBinding
     buildFeatures {
         viewBinding = true
+        buildConfig = true
     }
 }
 
@@ -46,12 +70,27 @@ dependencies {
     implementation(libs.androidx.navigation.fragment.ktx)
     implementation(libs.androidx.navigation.ui.ktx)
     implementation(libs.colorpickerview)
+
+    implementation("androidx.viewpager2:viewpager2:1.0.0")
+
+    implementation("com.google.android.gms:play-services-maps:18.2.0")
+    implementation("com.google.android.libraries.places:places:3.3.0")
+
     testImplementation(libs.junit)
+    testImplementation("io.mockk:mockk:1.13.8")
+    testImplementation("androidx.arch.core:core-testing:2.2.0")
+
+    // Retrofit
     implementation("com.squareup.retrofit2:retrofit:2.9.0")
     implementation("com.squareup.retrofit2:converter-gson:2.9.0")
     implementation("com.squareup.okhttp3:okhttp:4.9.3")
     implementation("com.squareup.okhttp3:logging-interceptor:4.9.3")
+    implementation("com.github.bumptech.glide:glide:4.16.0")
+
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
 
+    implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.8.3")
+    implementation("androidx.lifecycle:lifecycle-livedata-ktx:2.8.3")
+    implementation("com.google.code.gson:gson:2.10.1")
 }

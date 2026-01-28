@@ -17,6 +17,11 @@ class PasswordRecoveryActivity : BaseActivity() {
 
     private lateinit var enlace: ActivityPasswordRecoveryBinding
 
+    override fun onResume() {
+        super.onResume()
+        applyAppAppearance(enlace.root)
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enlace = ActivityPasswordRecoveryBinding.inflate(layoutInflater)

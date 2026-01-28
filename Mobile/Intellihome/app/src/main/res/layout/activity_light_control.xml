@@ -1,0 +1,358 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#ECEFF1"
+    tools:ignore="MissingConstraints" >
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="16dp">
+
+        <TextView
+            android:id="@+id/txtTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="44dp"
+            android:text="@string/light_control_title"
+            android:textColor="@color/black"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.497"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/housePlanContainer"
+            android:layout_width="382dp"
+            android:layout_height="367dp"
+            android:layout_marginTop="24dp"
+            android:backgroundTint="@color/light_off"
+            android:padding="8dp"
+            app:layout_constraintDimensionRatio="H,3:4"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.523"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/txtTitle">
+
+            <!-- Baño 1 -->
+            <Button
+                android:id="@+id/btn_banio1"
+                android:layout_width="108dp"
+                android:layout_height="101dp"
+                android:layout_marginStart="8dp"
+                android:layout_marginTop="7dp"
+                android:backgroundTint="@color/light_off_darker"
+                android:insetTop="0dp"
+                android:insetBottom="0dp"
+                android:text="@string/room_bathroom_1"
+                android:textSize="10sp"
+                app:cornerRadius="0dp"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+            <!-- Cocina -->
+            <Button
+                android:id="@+id/btn_cocina"
+                android:layout_width="108dp"
+                android:layout_height="92dp"
+                android:layout_marginStart="8dp"
+                android:layout_marginTop="111dp"
+                android:backgroundTint="@color/light_off_darker"
+                android:insetTop="0dp"
+                android:insetBottom="0dp"
+                android:text="@string/room_kitchen"
+                android:textSize="10sp"
+                app:cornerRadius="0dp"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+            <!-- Sala -->
+            <Button
+                android:id="@+id/btn_sala"
+                android:layout_width="108dp"
+                android:layout_height="136dp"
+                android:layout_marginStart="8dp"
+                android:layout_marginTop="206dp"
+                android:backgroundTint="@color/light_off_darker"
+                android:insetTop="0dp"
+                android:insetBottom="0dp"
+                android:text="@string/room_living_room"
+                android:textSize="10sp"
+                app:cornerRadius="0dp"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+            <!-- Habitación 1 -->
+            <Button
+                android:id="@+id/btn_habita3"
+                android:layout_width="121dp"
+                android:layout_height="101dp"
+                android:layout_marginStart="143dp"
+                android:layout_marginTop="7dp"
+                android:backgroundTint="@color/light_off_darker"
+                android:insetTop="0dp"
+                android:insetBottom="0dp"
+                android:text="@string/room_bedroom_3"
+                android:textSize="10sp"
+                app:cornerRadius="0dp"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+            <!-- Habitación 2 -->
+            <Button
+                android:id="@+id/btn_habita2"
+                android:layout_width="121dp"
+                android:layout_height="92dp"
+                android:layout_marginStart="143dp"
+                android:layout_marginTop="111dp"
+                android:backgroundTint="@color/light_off_darker"
+                android:insetTop="0dp"
+                android:insetBottom="0dp"
+                android:text="@string/room_bedroom_2"
+                android:textSize="10sp"
+                app:cornerRadius="0dp"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+            <!-- Habitación 3 -->
+            <Button
+                android:id="@+id/btn_habita1"
+                android:layout_width="113dp"
+                android:layout_height="108dp"
+                android:layout_marginStart="143dp"
+                android:layout_marginTop="233dp"
+                android:backgroundTint="@color/light_off_darker"
+                android:insetTop="0dp"
+                android:insetBottom="0dp"
+                android:text="@string/room_bedroom_1"
+                android:textSize="10sp"
+                app:cornerRadius="0dp"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+            <!-- Garaje -->
+            <Button
+                android:id="@+id/btn_garaje"
+                android:layout_width="97dp"
+                android:layout_height="108dp"
+                android:layout_marginStart="259dp"
+                android:layout_marginTop="233dp"
+                android:backgroundTint="@color/light_off_darker"
+                android:insetTop="0dp"
+                android:insetBottom="0dp"
+                android:text="@string/room_garage"
+                android:textSize="10sp"
+                app:cornerRadius="0dp"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+            <!-- Baño 2 -->
+            <Button
+                android:id="@+id/btn_banio2"
+                android:layout_width="73dp"
+                android:layout_height="92dp"
+                android:layout_marginStart="267dp"
+                android:layout_marginTop="111dp"
+                android:backgroundTint="@color/light_off_darker"
+                android:insetTop="0dp"
+                android:insetBottom="0dp"
+                android:text="@string/room_bathroom_2"
+                android:textSize="10sp"
+                app:cornerRadius="0dp"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <!-- Paredes Verticales -->
+            <View
+                android:id="@+id/paredVert1"
+                android:layout_width="3dp"
+                android:layout_height="0dp"
+                android:layout_marginStart="5dp"
+                android:layout_marginBottom="7dp"
+                android:background="@color/black"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/paredHoriz1"
+                app:layout_constraintVertical_bias="0.0" />
+
+            <View
+                android:id="@+id/paredVert2"
+                android:layout_width="3dp"
+                android:layout_height="100dp"
+                android:layout_marginStart="116dp"
+                android:background="@color/black"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/paredHoriz1"
+                app:layout_constraintVertical_bias="0.0" />
+
+            <View
+                android:id="@+id/paredVert3"
+                android:layout_width="3dp"
+                android:layout_height="198dp"
+                android:layout_marginStart="140dp"
+                android:background="@color/black"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/paredHoriz1"
+                app:layout_constraintVertical_bias="0.0" />
+
+            <View
+                android:id="@+id/paredVert4"
+                android:layout_width="3dp"
+                android:layout_height="114dp"
+                android:layout_marginStart="140dp"
+                android:layout_marginTop="213dp"
+                android:background="@color/black"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/paredHoriz1"
+                app:layout_constraintVertical_bias="0.588" />
+
+            <View
+                android:id="@+id/paredVert5"
+                android:layout_width="3dp"
+                android:layout_height="198dp"
+                android:layout_marginStart="264dp"
+                android:background="@color/black"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/paredHoriz1"
+                app:layout_constraintVertical_bias="0.0" />
+
+            <View
+                android:id="@+id/paredVert6"
+                android:layout_width="3dp"
+                android:layout_height="114dp"
+                android:layout_marginStart="256dp"
+                android:layout_marginTop="213dp"
+                android:background="@color/black"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/paredHoriz1"
+                app:layout_constraintVertical_bias="0.6" />
+
+            <View
+                android:id="@+id/paredVert7"
+                android:layout_width="3dp"
+                android:layout_height="97dp"
+                android:layout_marginStart="340dp"
+                android:layout_marginTop="94dp"
+                android:background="@color/black"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/paredHoriz1"
+                app:layout_constraintVertical_bias="0.045" />
+
+            <View
+                android:id="@+id/paredVert8"
+                android:layout_width="3dp"
+                android:layout_height="0dp"
+                android:layout_marginStart="356dp"
+                android:layout_marginTop="196dp"
+                android:layout_marginBottom="7dp"
+                android:background="@color/black"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/paredHoriz1"
+                app:layout_constraintVertical_bias="0.0" />
+
+            <!-- Paredes Horizontales -->
+
+            <View
+                android:id="@+id/paredHoriz1"
+                android:layout_width="262dp"
+                android:layout_height="3dp"
+                android:layout_marginStart="5dp"
+                android:layout_marginTop="4dp"
+                android:background="@color/black"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <View
+                android:id="@+id/paredHoriz2"
+                android:layout_width="114dp"
+                android:layout_height="3dp"
+                android:layout_marginStart="5dp"
+                android:layout_marginTop="100dp"
+                android:background="@color/black"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHorizontal_bias="0.0"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/paredHoriz1" />
+
+            <View
+                android:id="@+id/paredHoriz3"
+                android:layout_width="203dp"
+                android:layout_height="3dp"
+                android:layout_marginStart="140dp"
+                android:layout_marginTop="100dp"
+                android:background="@color/black"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHorizontal_bias="0.0"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/paredHoriz1" />
+
+            <View
+                android:id="@+id/paredHoriz4"
+                android:layout_width="114dp"
+                android:layout_height="3dp"
+                android:layout_marginStart="5dp"
+                android:layout_marginTop="92dp"
+                android:background="@color/black"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHorizontal_bias="0.0"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/paredHoriz2"
+                tools:ignore="MissingConstraints" />
+
+            <View
+                android:id="@+id/paredHoriz5"
+                android:layout_width="219dp"
+                android:layout_height="3dp"
+                android:layout_marginStart="140dp"
+                android:layout_marginTop="92dp"
+                android:background="@color/black"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHorizontal_bias="0.0"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/paredHoriz3" />
+
+            <View
+                android:id="@+id/paredHoriz6"
+                android:layout_width="216dp"
+                android:layout_height="3dp"
+                android:layout_marginStart="140dp"
+                android:layout_marginTop="24dp"
+                android:background="@color/black"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHorizontal_bias="0.0"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/paredHoriz5" />
+
+            <View
+                android:id="@+id/paredHoriz7"
+                android:layout_width="254dp"
+                android:layout_height="3dp"
+                android:layout_marginStart="5dp"
+                android:layout_marginTop="108dp"
+                android:background="@color/black"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/paredHoriz6" />
+
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <Button
+            android:id="@+id/btn_luces"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="32dp"
+            android:text="@string/btn_turn_on_all_lights"
+            android:textSize="16sp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/housePlanContainer" />
+
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</ScrollView>

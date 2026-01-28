@@ -1,0 +1,29 @@
+package com.intelliworks.intellihome.data.api
+
+import com.intelliworks.intellihome.data.model.ArrendamientoResponseDto
+import com.intelliworks.intellihome.data.model.PropiedadAlquiladaDto
+import retrofit2.Response
+import retrofit2.http.Field
+import retrofit2.http.FormUrlEncoded
+import retrofit2.http.GET
+import retrofit2.http.POST
+import retrofit2.http.Path
+
+interface ArrendamientoApi {
+
+    // 1. Pagar / Reservar
+    @FormUrlEncoded
+    @POST("arrendamientos/arrendamiento")
+    suspend fun registrarArrendamiento(
+        @Field("propiedad_id") propiedadId: Int,
+        @Field("inquilino_id") inquilinoId: Int,
+        @Field("fecha_inicio") fechaInicio: String,
+        @Field("fecha_fin") fechaFin: String
+    ): Response<ArrendamientoResponseDto>
+
+    // 2. Ver mis alquileres (ESTE SE QUEDA AQUÍ porque la URL es /arrendamientos/...)
+    @GET("arrendamientos/alquiladas/{user_id}")
+    suspend fun obtenerAlquiladasPorUsuario(
+        @Path("user_id") userId: Int
+    ): Response<List<PropiedadAlquiladaDto>>
+}

@@ -9,12 +9,20 @@ data class LoginResponseDto(
     val telefono: String?,
     val nombre: String?,
     val apellidos: String?,
+
+    val domicilio: String?,
+
     @SerializedName("rol_id")
     val rolId: Int?,
+
     @SerializedName("estado_cuenta")
     val estadoCuenta: String?,
 
-    // Estos campos solo vendrán si hay un error (según tu Python)
+    @SerializedName("imagen_perfil")
+    val imagenPerfil: String?,
+
+    val token: String?,
+
     val errores: Map<String, String>?,
     val mensaje: String?
 )
