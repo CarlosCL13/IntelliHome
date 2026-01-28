@@ -12,5 +12,7 @@ data class PropiedadAlquiladaDto(
     val banos: Int,
     val imagen: String?,
     val latitud: Double,
-    val longitud: Double
+    val longitud: Double,
+    @SerializedName("fecha_inicio") val fechaInicio: String?,
+    @SerializedName("fecha_fin") val fechaFin: String?
 )

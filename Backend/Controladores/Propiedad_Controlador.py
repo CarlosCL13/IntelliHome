@@ -1,6 +1,15 @@
 from fastapi import APIRouter, Depends, UploadFile, File, Form, HTTPException, Request
-from sqlalchemy.orm import Session, joinedload
+from sqlalchemy.orm import Session
+from datetime import date
+from typing import Optional
+import os
+import socket
+
+# Importación de Servicios y Base de Datos
 from Servicios.Propiedad_Servicio import Propiedad_Servicio
+from Base_de_Datos.db_session import get_db
+
+# Importación de Modelos
 from Modelos.Propiedad import Propiedad
 from Modelos.FotoPropiedad import FotoPropiedad
 from Modelos.Amenidad import Amenidad, PropiedadAmenidad
@@ -14,15 +23,84 @@ from Base_de_Datos.db_session import get_db
 import os
 import socket
 
+# Configuración del router para los endpoints de propiedades
 router = APIRouter(prefix="/propiedades", tags=["propiedades"])
 
-# Endpoint para el registro de una nueva propiedad
+
+# -----------------------------------------------------------------------------
+# Helper: Obtener IP Local (Definida aquí mismo, por eso no se importa)
+# -----------------------------------------------------------------------------
+def get_local_ip():
+    """
+    Intenta obtener la IP de la red local para sustituir localhost.
+    Útil para pruebas desde dispositivos físicos (celulares) para que puedan ver las imágenes.
+    """
+    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    try:
+        # Se intenta conectar a una IP externa (no envía datos reales)
+        s.connect(('10.255.255.255', 1))
+        ip = s.getsockname()[0]
+    except Exception:
+        ip = '127.0.0.1'
+    finally:
+        s.close()
+    return ip
+
+
+# -----------------------------------------------------------------------------
+# Helpers para Arrendamientos (Lógica interna)
+# -----------------------------------------------------------------------------
+def obtener_inquilino_actual(propiedad_id: int, db: Session) -> Optional[Usuario]:
+    """
+    Determina si la propiedad está ocupada hoy y devuelve al inquilino.
+    """
+    hoy = date.today()
+    # Se obtiene el arrendamiento actual
+    arrendamiento_actual = db.query(Arrendamiento).filter(
+        Arrendamiento.propiedad_id == propiedad_id,
+        Arrendamiento.fecha_inicio <= hoy,
+        Arrendamiento.fecha_fin >= hoy
+    ).first()
+
+    if arrendamiento_actual:
+        # Se obtiene el usuario inquilino asociado a dicho arrendamiento
+        inquilino = db.query(Usuario).filter(Usuario.id == arrendamiento_actual.inquilino_id).first()
+        return inquilino
+    return None
+
+
+def obtener_arrendamientos_futuros(propiedad_id: int, db: Session):
+    """
+    Obtiene la lista de fechas reservadas a futuro para bloquear el calendario.
+    """
+    arrendamientos = db.query(Arrendamiento).filter(
+        Arrendamiento.propiedad_id == propiedad_id
+    ).all()
+
+    futuros_arrendamientos = []
+    hoy = date.today()
+    for arrendamientos_aux in arrendamientos:
+        # Se omiten los arrendamientos que ya hayan finalizado hasta hoy
+        # Se incluyen los que están activos o son futuros
+        if arrendamientos_aux.fecha_fin >= hoy:
+            futuros_arrendamientos.append({
+                "arrendamiento_id": arrendamientos_aux.id,
+                "fecha_inicio": arrendamientos_aux.fecha_inicio,
+                "fecha_fin": arrendamientos_aux.fecha_fin
+            })
+    
+    return futuros_arrendamientos
+
+
+# -----------------------------------------------------------------------------
+# Endpoint: Registro de Propiedad
+# -----------------------------------------------------------------------------
 @router.post("/registro-propiedad")
 def registrar_propiedad(
     usuario_id: int = Form(...),
     tipo_casa_id: int = Form(...),
-    hobbies_ids: str = Form(...),
-    amenidades_ids: str = Form(...),
+    hobbies_ids: str = Form(""),
+    amenidades_ids: str = Form(""),
     latitud: float = Form(...),
     longitud: float = Form(...),
     titulo_publicacion: str = Form(...),
@@ -37,9 +115,15 @@ def registrar_propiedad(
     fotos_propiedad: list[UploadFile] = File(...),
     db: Session = Depends(get_db)
     ):
+    """
+    Registra una nueva propiedad en el sistema.
+    Recibe datos del formulario (Multipart) y archivos de imagen.
+    """
+    # Conversión de strings CSV a listas de enteros
     hobbies_ids_list = [int(i) for i in hobbies_ids.split(",")] if hobbies_ids else []
     amenidades_ids_list = [int(i) for i in amenidades_ids.split(",")] if amenidades_ids else []
-    # Se registra la propiedad usando el servicio
+    
+    # Delegación de la lógica de negocio al servicio
     resultado = Propiedad_Servicio.registrar_propiedad(
         db=db,
         usuario_id=usuario_id,
@@ -59,42 +143,60 @@ def registrar_propiedad(
         reglas_uso=reglas_uso,
         estado=estado
     )
+
     if 'errores' in resultado:
         raise HTTPException(status_code=422, detail=resultado['errores'])
+    
     return resultado
 
-# Endpoint para obtener todas las propiedades con detalles resumidos y una imagen
+
+# -----------------------------------------------------------------------------
+# Endpoint: Obtener Todas las Propiedades (Resumen)
+# -----------------------------------------------------------------------------
 @router.get("/todas", summary="Obtener todas las propiedades con detalles resumidos y una imagen")
 def get_todas_propiedades(request: Request, db: Session = Depends(get_db)):
+    """
+    Devuelve un listado de todas las propiedades registradas.
+    Incluye latitud y longitud para mostrar en mapas, y la primera foto como portada.
+    """
     propiedades = db.query(Propiedad).all()
     resultado = []
+    
+    # Lógica para determinar la URL base (IP local vs Localhost)
     base_url = str(request.base_url).rstrip('/')
-    # Reemplazar localhost o 127.0.0.1 por la IP local
     if "localhost" in base_url or "127.0.0.1" in base_url:
         ip = get_local_ip()
         base_url = base_url.replace("localhost", ip).replace("127.0.0.1", ip)
+
     
     for prop in propiedades:
-        # Obtener solo la primera foto
+        # Recuperar solo la primera foto para la vista de tarjeta/resumen
         foto = db.query(FotoPropiedad).filter(FotoPropiedad.propiedad_id == prop.id).first()
         foto_url = None
         if foto:
             nombre_archivo = os.path.basename(foto.url_foto)
             foto_url = f"{base_url}/uploads/{nombre_archivo}"
+
         resultado.append({
             "id": prop.id,
+            "usuario_id": prop.usuario_id, # IMPORTANTE: ID del dueño real
             "titulo_publicacion": prop.titulo_publicacion,
             "precio_noche": prop.precio_noche,
             "huespedes": prop.huespedes,
             "habitaciones": prop.habitaciones,
             "camas": prop.camas,
             "banos": prop.banos,
-            "imagen": foto_url
+            "imagen": foto_url,
+            "latitud": prop.latitud,
+            "longitud": prop.longitud
         })
+    
     return resultado
 
-# Renta de hoy (id del inquilino)
-# Endpoint para obtener una propiedad por id, incluyendo fotos (URL completa) y amenidades (información completa de una propiedad en concreto)
+
+# -----------------------------------------------------------------------------
+# Endpoint: Obtener Detalle de Propiedad por ID
+# -----------------------------------------------------------------------------
 @router.get("/{propiedad_id}", summary="Obtener una propiedad por id con fotos y amenidades")
 def get_propiedad_por_id(propiedad_id: int, request: Request, db: Session = Depends(get_db)):
     prop = db.query(Propiedad).filter(Propiedad.id == propiedad_id).first()
@@ -118,36 +220,38 @@ def get_propiedad_por_id(propiedad_id: int, request: Request, db: Session = Depe
     amenidades_ids = db.query(PropiedadAmenidad.amenidad_id).filter(PropiedadAmenidad.propiedad_id == prop.id).all()
     amenidades = db.query(Amenidad).filter(Amenidad.id.in_([a[0] for a in amenidades_ids])).all()
     amenidades_list = [{"id": a.id, "nombre": a.nombre} for a in amenidades]
+
     # Hobbies
     hobbies_ids = db.query(PropiedadHobby.hobby_id).filter(PropiedadHobby.propiedad_id == prop.id).all()
     hobbies = db.query(Hobby).filter(Hobby.id.in_([h[0] for h in hobbies_ids])).all()
     hobbies_list = [{"id": h.id, "nombre": h.nombre} for h in hobbies]
+
     # Nombres relacionados
     tipo_casa = db.query(TipoCasa).filter(TipoCasa.id == prop.tipo_casa_id).first()
     usuario = db.query(Usuario).filter(Usuario.id == prop.usuario_id).first()
-    # Imagen de perfil del usuario
-    imagen_perfil_url = None
-    if usuario and hasattr(usuario, 'imagen_perfil') and usuario.imagen_perfil:
-        nombre_archivo = os.path.basename(usuario.imagen_perfil)
-        base_url_img = base_url
-        # Si la imagen está en la carpeta uploads, servirla por /uploads
-        if 'uploads' in usuario.imagen_perfil:
-            imagen_perfil_url = f"{base_url_img}/uploads/{nombre_archivo}"
-        else:
-            imagen_perfil_url = usuario.imagen_perfil
 
-    # Se obtiene el Inquilino actual de la propiedad (hoy)
+    # Imagen de perfil del usuario (Host)
+    imagen_perfil_url = None
+    if usuario and getattr(usuario, 'imagen_perfil', None):
+        img_str = usuario.imagen_perfil
+        if img_str.startswith("http"):
+            imagen_perfil_url = img_str
+        else:
+            nombre_archivo = os.path.basename(img_str)
+            imagen_perfil_url = f"{base_url}/uploads/{nombre_archivo}"
+
+    # Se obtiene el Inquilino actual de la propiedad (hoy) para la lógica de IoT
     inquilino_actual = obtener_inquilino_actual(propiedad_id, db)
     inquilino_actual_id = None
-    # Se obtiene el id del inquilino actual
     if inquilino_actual:
         inquilino_actual_id = inquilino_actual.id
 
-    # Se obtiene los arrendamientos futuros de la propiedad
+    # Se obtiene los arrendamientos futuros de la propiedad para bloquear el calendario
     futuros_arrendamientos = obtener_arrendamientos_futuros(propiedad_id, db)
 
     resultado = {
         "id": prop.id,
+        "usuario_id": prop.usuario_id,
         "usuario": usuario.nombre if usuario else None,
         "usuario_nombre_completo": f"{usuario.nombre} {usuario.apellidos}".strip() if usuario and hasattr(usuario, 'nombre') and hasattr(usuario, 'apellidos') else None,
         "usuario_telefono": usuario.telefono if usuario and hasattr(usuario, 'telefono') else None,
@@ -172,31 +276,44 @@ def get_propiedad_por_id(propiedad_id: int, request: Request, db: Session = Depe
     }
     return resultado
 
-# Endpoint para obtener todas las propiedades de un usuario por su user id, incluyendo fotos, amenidades y hobbies
-@router.get("/usuario/{user_id}", summary="Obtener todas las propiedades de un usuario por su id (resumido)")
+
+# -----------------------------------------------------------------------------
+# Endpoint: Obtener Propiedades por Usuario (Resumen - Mis Publicaciones)
+# -----------------------------------------------------------------------------
+@router.get("/usuario/{user_id}", summary="Obtener todas las propiedades publicadas por un usuario")
 def get_propiedades_por_usuario(user_id: int, request: Request, db: Session = Depends(get_db)):
+    """
+    Devuelve las propiedades pertenecientes a un usuario específico (Dueño).
+    Formato resumido (tarjetas).
+    """
     propiedades = db.query(Propiedad).filter(Propiedad.usuario_id == user_id).all()
     resultado = []
+    
+    # Ajuste de URL base
     base_url = str(request.base_url).rstrip('/')
     if "localhost" in base_url or "127.0.0.1" in base_url:
         ip = get_local_ip()
         base_url = base_url.replace("localhost", ip).replace("127.0.0.1", ip)
+
     for prop in propiedades:
-        # Obtener solo la primera foto
         foto = db.query(FotoPropiedad).filter(FotoPropiedad.propiedad_id == prop.id).first()
         foto_url = None
         if foto:
             nombre_archivo = os.path.basename(foto.url_foto)
             foto_url = f"{base_url}/uploads/{nombre_archivo}"
+        
         resultado.append({
             "id": prop.id,
+            "usuario_id": prop.usuario_id,
             "titulo_publicacion": prop.titulo_publicacion,
             "precio_noche": prop.precio_noche,
             "huespedes": prop.huespedes,
             "habitaciones": prop.habitaciones,
             "camas": prop.camas,
             "banos": prop.banos,
-            "imagen": foto_url
+            "imagen": foto_url,
+            "latitud": prop.latitud,
+            "longitud": prop.longitud
         })
     return resultado
 

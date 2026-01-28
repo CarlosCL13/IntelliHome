@@ -21,20 +21,18 @@ class PropertyAmenitiesFragment : Fragment(R.layout.fragment_property_amenities)
 
         // 1. Observamos la lista REAL que viene de la base de datos (Python)
         viewModel.listaAmenidades.observe(viewLifecycleOwner) { lista ->
-            container.removeAllViews() // Limpiamos la lista para evitar duplicados al volver
+            container.removeAllViews()
 
             lista.forEach { amenidad ->
-                // Inflamos tu diseño de checkbox existente
                 val checkBox = LayoutInflater.from(context)
                     .inflate(R.layout.item_amenity_checkbox, container, false) as CheckBox
 
-                checkBox.text = amenidad.nombre
+                // CAMBIO AQUÍ: Usamos la función traductora en lugar de amenidad.nombre directo
+                checkBox.text = obtenerNombreAmenidad(amenidad.id, amenidad.nombre)
 
-                // 2. Verificamos si este ID ya estaba seleccionado en el ViewModel
                 val idsSeleccionados = viewModel.amenidadesSeleccionadasIds.value ?: emptySet()
                 checkBox.isChecked = idsSeleccionados.contains(amenidad.id)
 
-                // 3. Al hacer clic, guardamos el ID (no el nombre)
                 checkBox.setOnClickListener {
                     viewModel.toggleAmenidad(amenidad.id)
                 }
@@ -51,6 +49,44 @@ class PropertyAmenitiesFragment : Fragment(R.layout.fragment_property_amenities)
                 .replace(R.id.fragmentContainer, PropertyPhotosFragment())
                 .addToBackStack(null)
                 .commit()
+        }
+    }
+    /**
+     * Mapea IDs de Amenidades a Strings.xml
+     */
+    private fun obtenerNombreAmenidad(id: Int, original: String): String {
+        return when (id) {
+            1 -> getString(R.string.am_kitchen)
+            2 -> getString(R.string.am_ac)
+            3 -> getString(R.string.am_heating)
+            4 -> getString(R.string.am_wifi)
+            5 -> getString(R.string.am_cable_tv)
+            6 -> getString(R.string.am_washer_dryer)
+            7 -> getString(R.string.am_pool)
+            8 -> getString(R.string.am_garden)
+            9 -> getString(R.string.am_bbq)
+            10 -> getString(R.string.am_balcony)
+            11 -> getString(R.string.am_gym)
+            12 -> getString(R.string.am_parking)
+            13 -> getString(R.string.am_security)
+            14 -> getString(R.string.am_ensuite)
+            15 -> getString(R.string.am_outdoor_furniture)
+            16 -> getString(R.string.am_microwave)
+            17 -> getString(R.string.am_dishwasher)
+            18 -> getString(R.string.am_coffee_maker)
+            19 -> getString(R.string.am_linens)
+            20 -> getString(R.string.am_common_areas)
+            21 -> getString(R.string.am_extra_beds)
+            22 -> getString(R.string.am_cleaning)
+            23 -> getString(R.string.am_public_transport)
+            24 -> getString(R.string.am_pets)
+            25 -> getString(R.string.am_shops)
+            26 -> getString(R.string.am_floor_heating)
+            27 -> getString(R.string.am_workspace)
+            28 -> getString(R.string.am_entertainment)
+            29 -> getString(R.string.am_fireplace)
+            30 -> getString(R.string.am_internet_high_speed)
+            else -> original
         }
     }
 }

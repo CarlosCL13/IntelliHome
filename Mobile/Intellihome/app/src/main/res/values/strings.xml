@@ -2,65 +2,66 @@
     <string name="app_name">IntelliHome</string>
     <string name="logo_desc">Logo de la aplicación</string>
     <string name="data_not_available">N/A</string>
-    <string name="welcome_user">Bienvenido/a,</string>
+    <string name="welcome_user">Bienvenido,</string>
+
     <string name="nav_explore">Explorar</string>
-    <string name="nav_rentals">Alquileres</string>
+    <string name="nav_rentals">Historial</string>
     <string name="nav_profile">Perfil</string>
 
-    <string name="title_explore_properties">Explorar Alojamientos</string>
+    <string name="title_explore_properties">Explorar Propiedades</string>
     <string name="hint_search_destination">Buscar destino...</string>
 
-    <string name="title_rentals">Alojamientos Rentados</string>
+    <string name="title_rentals">Propiedades Rentadas</string>
     <string name="text_no_rentals">No tienes reservas activas</string>
 
     <string name="title_profile">Perfil</string>
     <string name="text_loading_user">Cargando usuario...</string>
-    <string name="text_user_verified">Usuario verificado</string>
-    <string name="btn_add_new_rental">Añadir nuevo alquiler</string>
+    <string name="text_user_verified">Usuario Verificado</string>
+    <string name="btn_add_new_rental">Publicar nueva propiedad</string>
     <string name="title_my_properties">Mis propiedades publicadas:</string>
 
     <string name="btn_next">Siguiente</string>
-    <string name="btn_finish">Terminar y Publicar</string>
+    <string name="btn_finish">Finalizar y Publicar</string>
     <string name="btn_add_photos">Agregar fotos</string>
     <string name="btn_publish">PUBLICAR</string>
     <string name="btn_edit">Editar</string>
     <string name="btn_add_property">Agregar propiedad</string>
 
-    <string name="login">Iniciar sesión</string>
+    <string name="login">Iniciar Sesión</string>
     <string name="signup">¿No tienes cuenta? Regístrate</string>
-    <string name="logout">Cerrar\nsesión</string>
-
+    <string name="logout">Cerrar\nSesión</string>
     <string name="username_hint">Usuario, correo o teléfono</string>
     <string name="password_hint">Contraseña</string>
     <string name="rememberme">Recuérdame</string>
     <string name="forgot_password">Olvidé mi contraseña</string>
+    <string name="authenticate_to_continue">Autentícate para continuar</string>
 
-    <string name="login_failed">Inicio de sesión fallido</string>
-    <string name="enter_username_first">Ingrese el usuario primero</string>
-    <string name="error_empty_fields">Por favor complete los campos</string>
-    <string name="error_invalid_credentials">Usuario o contraseña incorrectos</string>
+    <string name="login_failed">Error de inicio de sesión</string>
+    <string name="enter_username_first">Ingresa el usuario primero</string>
+    <string name="error_empty_fields">Por favor llena todos los campos</string>
+    <string name="error_invalid_credentials">Usuario o contraseña inválidos</string>
     <string name="error_network">Error de conexión con el servidor</string>
-    <string name="authenticate_to_continue">Autentíquese para continuar</string>
+    <string name="error_user_unknown">Error: Usuario desconocido. Inicia sesión nuevamente.</string>
 
     <string name="biometric_title">Acceso Biométrico</string>
     <string name="biometric_subtitle">Usa tu huella para continuar</string>
     <string name="biometric_success">Identidad confirmada</string>
-    <string name="fingerprint_login">Inicio con huella</string>
+    <string name="fingerprint_login">Ingreso con huella</string>
     <string name="fingerprint_not_enabled">Huella no habilitada para este usuario</string>
-    <string name="error_biometric_no_data">Inicia sesión manualmente y selecciona "Recuérdame" para activar la huella.</string>
+    <string name="error_biometric_no_data">Por favor inicia sesión manualmente y selecciona "Recuérdame" para habilitar la huella.</string>
 
     <string name="register_button">Registrarse</string>
-    <string name="register_login_redirect">¿Ya registrado? Inicia sesión</string>
+    <string name="register_login_redirect">¿Ya estás registrado? Inicia sesión</string>
     <string name="register_logo_desc">Logo App</string>
     <string name="register_user_photo_desc">Foto de usuario</string>
     <string name="register_terms">Ver términos y condiciones</string>
 
     <string name="register_name">Nombre:</string>
-    <string name="register_lastname">Apellido:</string>
+    <string name="register_lastname">Apellidos:</string>
     <string name="register_email">Correo:</string>
     <string name="register_username">Usuario:</string>
     <string name="register_phone">Teléfono:</string>
-    <string name="register_address">Dirección:</string>
+    <string name="register_address">Domicilio:</string>
 
     <string name="register_password">Contraseña:</string>
     <string name="register_password_hint">(mín 8 caracteres)</string>
@@ -87,12 +88,12 @@
     <string name="house_adventurous">Aventurera</string>
     <string name="house_contemporary">Contemporánea</string>
 
-    <string name="register_payment_data">Datos de pago:</string>
+    <string name="register_payment_data">Datos de tarjeta de pago:</string>
     <string name="register_card_holder">Titular:</string>
     <string name="register_card_number">Número de tarjeta:</string>
     <string name="register_card_expiration">Vencimiento:</string>
     <string name="register_card_expiration_hint">mm/aaaa</string>
-    <string name="register_fingerprint">Habilitar inicio con huella</string>
+    <string name="register_fingerprint">Habilitar huella digital</string>
 
     <string name="recovery_title">Restablecer Contraseña</string>
     <string name="recovery_user_hint">Usuario, correo o teléfono</string>
@@ -103,11 +104,11 @@
     <string name="recovery_confirm_pass_hint">Confirmar nueva contraseña</string>
     <string name="recovery_btn_update">Actualizar Contraseña</string>
 
-    <string name="error_password_regex">Debe tener al menos 8 caracteres, letras y números</string>
+    <string name="error_password_regex">Debe tener al menos 8 caracteres, con letras y números</string>
     <string name="error_password_match">Las contraseñas no coinciden</string>
     <string name="password_updated">Contraseña actualizada exitosamente</string>
 
-    <string name="main_title_account">DETALLES DE CUENTA</string>
+    <string name="main_title_account">DETALLES DE LA CUENTA</string>
     <string name="label_user_id">ID Usuario: %1$d</string>
     <string name="label_username">Usuario: @%1$s</string>
     <string name="label_email">Correo: %1$s</string>
@@ -121,7 +122,7 @@
     <string name="role_guest">Invitado</string>
 
     <string name="settings_title">Ajustes</string>
-    <string name="settings_menu">Ajustes</string>
+    <string name="settings_menu">Configuración</string>
     <string name="settings">Ajustes</string>
     <string name="help">Ayuda</string>
 
@@ -129,7 +130,7 @@
     <string name="settings_dark_mode">Modo oscuro</string>
     <string name="settings_background_color">Color de fondo</string>
     <string name="select_color">Selecciona un color</string>
-    <string name="settings_select_color">Selecciona color</string>
+    <string name="settings_select_color">Seleccionar color</string>
 
     <string name="settings_language">Idioma</string>
     <string name="lang_spanish">Español</string>
@@ -138,34 +139,26 @@
     <string name="help_title">Guía de Registro IntelliHome</string>
     <string name="help_content">
         Sigue estos pasos para crear tu cuenta correctamente:\n\n
-        1. **Info Básica:** Ingresa tu nombre, apellidos y un correo válido.\n\n
-        2. **Foto de Perfil:** Selecciona una foto menor a 1MB.\n\n
-        3. **Seguridad:** Crea un usuario único y contraseña segura.\n\n
-        4. **Biometría:** Si tu teléfono lo permite, activa la huella.\n\n
-        5. **Recuperación:** Selecciona una pregunta de seguridad. Será la única forma de recuperar tu cuenta.\n\n
-        6. **Preferencias:** Selecciona tipo de vivienda y al menos un hobby.\n\n
-        7. **Pago:** Registra tu tarjeta para la gestión de servicios.
+        1. **Datos Básicos:** Ingresa tu nombre, apellidos y un correo válido.\n\n
+        2. **Foto de Perfil:** Debes seleccionar una foto. Cuida que pese menos de 1MB.\n\n
+        3. **Seguridad:** Crea un usuario único y una contraseña segura. Evita lenguaje ofensivo.\n\n
+        4. **Biometría:** Si tu celular lo permite, habilita la huella para entrar más rápido.\n\n
+        5. **Recuperación:** Selecciona una pregunta de seguridad. Será la única forma de recuperar tu cuenta si olvidas la contraseña.\n\n
+        6. **Preferencias:** Debes seleccionar tus gustos de casa y al menos un hobby para personalizar tu experiencia de casa inteligente.\n\n
+        7. **Medio de Pago:** Registra tu tarjeta para la gestión automática de servicios.
     </string>
 
     <string name="title_add_property_flow">Agregar Propiedad</string>
 
-    <string name="title_property_type">¿Qué opción describe mejor tu alojamiento?</string>
-    <string name="type_contemporary">CONTEMPORÁNEO</string>
-    <string name="type_minimalist">MINIMALISTA</string>
-    <string name="type_adventurous">AVENTURERO</string>
+    <string name="title_property_type">¿Qué opción describe mejor tu espacio?</string>
 
-    <string name="title_activities">¿Qué actividades se relacionan con tu alojamiento?</string>
-    <string name="activity_hiking">HIKING\n(SENDERISMO)</string>
-    <string name="activity_tv">VER TV</string>
-    <string name="activity_sports">DEPORTES</string>
-    <string name="activity_snorkeling">ESNÓRQUEL</string>
-    <string name="activity_board_games">JUEGOS DE MESA</string>
+    <string name="title_activities">¿Qué actividades se relacionan con tu lugar?</string>
 
-    <string name="title_address">¿Dónde se ubica tu alojamiento?</string>
+    <string name="title_address">¿Dónde se ubica tu espacio?</string>
     <string name="hint_search_address">Busca tu dirección...</string>
 
     <string name="title_details">Detalles</string>
-    <string name="hint_property_title">Título de la publicación</string>
+    <string name="hint_property_title">Título del anuncio</string>
     <string name="hint_price_night">Precio por noche</string>
     <string name="label_guests">Huéspedes</string>
     <string name="label_bedrooms">Habitaciones</string>
@@ -174,45 +167,46 @@
 
     <string name="title_amenities">Selecciona las comodidades:</string>
 
-    <string-array name="amenities_list">
-        <item>Cocina equipada (con electrodomésticos modernos)</item>
-        <item>Aire acondicionado</item>
-        <item>Calefacción</item>
-        <item>Wi-Fi gratuito</item>
-        <item>Televisión por cable o satélite</item>
-        <item>Lavadora y secadora</item>
-        <item>Piscina</item>
-        <item>Jardín o patio</item>
-        <item>Barbacoa o parrilla</item>
-        <item>Terraza o balcón</item>
-        <item>Gimnasio en casa</item>
-        <item>Garaje o espacio de estacionamiento</item>
-        <item>Sistema de seguridad</item>
-        <item>Habitaciones con baño en suite</item>
-        <item>Muebles de exterior</item>
-        <item>Microondas</item>
-        <item>Lavavajillas</item>
-        <item>Cafetera</item>
-        <item>Ropa de cama y toallas incluidas</item>
-        <item>Acceso a áreas comunes (piscina, gimnasio)</item>
-        <item>Camas adicionales o sofá cama</item>
-        <item>Servicios de limpieza opcionales</item>
-        <item>Acceso a transporte público cercano</item>
-        <item>Mascotas permitidas</item>
-        <item>Cercanía a tiendas y restaurantes</item>
-        <item>Sistema de calefacción por suelo radiante</item>
-        <item>Escritorio o área de trabajo</item>
-        <item>Sistemas de entretenimiento (videojuegos, etc.)</item>
-        <item>Chimenea</item>
-        <item>Acceso a internet de alta velocidad</item>
-    </string-array>
+    <string name="am_kitchen">Cocina equipada (electrodomésticos modernos)</string>
+    <string name="am_ac">Aire acondicionado</string>
+    <string name="am_heating">Calefacción</string>
+    <string name="am_wifi">Wi-Fi gratuito</string>
+    <string name="am_cable_tv">Televisión por cable o satélite</string>
+    <string name="am_washer_dryer">Lavadora y secadora</string>
+    <string name="am_pool">Piscina</string>
+    <string name="am_garden">Jardín o patio</string>
+    <string name="am_bbq">Barbacoa o parrilla</string>
+    <string name="am_balcony">Terraza o balcón</string>
+    <string name="am_gym">Gimnasio en casa</string>
+    <string name="am_parking">Garaje o espacio de estacionamiento</string>
+    <string name="am_security">Sistema de seguridad</string>
+    <string name="am_ensuite">Habitaciones con baño en suite</string>
+    <string name="am_outdoor_furniture">Muebles de exterior</string>
+    <string name="am_microwave">Microondas</string>
+    <string name="am_dishwasher">Lavavajillas</string>
+    <string name="am_coffee_maker">Cafetera</string>
+    <string name="am_linens">Ropa de cama y toallas incluidas</string>
+    <string name="am_common_areas">Acceso a áreas comunes (piscina, gimnasio)</string>
+    <string name="am_extra_beds">Camas adicionales o sofá cama</string>
+    <string name="am_cleaning">Servicios de limpieza opcionales</string>
+    <string name="am_public_transport">Acceso a transporte público cercano</string>
+    <string name="am_pets">Mascotas permitidas</string>
+    <string name="am_shops">Cercanía a tiendas y restaurantes</string>
+    <string name="am_floor_heating">Sistema de calefacción por suelo radiante</string>
+    <string name="am_workspace">Escritorio o área de trabajo</string>
+    <string name="am_entertainment">Sistemas de entretenimiento (videojuegos, etc.)</string>
+    <string name="am_fireplace">Chimenea</string>
+    <string name="am_internet_high_speed">Acceso a internet de alta velocidad</string>
 
-    <string name="title_photos">Agrega fotos de tu alojamiento:</string>
-    <string name="text_photo_requirements">Formatos permitidos: JPG, PNG, GIF, SVG.\nMáximo 1MB por imagen.</string>
+    <string name="label_none">Ninguna</string>
+
+
+    <string name="title_photos">Agrega fotos de tu espacio:</string>
+    <string name="text_photo_requirements">Formatos permitidos: JPG, PNG, GIF, SVG.\nMáx 1MB por imagen.</string>
 
     <string name="error_invalid_image">Imagen inválida</string>
     <string name="error_format_not_allowed">Formato no permitido. Solo JPG, PNG, GIF, SVG.</string>
-    <string name="error_size_exceeded">El archivo excede 1MB</string>
+    <string name="error_size_exceeded">Archivo excede 1MB</string>
     <string name="error_no_photos">Debes agregar al menos una foto para publicar.</string>
     <string name="msg_publish_success">¡Publicación exitosa!</string>
 
@@ -221,7 +215,6 @@
     <string name="summary_title">TÍTULO:</string>
     <string name="summary_price">PRECIO:</string>
     <string name="summary_capacity">CAPACIDAD:</string>
-    <string name="summary_guests">Huéspedes:</string>
     <string name="summary_rooms">Habitaciones:</string>
     <string name="summary_beds">Camas:</string>
     <string name="summary_baths">Baños:</string>
@@ -230,7 +223,7 @@
     <string name="summary_amenities">COMODIDADES:</string>
     <string name="summary_photos_count">FOTOS: Se subirán %1$d imágenes.</string>
 
-    <string name="text_none">Ninguna</string>
+    <string name="text_none">Ninguno</string>
     <string name="text_not_defined">No definido</string>
     <string name="text_no_title">Sin título</string>
     <string name="text_no_address">Sin dirección</string>
@@ -241,52 +234,56 @@
     <string name="btn_turn_off_all_lights">Apagar luces</string>
     <string name="btn_toggle_all_lights">Encender / Apagar</string>
     <string name="room_bathroom_1">Baño\n1</string>
-    <string name="room_bedroom_3">Habitación\n3</string>
+    <string name="room_bedroom_3">Cuarto\n3</string>
     <string name="room_kitchen">Cocina</string>
-    <string name="room_bedroom_2">Habitación\n2</string>
+    <string name="room_bedroom_2">Cuarto\n2</string>
     <string name="room_bathroom_2">Baño\n2</string>
     <string name="room_living_room">Sala</string>
-    <string name="room_bedroom_1">Habitación\n1</string>
+    <string name="room_bedroom_1">Cuarto\n1</string>
     <string name="room_garage">Garaje</string>
 
-    <!-- Property Detail -->
-    <string name="property_detail_title">Detalles de la Propiedad</string>
+    <string name="property_detail_title">Detalle de Propiedad</string>
     <string name="property_image_desc">Imágenes de la propiedad</string>
     <string name="previous_photo">Foto anterior</string>
-    <string name="next_photo">Foto siguiente</string>
+    <string name="next_photo">Siguiente foto</string>
     <string name="payment_rental_dates_title">Fechas de alquiler</string>
-    <string name="payment_rental_dates_subtitle">Selecciona las fechas de inicio y fin para tu reserva</string>
+    <string name="payment_rental_dates_subtitle">Selecciona fecha de entrada y salida para tu reserva</string>
     <string name="payment_select_dates_button">Seleccionar fechas</string>
-    <string name="payment_no_dates_selected">No se han seleccionado fechas</string>
-    <string name="payment_total_nights">Total de noches: %1$d</string>
+    <string name="payment_no_dates_selected">Sin fechas seleccionadas</string>
+    <string name="payment_total_nights">Total noches: %1$d</string>
     <string name="payment_dates_selected">Desde: %1$s\nHasta: %2$s</string>
-    <string name="payment_error_no_dates">Por favor selecciona las fechas de alquiler</string>
+    <string name="payment_error_no_dates">Por favor selecciona fechas de renta</string>
     <string name="payment_error_blocked_dates">Las fechas seleccionadas incluyen días no disponibles</string>
-    <string name="property_name_placeholder">Nombre de la propiedad</string>
+    <string name="property_name_placeholder">Nombre propiedad</string>
     <string name="property_amenities_label">Lista de amenidades:</string>
     <string name="property_host_label">Anfitrión:</string>
-    <string name="host_icon_desc">Nombre del usuario</string>
+    <string name="host_icon_desc">Usuario</string>
     <string name="property_description_label">Descripción:</string>
     <string name="property_activities_label">Actividades:</string>
-    <string name="property_amenities_list_label">Comodidades:</string>
+    <string name="property_amenities_list_label">Amenidades:</string>
     <string name="property_rules_label">Reglas de uso:</string>
-    <string name="btn_rent">Alquilar</string>
-    <string name="btn_domotica">Smart Home</string>
+    <string name="btn_rent">Rentar</string>
+    <string name="btn_domotica">Domótica</string>
 
-    <!-- Payment -->
     <string name="payment_title">Proceso de pago</string>
     <string name="payment_use_new_card">Usar nueva tarjeta</string>
-    <string name="payment_saved_card_label">Utilizaré tarjeta terminada en 4422</string>
-    <string name="payment_cvv_label">Ingrese el código CVV de la tarjeta</string>
+    <string name="payment_saved_card_label">Usaré la tarjeta con terminación: </string>
+    <string name="payment_cvv_label">Introduce el código CVV de la tarjeta</string>
     <string name="payment_cvv_hint">CVV</string>
     <string name="payment_card_number_hint">Número de tarjeta</string>
     <string name="payment_cardholder_name_hint">Nombre del titular</string>
     <string name="payment_expiry_date_hint">MM/AA</string>
     <string name="btn_process_payment">Procesar pago</string>
+    <string name="title_payment_success">¡Pago Exitoso!</string>
+    <string name="msg_payment_success">Propiedad rentada correctamente.</string>
+    <string name="btn_go_home">Ir al Inicio</string>
+    <string name="title_pay_amount">Pagar %1$s</string>
+    <string name="status_processing">Procesando...</string>
+    <string name="error_payment_processing">Error al procesar el pago</string>
 
-    <string name="error_loading_property_data">Error al cargar datos de la propiedad</string>
+    <string name="error_loading_property_data">Error cargando datos de la propiedad</string>
     <string name="error_limit_reached">Límite alcanzado</string>
-    <string name="error_max_photos">Máximo %1$d fotos</string>
+    <string name="error_max_photos">Máx %1$d fotos</string>
     <string name="error_added_partial_photos">Solo se agregaron las primeras %1$d fotos.</string>
     <string name="error_invalid_files_count">%1$d archivos inválidos</string>
     <string name="msg_publish_confirmation">¿Deseas publicar esta propiedad ahora?</string>
@@ -295,14 +292,14 @@
     <string name="default_unknown_location">Ubicación desconocida</string>
     <string name="default_property_type">Casa</string>
     <string name="default_no_activities">Sin actividades</string>
-    <string name="default_no_amenities">Sin comodidades</string>
-    <string name="default_description">Disfruta de este alojamiento único con estilo.</string>
+    <string name="default_no_amenities">Sin amenidades</string>
+    <string name="default_description">Disfruta de este alojamiento único y con estilo.</string>
     <string name="default_rules">No fumar, No fiestas.</string>
     <string name="default_no_description">Sin descripción</string>
     <string name="default_no_rules">Sin reglas específicas</string>
 
     <string name="fmt_host_name">Anfitrión: %1$s</string>
-    <string name="fmt_capacity_short">%1$d huéspedes • %2$d habs</string>
+    <string name="fmt_capacity_short">%1$d huéspedes • %2$d hab.</string>
     <string name="fmt_capacity_full">%1$d huéspedes · %2$d habitaciones · %3$d camas · %4$d baños</string>
 
     <string name="label_location">Ubicación</string>
@@ -310,28 +307,41 @@
     <string name="label_description">Descripción</string>
     <string name="label_activities">Actividades</string>
     <string name="label_amenities">Comodidades</string>
-    <string name="label_rules">Reglas de uso</string>
+    <string name="label_rules">Reglas de la casa</string>
     <string name="label_iot_panel">Panel IoT</string>
 
     <string name="label_description_long">Descripción del alojamiento</string>
-    <string name="hint_description">Cuéntales a los huéspedes sobre tu espacio...</string>
+    <string name="hint_description">Cuéntale a los huéspedes sobre tu espacio...</string>
     <string name="label_rules_long">Reglas de la casa</string>
     <string name="hint_rules">Ej: No fumar, no fiestas, mascotas permitidas...</string>
 
     <string name="title_filters">Filtros</string>
-    <string name="fmt_max_price">Precio máx. por noche: %1$s</string>
-    <string name="fmt_min_guests">Huéspedes mínimos: %1$d</string>
-    <string name="btn_reset">Restablecer</string>
+    <string name="fmt_max_price">Precio máx por noche: %1$s</string>
+    <string name="fmt_min_guests">Mín huéspedes: %1$d</string>
+    <string name="btn_reset">Reiniciar</string>
     <string name="btn_apply">Aplicar</string>
 
-    <string name="default_host">Host</string>
-    <string name="status_processing">Processing...</string>
-    <string name="error_payment_processing">Error processing payment</string>
-    <string name="error_user_unknown">Error: Unknown user. Please log in again.</string>
-    <string name="title_payment_success">Payment Successful!</string>
-    <string name="msg_payment_success">Property rented successfully.</string>
-    <string name="btn_go_home">Go to Home</string>
-    <string name="title_pay_amount">Pay %1$s</string>
+    <string name="default_host">Anfitrión</string>
 
+    <string name="rec_travel">¿Cuál fue el primer país al que viajó?</string>
+    <string name="rec_fruit">¿Cuál es su fruta favorita?</string>
+    <string name="rec_birthplace">¿Cuál es su lugar de nacimiento?</string>
+    <string name="rec_teacher">¿Cuál es su profesor preferido?</string>
+    <string name="rec_soccer">¿Cuál es el mejor equipo de futbol de Costa Rica?</string>
+    <string name="fmt_rental_dates">Renta: %1$s al %2$s</string>
+
+    <string name="selectDates">Seleccionar fechas</string>
+
+    <string name="payment_min_one_night">El alquiler debe ser mínimo de 1 noche</string>
+    <string name="payment_dates_overlap">El rango seleccionado incluye fechas ya reservadas.</string>
+    <string name="payment_total_pay_fmt">Total a pagar: ₡%1$s</string>
+    <string name="payment_cvv_req">CVV Requerido</string>
+    <string name="payment_card_num_req">Número requerido</string>
+    <string name="payment_session_error">Error de sesión o propiedad</string>
+    <string name="payment_processing_btn">Procesando...</string>
+    <string name="payment_success_msg">¡Renta Exitosa!</string>
+    <string name="payment_generic_error_fmt">Error: %1$s</string>
+    <string name="payment_process_btn_default">Procesar Pago</string>
+    <string name="payment_connection_error_fmt">Error de conexión: %1$s</string>
+    <string name="payment_unknown_user">Usuario no identificado</string>
 </resources>
-

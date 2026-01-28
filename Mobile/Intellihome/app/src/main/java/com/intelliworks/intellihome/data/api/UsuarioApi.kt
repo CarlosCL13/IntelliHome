@@ -5,6 +5,7 @@ import com.intelliworks.intellihome.data.model.LoginResponseDto
 import com.intelliworks.intellihome.data.model.PreguntaResponseDto
 import com.intelliworks.intellihome.data.model.RecoveryResultDto
 import com.intelliworks.intellihome.data.model.Ultimos4TarjetaDto
+import com.intelliworks.intellihome.data.model.UserProfileDto
 import okhttp3.MultipartBody
 import okhttp3.RequestBody
 import retrofit2.Response
@@ -83,4 +84,12 @@ interface UsuarioApi {
         @Path("user_id") userId: Int
     ): Response<Ultimos4TarjetaDto>
 
+    /**
+     * Obtiene los datos del perfil logeado.
+     * Sincronizado con @router.post("/perfil/{user_id}) en Python.
+     */
+    @GET("usuarios/perfil/{user_id}")
+    suspend fun obtenerPerfilUsuario(
+        @Path("user_id") userId: Int
+    ): Response<UserProfileDto>
 }

@@ -1,82 +1,93 @@
 package com.intelliworks.intellihome.utils
 
-import android.content.Intent
 import android.view.LayoutInflater
-import android.view.View
 import android.view.ViewGroup
-import android.widget.ImageView
-import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
-import com.bumptech.glide.Glide // <--- IMPORTANTE
-import com.google.gson.Gson
+import com.bumptech.glide.Glide
 import com.intelliworks.intellihome.R
-import com.intelliworks.intellihome.RentPropertyActivity
-import java.text.NumberFormat
-import java.util.Locale
+// Se asume que el archivo de diseño se llama item_property_card.xml
+import com.intelliworks.intellihome.databinding.ItemPropertyCardBinding
 
-class PropertyAdapter(private var propertyList: List<Property>) :
-    RecyclerView.Adapter<PropertyAdapter.PropertyViewHolder>() {
+/**
+ * Adaptador para la lista de propiedades.
+ * Vincula los datos con el diseño definido en item_property_card.xml.
+ */
+class PropertyAdapter(
+    private var propertyList: List<Property>,
+    private val onPropertyClick: ((Property) -> Unit)? = null
+) : RecyclerView.Adapter<PropertyAdapter.PropertyViewHolder>() {
 
-    class PropertyViewHolder(view: View) : RecyclerView.ViewHolder(view) {
-        val imgProperty: ImageView = view.findViewById(R.id.imgProperty)
-        val txtTitle: TextView = view.findViewById(R.id.txtTitle)
-        val txtAddress: TextView = view.findViewById(R.id.txtAddress)
-        val txtCapacity: TextView = view.findViewById(R.id.txtCapacity)
-        val txtPrice: TextView = view.findViewById(R.id.txtPrice)
-    }
+    /**
+     * ViewHolder que mantiene las referencias a las vistas usando ViewBinding.
+     */
+    inner class PropertyViewHolder(val binding: ItemPropertyCardBinding) : RecyclerView.ViewHolder(binding.root)
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PropertyViewHolder {
-        val view = LayoutInflater.from(parent.context)
-            .inflate(R.layout.item_property_card, parent, false)
-        return PropertyViewHolder(view)
+        val binding = ItemPropertyCardBinding.inflate(LayoutInflater.from(parent.context), parent, false)
+        return PropertyViewHolder(binding)
     }
 
     override fun onBindViewHolder(holder: PropertyViewHolder, position: Int) {
-        val currentProperty = propertyList[position]
-        val context = holder.itemView.context
+        val property = propertyList[position]
 
-        holder.txtTitle.text = currentProperty.titulo
-        holder.txtAddress.text = currentProperty.direccion
-        holder.txtCapacity.text = PropertyUtils.getFormattedCapacity(context, currentProperty.capacidad)
+        // Uso de 'with' para simplificar el acceso a las vistas del binding
+        with(holder.binding) {
+            // Asignación de textos usando los IDs específicos del XML (txtTitle, txtAddress, etc.)
+            txtTitle.text = property.titulo ?: "Sin título"
+            txtAddress.text = property.direccion ?: "Ubicación desconocida"
+            txtPrice.text = "₡${property.precio}"
+            txtCapacity.text = formatCapacity(property.capacidad)
 
-        val precioDouble = currentProperty.precio.replace(",", "").toDoubleOrNull() ?: 0.0
-        val currencyFormat = NumberFormat.getCurrencyInstance(Locale("es", "CR"))
-        holder.txtPrice.text = currencyFormat.format(precioDouble)
+            // Carga de imagen principal de la propiedad
+            if (property.imagenes.isNotEmpty()) {
+                Glide.with(root.context)
+                    .load(property.imagenes[0])
+                    .centerCrop()
+                    .into(imgProperty)
+            }
+            if (!property.fechaInicio.isNullOrEmpty() && !property.fechaFin.isNullOrEmpty()) {
 
-        // --- CORRECCIÓN: CARGA DE IMÁGENES WEB CON GLIDE ---
-        if (currentProperty.imagenes.isNotEmpty()) {
-            val urlImagen = currentProperty.imagenes[0]
-            // Glide se encarga de descargarla y ponerla, o poner un error si falla
-            Glide.with(context)
-                .load(urlImagen)
-                .placeholder(android.R.drawable.ic_menu_gallery) // Mientras carga
-                .error(android.R.drawable.ic_delete) // Si falla
-                .centerCrop()
-                .into(holder.imgProperty)
-        } else {
-            holder.imgProperty.setImageResource(android.R.drawable.ic_menu_gallery)
-        }
+                val context = root.context
 
-        holder.itemView.setOnClickListener {
-            val intent = Intent(context, RentPropertyActivity::class.java)
-            // Pasamos la propiedad básica (ID, titulo, precio)
-            // La pantalla de detalles se encargará de descargar el resto de la info (descripción, host, etc.)
-            val gson = Gson()
-            val propertyJson = gson.toJson(currentProperty)
-            intent.putExtra("property_data", propertyJson)
+                // Pasamos 'context' para que detecte si es Inglés o Español
+                val inicio = PropertyUtils.formatearFechaLocal(context, property.fechaInicio)
+                val fin = PropertyUtils.formatearFechaLocal(context, property.fechaFin)
 
-            val currentUserId = SessionManager.obtenerUserId(context)
-            val isRentalOrOwnerActive = (currentProperty.rentedByUserId == currentUserId) || (currentProperty.userId == currentUserId)
-            intent.putExtra("is_rental_active", isRentalOrOwnerActive)
+                // El string R.string.fmt_rental_dates también cambia según el idioma
+                txtRentDates.text = context.getString(R.string.fmt_rental_dates, inicio, fin)
 
-            context.startActivity(intent)
+                txtRentDates.visibility = android.view.View.VISIBLE
+            } else {
+                txtRentDates.visibility = android.view.View.GONE
+            }
+
+            // Configuración del evento de clic para navegación
+            root.setOnClickListener {
+                onPropertyClick?.invoke(property)
+            }
         }
     }
 
     override fun getItemCount() = propertyList.size
 
+    /**
+     * Actualiza la lista de propiedades y notifica al adaptador.
+     */
     fun updateList(newList: List<Property>) {
         propertyList = newList
         notifyDataSetChanged()
+    }
+
+    /**
+     * Formatea la capacidad extrayendo el número de huéspedes del CSV.
+     */
+    private fun formatCapacity(capacity: String?): String {
+        if (capacity.isNullOrEmpty()) return "N/A"
+        return try {
+            val parts = capacity.split(",")
+            "${parts[0]} "
+        } catch (e: Exception) {
+            capacity
+        }
     }
 }

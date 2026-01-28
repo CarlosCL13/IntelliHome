@@ -386,19 +386,21 @@ class Register : BaseActivity() {
 
     // Carga la lista de hobbies
     private suspend fun cargarHobbies(catalogosRepository: CatalogosRepository) {
-        // CORRECCIÓN: El repositorio ya devuelve la lista limpia, no un "Response"
         val hobbies = catalogosRepository.obtenerHobbies()
 
         if (hobbies.isNotEmpty()) {
             val llHobbies = findViewById<ViewGroup>(R.id.ll_hobbies)
-            // Limpiamos los checkboxes anteriores (excepto el título o primer elemento si lo hay)
             while (llHobbies.childCount > 1) llHobbies.removeViewAt(1)
 
             hobbies.forEach { hobby ->
                 val checkBox = CheckBox(this@Register)
                 checkBox.id = View.generateViewId()
-                checkBox.text = hobby.nombre // Ahora sí reconoce 'nombre'
-                checkBox.tag = hobby.id      // Ahora sí reconoce 'id'
+
+                // --- TRADUCCIÓN POR ID ---
+                checkBox.text = obtenerNombreHobby(hobby.id, hobby.nombre)
+                // -------------------------
+
+                checkBox.tag = hobby.id
                 checkBox.textSize = 14f
                 llHobbies.addView(checkBox)
             }
@@ -409,7 +411,6 @@ class Register : BaseActivity() {
 
     // Carga la lista de tipos de casa
     private suspend fun cargarTiposCasa(catalogosRepository: CatalogosRepository) {
-        // CORRECCIÓN: Usamos obtenerTipos() que devuelve List<TipoCasaDto>
         val tiposCasa = catalogosRepository.obtenerTipos()
 
         if (tiposCasa.isNotEmpty()) {
@@ -419,7 +420,11 @@ class Register : BaseActivity() {
             tiposCasa.forEach { tipo ->
                 val checkBox = CheckBox(this@Register)
                 checkBox.id = View.generateViewId()
-                checkBox.text = tipo.nombre
+
+                // --- TRADUCCIÓN POR ID ---
+                checkBox.text = obtenerNombreTipoCasa(tipo.id, tipo.nombre)
+                // -------------------------
+
                 checkBox.tag = tipo.id
                 checkBox.textSize = 14f
                 llCasa.addView(checkBox)
@@ -431,18 +436,20 @@ class Register : BaseActivity() {
 
     // Carga la lista de preguntas de recuperación
     private suspend fun cargarPreguntasRecuperacion(catalogosRepository: CatalogosRepository) {
-        // Nota: Asegúrate de tener esta función en tu repositorio.
-        // Si no la tienes, usa la api directa o agrégala al repo.
-        // Aquí asumo que usas la API directa para preguntas si no está en el repo:
         val api = RetrofitInstance.retrofit.create(CatalogosApi::class.java)
         val response = api.getPreguntasRecuperacion()
 
         if (response.isSuccessful) {
             val preguntas = response.body() ?: emptyList()
-            val textos = preguntas.map { it.texto } // Mapeamos a solo texto
 
-            if (textos.isNotEmpty()) {
-                val adapter = ArrayAdapter(this@Register, android.R.layout.simple_spinner_dropdown_item, textos)
+            // --- TRADUCCIÓN POR ID ---
+            val textosTraducidos = preguntas.map {
+                obtenerPreguntaTraducida(it.id, it.texto)
+            }
+            // -------------------------
+
+            if (textosTraducidos.isNotEmpty()) {
+                val adapter = ArrayAdapter(this@Register, android.R.layout.simple_spinner_dropdown_item, textosTraducidos)
                 binding.spPregunta.adapter = adapter
                 binding.spPregunta.isEnabled = true
             }
@@ -517,6 +524,42 @@ class Register : BaseActivity() {
                 // Muestra la imagen seleccionada en el ImageView
                 binding.imgUsuario.setImageURI(uri)
             }
+        }
+    }
+
+    // ------------------------------------------------------------------------
+    // FUNCIONES AUXILIARES DE TRADUCCIÓN
+    // ------------------------------------------------------------------------
+
+    private fun obtenerNombreHobby(id: Int, original: String): String {
+        return when (id) {
+            1 -> getString(R.string.hobby_tv)           // Ver TV
+            2 -> getString(R.string.hobby_hiking)       // Senderismo
+            3 -> getString(R.string.hobby_boardgames)   // Juegos de mesa
+            4 -> getString(R.string.hobby_snorkel)   // Esnórquel
+            5 -> getString(R.string.hobby_sports)       // Deportes
+            else -> original
+        }
+    }
+
+    private fun obtenerNombreTipoCasa(id: Int, original: String): String {
+        return when (id) {
+            1 -> getString(R.string.house_minimalist)   // Aventurera
+            2 -> getString(R.string.house_contemporary)  // Contemporánea
+            3 -> getString(R.string.house_adventurous)    // Minimalista
+            else -> original
+        }
+    }
+
+    private fun obtenerPreguntaTraducida(id: Int, original: String): String {
+        // IDs basados en el orden de tu base de datos sqlite
+        return when (id) {
+            1 -> getString(R.string.rec_soccer)     // Primer país
+            2 -> getString(R.string.rec_teacher)      // Fruta favorita
+            3 -> getString(R.string.rec_birthplace) // Lugar de nacimiento
+            4 -> getString(R.string.rec_fruit)    // Profesor preferido
+            5 -> getString(R.string.rec_travel)     // Mejor equipo CR
+            else -> original
         }
     }
 

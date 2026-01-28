@@ -16,6 +16,9 @@ class LightControlActivity : BaseActivity() {
     private lateinit var binding: ActivityLightControlBinding
     private val casaRepository = CasaRepository()
 
+    // Variable para guardar el ID dinámico de la propiedad
+    private var currentPropertyId: Int = 0
+
     // Mapeo de habitaciones al formato del backend
     private val habitacionesMap = mapOf(
         "banio1" to "Bano 1",
@@ -45,6 +48,15 @@ class LightControlActivity : BaseActivity() {
         setContentView(binding.root)
         showSettingsButton(false)
 
+        // 1. OBTENER EL ID DEL INTENT
+        currentPropertyId = intent.getIntExtra("PROPERTY_ID", 0)
+
+        // 2. VALIDAR QUE EL ID SEA VÁLIDO
+        if (currentPropertyId == 0) {
+            Toast.makeText(this, "Error: No se identificó la propiedad", Toast.LENGTH_LONG).show()
+            finish() // Cierra la actividad si no hay ID
+            return
+        }
         configurarBotones()
         cargarEstadoInicial()
     }
@@ -63,24 +75,16 @@ class LightControlActivity : BaseActivity() {
     private fun cargarEstadoInicial() {
         lifecycleScope.launch {
             try {
-                val response = casaRepository.obtenerEstadoLeds()
+                val response = casaRepository.obtenerEstadoLeds(currentPropertyId)
                 if (response.isSuccessful) {
                     response.body()?.let { estadoDto ->
                         actualizarEstadoLuces(estadoDto.toBoolean())
                     }
                 } else {
-                    Toast.makeText(
-                        this@LightControlActivity,
-                        "Error al cargar estado de las luces",
-                        Toast.LENGTH_SHORT
-                    ).show()
+                    Toast.makeText(this@LightControlActivity, "Error al cargar estado", Toast.LENGTH_SHORT).show()
                 }
             } catch (e: Exception) {
-                Toast.makeText(
-                    this@LightControlActivity,
-                    "Error de conexión al cargar estado: ${e.message}",
-                    Toast.LENGTH_SHORT
-                ).show()
+                Toast.makeText(this@LightControlActivity, "Error de conexión: ${e.message}", Toast.LENGTH_SHORT).show()
             }
         }
     }
@@ -117,14 +121,8 @@ class LightControlActivity : BaseActivity() {
 
     // Actualiza el botón de todas las luces según el estado actual
     private fun actualizarBotonTodasLasLuces() {
-        val todasEncendidas = luzBanio1 && luzBanio2 && luzCocina && luzSala &&
-                luzGaraje && luzHabitacion1 && luzHabitacion2 && luzHabitacion3
-
-        binding.btnLuces.text = if (todasEncendidas) {
-            getString(R.string.btn_turn_off_all_lights)
-        } else {
-            getString(R.string.btn_turn_on_all_lights)
-        }
+        val todasEncendidas = luzBanio1 && luzBanio2 && luzCocina && luzSala && luzGaraje && luzHabitacion1 && luzHabitacion2 && luzHabitacion3
+        binding.btnLuces.text = if (todasEncendidas) getString(R.string.btn_turn_off_all_lights) else getString(R.string.btn_turn_on_all_lights)
     }
 
     // Envia al backend si una luz está encendida o apagada
@@ -133,20 +131,13 @@ class LightControlActivity : BaseActivity() {
 
         lifecycleScope.launch {
             try {
-                val response = casaRepository.cambiarLedHabitacion(habitacion, encendida)
+                // USAR EL ID DINÁMICO
+                val response = casaRepository.cambiarLedHabitacion(currentPropertyId, habitacion, encendida)
                 if (!response.isSuccessful) {
-                    Toast.makeText(
-                        this@LightControlActivity,
-                        "Error al cambiar estado de $habitacion",
-                        Toast.LENGTH_SHORT
-                    ).show()
+                    Toast.makeText(this@LightControlActivity, "Error al cambiar estado", Toast.LENGTH_SHORT).show()
                 }
             } catch (e: Exception) {
-                Toast.makeText(
-                    this@LightControlActivity,
-                    "Error de conexión: ${e.message}",
-                    Toast.LENGTH_SHORT
-                ).show()
+                Toast.makeText(this@LightControlActivity, "Error de conexión", Toast.LENGTH_SHORT).show()
             }
         }
     }
@@ -155,20 +146,13 @@ class LightControlActivity : BaseActivity() {
     private fun enviarEstadoTodasLasLuces(encendidas: Boolean) {
         lifecycleScope.launch {
             try {
-                val response = casaRepository.cambiarTodosLosLeds(encendidas)
+                // USAR EL ID DINÁMICO
+                val response = casaRepository.cambiarTodosLosLeds(currentPropertyId, encendidas)
                 if (!response.isSuccessful) {
-                    Toast.makeText(
-                        this@LightControlActivity,
-                        "Error al cambiar estado de todas las luces",
-                        Toast.LENGTH_SHORT
-                    ).show()
+                    Toast.makeText(this@LightControlActivity, "Error global", Toast.LENGTH_SHORT).show()
                 }
             } catch (e: Exception) {
-                Toast.makeText(
-                    this@LightControlActivity,
-                    "Error de conexión: ${e.message}",
-                    Toast.LENGTH_SHORT
-                ).show()
+                Toast.makeText(this@LightControlActivity, "Error de conexión", Toast.LENGTH_SHORT).show()
             }
         }
     }

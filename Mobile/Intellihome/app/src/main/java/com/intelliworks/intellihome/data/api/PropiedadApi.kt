@@ -1,9 +1,8 @@
 package com.intelliworks.intellihome.data.api
 
-import com.intelliworks.intellihome.data.model.PropiedadAlquiladaDto
 import com.intelliworks.intellihome.data.model.PropiedadDetalleDto
 import com.intelliworks.intellihome.data.model.PropiedadRegistroResponseDto
-import com.intelliworks.intellihome.data.model.PropiedadResumenDto // Importar el nuevo DTO
+import com.intelliworks.intellihome.data.model.PropiedadResumenDto
 import okhttp3.MultipartBody
 import okhttp3.RequestBody
 import retrofit2.Response
@@ -15,11 +14,10 @@ import retrofit2.http.Path
 
 interface PropiedadApi {
 
-    @GET("arrendamientos/alquiladas/{user_id}")
-    suspend fun obtenerPropiedadesAlquiladas(
+    @GET("propiedades/usuario/{user_id}")
+    suspend fun obtenerPropiedadesPorUsuario(
         @Path("user_id") userId: Int
-    ): Response<List<PropiedadAlquiladaDto>>
-
+    ): Response<List<PropiedadResumenDto>>
 
     @GET("propiedades/{id}")
     suspend fun obtenerDetallePropiedad(@Path("id") id: Int): Response<PropiedadDetalleDto>
@@ -47,7 +45,6 @@ interface PropiedadApi {
         @Part("reglas_uso") reglas: RequestBody,
         @Part("vehiculos") vehiculos: RequestBody,
         @Part("estado") estado: RequestBody,
-        // Lista de fotos
         @Part fotos_propiedad: List<MultipartBody.Part>
     ): Response<PropiedadRegistroResponseDto>
 }

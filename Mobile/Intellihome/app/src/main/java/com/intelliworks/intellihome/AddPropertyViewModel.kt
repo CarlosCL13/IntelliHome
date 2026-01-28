@@ -106,11 +106,13 @@ class AddPropertyViewModel : ViewModel() {
             val t = titulo.value
             val p = precio.value
             val d = descripcion.value
-            value = !t.isNullOrEmpty() && !p.isNullOrEmpty() && !d.isNullOrEmpty()
+            val r = reglas.value
+            value = !t.isNullOrEmpty() && !p.isNullOrEmpty() && !d.isNullOrEmpty() && !r.isNullOrEmpty()
         }
         addSource(titulo) { validar() }
         addSource(precio) { validar() }
         addSource(descripcion) { validar() }
+        addSource(reglas) { validar() }
     }
 
     // --- FOTOS (Se mantiene igual) ---

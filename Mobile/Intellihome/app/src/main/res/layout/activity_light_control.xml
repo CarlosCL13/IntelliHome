@@ -86,7 +86,7 @@
                 app:layout_constraintTop_toTopOf="parent" />
             <!-- Habitación 1 -->
             <Button
-                android:id="@+id/btn_habita1"
+                android:id="@+id/btn_habita3"
                 android:layout_width="121dp"
                 android:layout_height="101dp"
                 android:layout_marginStart="143dp"
@@ -94,7 +94,7 @@
                 android:backgroundTint="@color/light_off_darker"
                 android:insetTop="0dp"
                 android:insetBottom="0dp"
-                android:text="@string/room_bedroom_1"
+                android:text="@string/room_bedroom_3"
                 android:textSize="10sp"
                 app:cornerRadius="0dp"
                 app:layout_constraintStart_toStartOf="parent"
@@ -116,7 +116,7 @@
                 app:layout_constraintTop_toTopOf="parent" />
             <!-- Habitación 3 -->
             <Button
-                android:id="@+id/btn_habita3"
+                android:id="@+id/btn_habita1"
                 android:layout_width="113dp"
                 android:layout_height="108dp"
                 android:layout_marginStart="143dp"
@@ -124,7 +124,7 @@
                 android:backgroundTint="@color/light_off_darker"
                 android:insetTop="0dp"
                 android:insetBottom="0dp"
-                android:text="@string/room_bedroom_3"
+                android:text="@string/room_bedroom_1"
                 android:textSize="10sp"
                 app:cornerRadius="0dp"
                 app:layout_constraintStart_toStartOf="parent"
