@@ -20,7 +20,10 @@ interface ArrendamientoApi {
         @Field("propiedad_id") propiedadId: Int,
         @Field("inquilino_id") inquilinoId: Int,
         @Field("fecha_inicio") fechaInicio: String,
-        @Field("fecha_fin") fechaFin: String
+        @Field("fecha_fin") fechaFin: String,
+        @Field("subtotal") subtotal: Double,
+        @Field("iva") iva: Double,
+        @Field("comision") comision: Double
     ): Response<ArrendamientoResponseDto>
 
     // 3. Cotizar arrendamiento sin guardar

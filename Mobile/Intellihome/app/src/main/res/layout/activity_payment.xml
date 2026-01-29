@@ -59,6 +59,12 @@
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
                 android:padding="16dp">
+                <!-- Línea separadora para el desglose de cotización -->
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:layout_marginTop="12dp"
+                    android:background="#BDBDBD" />
 
                 <TextView
                     android:layout_width="wrap_content"
@@ -99,41 +105,24 @@
                     android:textSize="14sp"
                     android:visibility="gone" />
 
+                <!-- Línea separadora antes del desglose de cotización -->
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:background="#BDBDBD" />
+
                 <!-- Desglose de cotización del backend -->
-                <TextView
-                    android:id="@+id/tv_backend_subtotal"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
-                    android:text="Subtotal: $0"
-                    android:textColor="@android:color/black"
-                    android:textSize="14sp"
-                    android:visibility="gone" />
-
-                <TextView
-                    android:id="@+id/tv_backend_iva"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="IVA: $0"
-                    android:textColor="@android:color/black"
-                    android:textSize="14sp"
-                    android:visibility="gone" />
-
-                <TextView
-                    android:id="@+id/tv_backend_comision"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="Comisión: $0"
-                    android:textColor="@android:color/black"
-                    android:textSize="14sp"
-                    android:visibility="gone" />
 
                 <TextView
                     android:id="@+id/tv_backend_precio_noche"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="Precio por noche: $0"
-                    android:textColor="@android:color/black"
+                    android:layout_marginTop="0dp"
+                    android:paddingLeft="12dp"
+                    android:paddingTop="12dp"
+                    android:background="#F5F5F5"
+                    android:textColor="@android:color/darker_gray"
                     android:textSize="14sp"
                     android:visibility="gone" />
 
@@ -142,7 +131,57 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="Noches: 0"
-                    android:textColor="@android:color/black"
+                    android:layout_marginTop="0dp"
+                    android:paddingLeft="12dp"
+                    android:paddingTop="6dp"
+                    android:paddingBottom="6dp"
+                    android:background="#F5F5F5"
+                    android:textColor="@android:color/darker_gray"
+                    android:textSize="14sp"
+                    android:visibility="gone" />
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:background="#BDBDBD" />
+
+                <TextView
+                    android:drawableTop="@color/black"
+                    android:id="@+id/tv_backend_subtotal"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:paddingLeft="12dp"
+                    android:paddingTop="12dp"
+                    android:background="#F5F5F5"
+                    android:textColor="@android:color/holo_red_dark"
+                    android:text="Subtotal: $0"
+                    android:textSize="14sp"
+                    android:visibility="gone" />
+
+                <TextView
+                    android:id="@+id/tv_backend_iva"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="IVA: $0"
+                    android:layout_marginTop="0dp"
+                    android:paddingLeft="12dp"
+                    android:paddingTop="6dp"
+                    android:background="#F5F5F5"
+                    android:textColor="@android:color/holo_red_dark"
+                    android:textSize="14sp"
+                    android:visibility="gone" />
+
+                <TextView
+                    android:id="@+id/tv_backend_comision"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Comisión: $0"
+                    android:layout_marginTop="0dp"
+                    android:paddingLeft="12dp"
+                    android:paddingTop="6dp"
+                    android:paddingBottom="12dp"
+                    android:background="#F5F5F5"
+                    android:textColor="@android:color/holo_red_dark"
                     android:textSize="14sp"
                     android:visibility="gone" />
 
@@ -152,7 +191,8 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
                     android:background="#E8F5E9"
-                    android:padding="12dp"
+                    android:paddingLeft="12dp"
+                    android:paddingTop="12dp"
                     android:text="Total a pagar: $0"
                     android:textColor="#2E7D32"
                     android:textSize="16sp"

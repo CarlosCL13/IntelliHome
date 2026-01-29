@@ -32,6 +32,8 @@ import java.util.*
 data class ArrendamientoFechaSimple(val fecha_inicio: String, val fecha_fin: String)
 
 class PaymentActivity : BaseActivity() {
+    // Cotización actual para enviar al backend
+    private var cotizacionActual: com.intelliworks.intellihome.data.model.CotizacionArrendamientoDto? = null
 
     private lateinit var binding: ActivityPaymentBinding
     private var usarTarjetaGuardada = true
@@ -196,6 +198,7 @@ class PaymentActivity : BaseActivity() {
     }
 
     private fun mostrarCotizacionBackend(cotizacion: com.intelliworks.intellihome.data.model.CotizacionArrendamientoDto) {
+            cotizacionActual = cotizacion
         val symbols = DecimalFormatSymbols(Locale.US).apply {
             groupingSeparator = ' '
             decimalSeparator = ','
@@ -320,6 +323,13 @@ class PaymentActivity : BaseActivity() {
             return
         }
 
+        // Validar que exista cotización previa
+        val cotizacion = cotizacionActual
+        if (cotizacion == null) {
+            Toast.makeText(this, "Primero selecciona fechas y espera la cotización.", Toast.LENGTH_SHORT).show()
+            return
+        }
+
         val fechaInicio = backendDateFormat.format(Date(fechaInicioSeleccionada!!))
         val fechaFin = backendDateFormat.format(Date(fechaFinSeleccionada!!))
 
@@ -332,7 +342,10 @@ class PaymentActivity : BaseActivity() {
                     propiedadId = propiedadId,
                     inquilinoId = inquilinoId,
                     fechaInicio = fechaInicio,
-                    fechaFin = fechaFin
+                    fechaFin = fechaFin,
+                    subtotal = cotizacion.subtotal,
+                    iva = cotizacion.iva,
+                    comision = cotizacion.comision
                 )
 
                 if (response.isSuccessful) {

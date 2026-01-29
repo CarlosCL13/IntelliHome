@@ -20,13 +20,19 @@ class ArrendamientoRepository {
         propiedadId: Int,
         inquilinoId: Int,
         fechaInicio: String,
-        fechaFin: String
+        fechaFin: String,
+        subtotal: Double,
+        iva: Double,
+        comision: Double
     ): Response<ArrendamientoResponseDto> {
         return arrendamientoApi.registrarArrendamiento(
             propiedadId = propiedadId,
             inquilinoId = inquilinoId,
             fechaInicio = fechaInicio,
-            fechaFin = fechaFin
+            fechaFin = fechaFin,
+            subtotal = subtotal,
+            iva = iva,
+            comision = comision
         )
     }
 
