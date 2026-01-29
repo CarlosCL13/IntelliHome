@@ -10,3 +10,6 @@ class Arrendamiento(db.Model):
     inquilino_id = db.Column(db.Integer, db.ForeignKey('usuario.id'), nullable=False)
     fecha_inicio = db.Column(db.Date, nullable=False)
     fecha_fin = db.Column(db.Date, nullable=False)
+    subtotal = db.Column(db.Numeric(precision=12, scale=2), nullable=False)
+    iva = db.Column(db.Numeric(precision=12, scale=2), nullable=False)
+    comision = db.Column(db.Numeric(precision=12, scale=2), nullable=False)

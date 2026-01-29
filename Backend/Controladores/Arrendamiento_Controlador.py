@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, Form, HTTPException, Request
 from sqlalchemy.orm import Session
 from sqlalchemy import desc
 import os
+import socket
 
 # Importaciones del Proyecto
 from Base_de_Datos.db_session import get_db
@@ -135,3 +136,39 @@ def get_propiedades_alquiladas(user_id: int, request: Request, db: Session = Dep
             })
             
     return propiedades_rentadas
+
+@router.post("/cotizar", summary="Cotizar arrendamiento sin guardar")
+def cotizar_arrendamiento(
+    propiedad_id: int = Form(...),
+    fecha_inicio: str = Form(...),
+    fecha_fin: str = Form(...),
+    db: Session = Depends(get_db)
+):
+    """
+    Calcula el desglose de un arrendamiento (subtotal, IVA, comisión, total) sin guardar en BD.
+    Usa la fecha de inicio como fecha de reserva para el cálculo de la comisión.
+    """
+    resultado = Arrendamiento_Servicio.calcular_cotizacion(
+        db=db,
+        propiedad_id=propiedad_id,
+        fecha_inicio=fecha_inicio,
+        fecha_fin=fecha_fin,
+        fecha_reserva=fecha_inicio
+    )
+    if 'errores' in resultado:
+        raise HTTPException(status_code=400, detail=resultado["errores"])
+    return resultado
+
+
+# Función para obtener la IP local de la máquina
+def get_local_ip():
+    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    try:
+        # No importa si no hay internet, solo queremos la IP local
+        s.connect(('10.255.255.255', 1))
+        ip = s.getsockname()[0]
+    except Exception:
+        ip = '127.0.0.1'
+    finally:
+        s.close()
+    return ip

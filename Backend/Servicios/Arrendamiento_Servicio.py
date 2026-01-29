@@ -61,6 +61,86 @@ class Arrendamiento_Servicio:
         finally:
             db.close()
 
+    # Cálculo de cotización de un arrendamiento sin guardar en BD
+    @staticmethod
+    def calcular_cotizacion(db: Session, propiedad_id: int, fecha_inicio: str, fecha_fin: str, fecha_reserva: str):
+        """
+        Calcula el desglose de la cotización de un arrendamiento sin guardar en BD.
+        """
+        from datetime import datetime
+        errores = {}
+        try:
+            # Validar fechas
+            fecha_inicio_aux, fecha_fin_aux = Arrendamiento_Servicio._validar_fechas(fecha_inicio, fecha_fin, errores)
+            if errores:
+                return {'errores': errores}
+
+            # Obtener propiedad
+            propiedad = db.query(Propiedad).filter(Propiedad.id == propiedad_id).first()
+            if not propiedad:
+                return {'errores': {'propiedad': 'Propiedad no encontrada.'}}
+
+            # Calcular noches
+            noches = (fecha_fin_aux - fecha_inicio_aux).days
+            if noches <= 0:
+                return {'errores': {'fechas': 'El número de noches debe ser mayor a 0.'}}
+
+            precio_noche = propiedad.precio_noche
+            subtotal = precio_noche * noches
+
+            # IVA fijo 13%
+            porcentaje_iva = 13.0
+            iva = subtotal * (porcentaje_iva / 100)
+
+            # Comisión base 10% (usada en el algoritmo)
+            comision_base = 10.0
+            comision = subtotal * (comision_base / 100)
+
+
+            # Parsear fecha_reserva (YYYY-MM-DD)
+            try:
+                fecha_reserva_dt = datetime.strptime(fecha_reserva, '%Y-%m-%d')
+                dia = fecha_reserva_dt.day
+                mes = fecha_reserva_dt.month
+            except Exception:
+                return {'errores': {'fecha_reserva': 'Formato de fecha_reserva inválido (YYYY-MM-DD)'}}
+
+            # Calcular comisión ajustada usando el algoritmo
+            comision_ajustada = Arrendamiento_Servicio._calcular_comision_banquero(
+                dia, mes, porcentaje_iva, comision, subtotal + iva
+            )
+
+            total = subtotal + iva + comision_ajustada
+
+            return {
+                'subtotal': round(subtotal, 2),
+                'iva': round(iva, 2),
+                'comision': round(comision_ajustada, 2),
+                'total': round(total, 2),
+                'noches': noches,
+                'precio_noche': round(precio_noche, 2)
+            }
+        except Exception as e:
+            return {'errores': {'internal': f'Error interno: {str(e)}'}}
+
+    # Algoritmo de Banquero para cálculo de comisión
+    @staticmethod
+    def _calcular_comision_banquero(dia, mes, porcentaje_impuesto, comision, monto_total):
+        """
+        Implementa el algoritmo de Banquero para calcular la comisión ajustada.
+        """
+        limite_maximo = 0.10 * monto_total
+        if porcentaje_impuesto + comision > 0:
+            media_armonica = 2 / ((1 / porcentaje_impuesto) + (1 / comision))
+        else:
+            media_armonica = 0
+        factor_ajuste = (dia + mes) / 100
+        media_armonica_ajustada = media_armonica * factor_ajuste
+        if media_armonica_ajustada > limite_maximo:
+            media_armonica_ajustada = limite_maximo
+        return media_armonica_ajustada
+    
+
     #================================= VALIDACIONES ================================= #
 
     # Validación de fechas
