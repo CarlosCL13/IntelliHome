@@ -99,15 +99,51 @@
                     android:textSize="14sp"
                     android:visibility="gone" />
 
+                <!-- Desglose de cotización del backend -->
                 <TextView
-                    android:id="@+id/tv_total_noches"
+                    android:id="@+id/tv_backend_subtotal"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
-                    android:text="@string/payment_total_nights"
+                    android:text="Subtotal: $0"
                     android:textColor="@android:color/black"
                     android:textSize="14sp"
-                    android:textStyle="bold"
+                    android:visibility="gone" />
+
+                <TextView
+                    android:id="@+id/tv_backend_iva"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="IVA: $0"
+                    android:textColor="@android:color/black"
+                    android:textSize="14sp"
+                    android:visibility="gone" />
+
+                <TextView
+                    android:id="@+id/tv_backend_comision"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Comisión: $0"
+                    android:textColor="@android:color/black"
+                    android:textSize="14sp"
+                    android:visibility="gone" />
+
+                <TextView
+                    android:id="@+id/tv_backend_precio_noche"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Precio por noche: $0"
+                    android:textColor="@android:color/black"
+                    android:textSize="14sp"
+                    android:visibility="gone" />
+
+                <TextView
+                    android:id="@+id/tv_backend_noches"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Noches: 0"
+                    android:textColor="@android:color/black"
+                    android:textSize="14sp"
                     android:visibility="gone" />
 
                 <TextView
