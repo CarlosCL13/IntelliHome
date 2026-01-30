@@ -199,6 +199,10 @@ def get_todas_propiedades(request: Request, db: Session = Depends(get_db)):
 # -----------------------------------------------------------------------------
 @router.get("/{propiedad_id}", summary="Obtener una propiedad por id con fotos y amenidades")
 def get_propiedad_por_id(propiedad_id: int, request: Request, db: Session = Depends(get_db)):
+    """
+    Devuelve el detalle completo de una propiedad específica por su ID.
+    Incluye fotos, amenidades, hobbies, y datos del propietario.
+    """
     prop = db.query(Propiedad).filter(Propiedad.id == propiedad_id).first()
     if not prop:
         raise HTTPException(status_code=404, detail="Propiedad no encontrada")
@@ -277,6 +281,7 @@ def get_propiedad_por_id(propiedad_id: int, request: Request, db: Session = Depe
     return resultado
 
 
+
 # -----------------------------------------------------------------------------
 # Endpoint: Obtener Propiedades por Usuario (Resumen - Mis Publicaciones)
 # -----------------------------------------------------------------------------
@@ -332,6 +337,9 @@ def get_local_ip():
 
 # Función para obtener el inquilino actual (hoy) de una propiedad
 def obtener_inquilino_actual(propiedad_id: int, db: Session) -> Optional[Usuario]:
+    """
+    Determina si la propiedad está ocupada hoy y devuelve al inquilino.
+    """
     hoy = date.today()
     # Se obtiene el arrendamiento actual
     arrendamiento_actual = db.query(Arrendamiento).filter(
@@ -348,6 +356,9 @@ def obtener_inquilino_actual(propiedad_id: int, db: Session) -> Optional[Usuario
 
 # Función para obtener los arrendamientos futuros de una propiedad
 def obtener_arrendamientos_futuros(propiedad_id: int, db: Session):
+    """
+    Obtiene la lista de fechas reservadas a futuro para bloquear el calendario.
+    """
     arrendamientos = db.query(Arrendamiento).filter(
         Arrendamiento.propiedad_id == propiedad_id
     ).all()

@@ -1,8 +1,8 @@
-"""Migración inicial
+"""Migración Inicial
 
-Revision ID: 16918432d2d0
+Revision ID: 30c5a833eb07
 Revises: 
-Create Date: 2026-01-26 00:01:08.879552
+Create Date: 2026-01-29 12:23:27.207160
 
 """
 from typing import Sequence, Union
@@ -12,7 +12,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = '16918432d2d0'
+revision: str = '30c5a833eb07'
 down_revision: Union[str, Sequence[str], None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -120,6 +120,9 @@ def upgrade() -> None:
     sa.Column('inquilino_id', sa.Integer(), nullable=False),
     sa.Column('fecha_inicio', sa.Date(), nullable=False),
     sa.Column('fecha_fin', sa.Date(), nullable=False),
+    sa.Column('subtotal', sa.Numeric(precision=12, scale=2), nullable=False),
+    sa.Column('iva', sa.Numeric(precision=12, scale=2), nullable=False),
+    sa.Column('comision', sa.Numeric(precision=12, scale=2), nullable=False),
     sa.ForeignKeyConstraint(['inquilino_id'], ['usuario.id'], ),
     sa.ForeignKeyConstraint(['propiedad_id'], ['propiedad.id'], ),
     sa.PrimaryKeyConstraint('id')
