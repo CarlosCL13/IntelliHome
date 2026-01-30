@@ -281,6 +281,7 @@ def get_propiedad_por_id(propiedad_id: int, request: Request, db: Session = Depe
     return resultado
 
 
+
 # -----------------------------------------------------------------------------
 # Endpoint: Obtener Propiedades por Usuario (Resumen - Mis Publicaciones)
 # -----------------------------------------------------------------------------

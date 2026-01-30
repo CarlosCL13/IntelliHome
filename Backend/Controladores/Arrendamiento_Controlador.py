@@ -24,12 +24,16 @@ Descripción: Gestiona los endpoints HTTP relacionados con el ciclo de vida de l
 Incluye registro de nuevos contratos y consulta de historial para inquilinos.
 """
 
+
 @router.post("/arrendamiento")
 def registrar_arrendamiento(
     propiedad_id: int = Form(...),
     inquilino_id: int = Form(...),
     fecha_inicio: str = Form(...),
     fecha_fin: str = Form(...),
+    subtotal: float = Form(...),
+    iva: float = Form(...),
+    comision: float = Form(...),
     db: Session = Depends(get_db)
 ):
     """
@@ -42,6 +46,9 @@ def registrar_arrendamiento(
         inquilino_id (int): ID del usuario que realiza la renta.
         fecha_inicio (str): Fecha de inicio en formato YYYY-MM-DD.
         fecha_fin (str): Fecha de fin en formato YYYY-MM-DD.
+        subtotal (float): Subtotal del arrendamiento.
+        iva (float): IVA calculado.
+        comision (float): Comisión calculada.
         db (Session): Sesión de base de datos inyectada.
 
     Returns:
@@ -55,7 +62,10 @@ def registrar_arrendamiento(
         propiedad_id=propiedad_id,
         inquilino_id=inquilino_id,
         fecha_inicio=fecha_inicio,
-        fecha_fin=fecha_fin
+        fecha_fin=fecha_fin,
+        subtotal=subtotal,
+        iva=iva,
+        comision=comision
     )
 
     if 'errores' in resultado:
@@ -159,6 +169,27 @@ def cotizar_arrendamiento(
         raise HTTPException(status_code=400, detail=resultado["errores"])
     return resultado
 
+# Endpoint para obtener el desglose del último arrendamiento de un usuario en una propiedad
+@router.get("/desglose/{propiedad_id}/{usuario_id}", summary="Obtener desglose del último arrendamiento de un usuario en una propiedad")
+def get_desglose_ultimo_arrendamiento(propiedad_id: int, usuario_id: int, db: Session = Depends(get_db)):
+    """
+    Devuelve el desglose del último arrendamiento hecho por el usuario a la propiedad indicada.
+    """
+    ultimo_arrendamiento = db.query(Arrendamiento).filter(
+        Arrendamiento.propiedad_id == propiedad_id,
+        Arrendamiento.inquilino_id == usuario_id
+    ).order_by(Arrendamiento.fecha_inicio.desc()).first()
+
+    if not ultimo_arrendamiento:
+        raise HTTPException(status_code=404, detail="No existe arrendamiento para ese usuario y propiedad")
+
+    desglose_arrendamiento = {
+        "subtotal": float(ultimo_arrendamiento.subtotal),
+        "iva": float(ultimo_arrendamiento.iva),
+        "comision": float(ultimo_arrendamiento.comision),
+        "total": float(ultimo_arrendamiento.subtotal) + float(ultimo_arrendamiento.iva) + float(ultimo_arrendamiento.comision)
+    }
+    return desglose_arrendamiento
 
 # Función para obtener la IP local de la máquina
 def get_local_ip():

@@ -19,7 +19,10 @@ class Arrendamiento_Servicio:
             propiedad_id: int,
             inquilino_id: int,
             fecha_inicio: str,
-            fecha_fin: str
+            fecha_fin: str,
+            subtotal: float,
+            iva: float,
+            comision: float
         ):
         errores = {}
         nuevo_arrendamiento = None
@@ -36,7 +39,10 @@ class Arrendamiento_Servicio:
                 propiedad_id=propiedad_id,
                 inquilino_id=inquilino_id,
                 fecha_inicio=fecha_inicio_aux,
-                fecha_fin=fecha_fin_aux
+                fecha_fin=fecha_fin_aux,
+                subtotal=subtotal,
+                iva=iva,
+                comision=comision
             )
             db.add(nuevo_arrendamiento)
             db.commit()
@@ -94,7 +100,6 @@ class Arrendamiento_Servicio:
 
             # Comisión base 10% (usada en el algoritmo)
             comision_base = 10.0
-            comision = subtotal * (comision_base / 100)
 
 
             # Parsear fecha_reserva (YYYY-MM-DD)
@@ -107,7 +112,7 @@ class Arrendamiento_Servicio:
 
             # Calcular comisión ajustada usando el algoritmo
             comision_ajustada = Arrendamiento_Servicio._calcular_comision_banquero(
-                dia, mes, porcentaje_iva, comision, subtotal + iva
+                dia, mes, porcentaje_iva, comision_base, subtotal + iva
             )
 
             total = subtotal + iva + comision_ajustada
@@ -125,13 +130,13 @@ class Arrendamiento_Servicio:
 
     # Algoritmo de Banquero para cálculo de comisión
     @staticmethod
-    def _calcular_comision_banquero(dia, mes, porcentaje_impuesto, comision, monto_total):
+    def _calcular_comision_banquero(dia, mes, porcentaje_impuesto, comision_base, monto_total):
         """
         Implementa el algoritmo de Banquero para calcular la comisión ajustada.
         """
         limite_maximo = 0.10 * monto_total
-        if porcentaje_impuesto + comision > 0:
-            media_armonica = 2 / ((1 / porcentaje_impuesto) + (1 / comision))
+        if porcentaje_impuesto + comision_base > 0:
+            media_armonica = 2 / ((1 / porcentaje_impuesto) + (1 / comision_base))
         else:
             media_armonica = 0
         factor_ajuste = (dia + mes) / 100
