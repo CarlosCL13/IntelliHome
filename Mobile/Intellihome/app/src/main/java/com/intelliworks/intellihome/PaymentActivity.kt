@@ -159,10 +159,10 @@ class PaymentActivity : BaseActivity() {
                             mostrarCotizacionBackend(cotizacion)
                         }
                     } else {
-                        Toast.makeText(this@PaymentActivity, "Error al cotizar: ${response.errorBody()?.string()}", Toast.LENGTH_LONG).show()
+                        Toast.makeText(this@PaymentActivity, getString(R.string.payment_generic_error_fmt, response.errorBody()?.string()), Toast.LENGTH_LONG).show()
                     }
                 } catch (e: Exception) {
-                    Toast.makeText(this@PaymentActivity, "Error al cotizar: ${e.message}", Toast.LENGTH_LONG).show()
+                    Toast.makeText(this@PaymentActivity, getString(R.string.payment_connection_error_fmt, e.message), Toast.LENGTH_LONG).show()
                 }
             }
         }
@@ -205,11 +205,11 @@ class PaymentActivity : BaseActivity() {
         }
         val formatter = DecimalFormat("#,###.00", symbols)
 
-        binding.tvBackendSubtotal.text = "Subtotal: $${formatter.format(cotizacion.subtotal)}"
-        binding.tvBackendIva.text = "IVA: $${formatter.format(cotizacion.iva)}"
-        binding.tvBackendComision.text = "Comisión: $${formatter.format(cotizacion.comision)}"
-        binding.tvBackendPrecioNoche.text = "Precio por noche: $${formatter.format(cotizacion.precio_noche)}"
-        binding.tvBackendNoches.text = "Noches: ${cotizacion.noches}"
+        binding.tvBackendSubtotal.text = getString(R.string.payment_subtotal_fmt, formatter.format(cotizacion.subtotal))
+        binding.tvBackendIva.text = getString(R.string.payment_iva_fmt, formatter.format(cotizacion.iva))
+        binding.tvBackendComision.text = getString(R.string.payment_commission_fmt, formatter.format(cotizacion.comision))
+        binding.tvBackendPrecioNoche.text = getString(R.string.payment_price_per_night_fmt, formatter.format(cotizacion.precio_noche))
+        binding.tvBackendNoches.text = getString(R.string.payment_nights_fmt, cotizacion.noches)
 
         // Sumar subtotal + iva + comisión para mostrar el total calculado
         val totalCalculado = cotizacion.subtotal + cotizacion.iva + cotizacion.comision
@@ -326,7 +326,7 @@ class PaymentActivity : BaseActivity() {
         // Validar que exista cotización previa
         val cotizacion = cotizacionActual
         if (cotizacion == null) {
-            Toast.makeText(this, "Primero selecciona fechas y espera la cotización.", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, getString(R.string.payment_error_no_dates), Toast.LENGTH_SHORT).show()
             return
         }
 

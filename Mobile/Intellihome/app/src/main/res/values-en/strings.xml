@@ -343,4 +343,25 @@
     <string name="payment_dates_selected">Selected: %1$s to %2$s</string>
     <string name="payment_total_nights">Total nights: %1$d</string>
     <string name="payment_error_no_dates">Please select dates first</string>
+
+    <!-- Payment breakdown -->
+    <string name="label_payment_breakdown">Payment breakdown</string>
+    <string name="payment_breakdown_title">Payment breakdown</string>
+    <string name="label_subtotal">Subtotal</string>
+    <string name="payment_subtotal_label">Subtotal: ₡0</string>
+    <string name="payment_subtotal_fmt">Subtotal: $%1$s</string>
+    <string name="label_iva">VAT</string>
+    <string name="payment_iva_label">VAT: ₡0</string>
+    <string name="payment_iva_fmt">VAT: $%1$s</string>
+    <string name="label_comision">Commission</string>
+    <string name="payment_commission_label">Commission: ₡0</string>
+    <string name="payment_commission_fmt">Commission: $%1$s</string>
+    <string name="label_total_paid">Total paid</string>
+    <string name="payment_total_label">Total to pay: ₡0</string>
+    <string name="label_price_per_night">Price per night</string>
+    <string name="payment_price_per_night_label">Price per night: ₡0</string>
+    <string name="payment_price_per_night_fmt">Price per night: $%1$s</string>
+    <string name="label_nights">Nights</string>
+    <string name="payment_nights_label">Nights: 0</string>
+    <string name="payment_nights_fmt">Nights: %1$d</string>
 </resources>

@@ -316,10 +316,91 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/lbl_reglas" />
 
-            <View
-                android:layout_width="match_parent"
-                android:layout_height="80dp"
-                app:layout_constraintTop_toBottomOf="@id/tv_reglas_propiedad"/>
+                <!-- Sección de desglose de pago, oculta por defecto -->
+                <LinearLayout
+                    android:id="@+id/seccionDesglosePago"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:layout_marginTop="20dp"
+                    android:visibility="gone"
+                    app:layout_constraintTop_toBottomOf="@id/tv_reglas_propiedad">
+
+                    <View
+                        android:id="@+id/divider00"
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp"
+                        android:layout_marginTop="20dp"
+                        android:background="#E0E0E0"
+                        app:layout_constraintTop_toBottomOf="@+id/tv_reglas_propiedad" />
+
+                    <TextView
+                        android:id="@+id/lbl_desglose"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/payment_breakdown_title"
+                        android:layout_marginTop="20dp"
+                        android:textStyle="bold"
+                        android:textSize="18sp"
+                        android:textColor="@android:color/black" />
+
+                    <TextView
+                        android:id="@+id/tv_desglose_precio_noche"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/payment_price_per_night_label"
+                        android:paddingTop="6dp"
+                        android:paddingLeft="12dp"
+                        android:textColor="#212121"
+                        android:textSize="15sp" />
+                    <TextView
+                        android:id="@+id/tv_noches"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/payment_nights_label"
+                        android:paddingTop="6dp"
+                        android:paddingLeft="12dp"
+                        android:textColor="#212121"
+                        android:textSize="15sp" />
+                    <TextView
+                        android:id="@+id/tv_subtotal"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/payment_subtotal_label"
+                        android:paddingTop="6dp"
+                        android:paddingLeft="12dp"
+                        android:textColor="#212121"
+                        android:textSize="15sp" />
+                    <TextView
+                        android:id="@+id/tv_iva"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/payment_iva_label"
+                        android:paddingTop="6dp"
+                        android:paddingLeft="12dp"
+                        android:textColor="#212121"
+                        android:textSize="15sp" />
+                    <TextView
+                        android:id="@+id/tv_comision"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/payment_commission_label"
+                        android:paddingTop="6dp"
+                        android:paddingLeft="12dp"
+                        android:textColor="#212121"
+                        android:textSize="15sp" />
+                    <TextView
+                        android:id="@+id/tv_desglose_total_pagado"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/payment_total_label"
+                        android:paddingTop="6dp"
+                        android:paddingLeft="12dp"
+                        android:textColor="#2E7D32"
+                        android:textStyle="bold"
+                        android:textSize="16sp" />
+
+                </LinearLayout>
 
         </androidx.constraintlayout.widget.ConstraintLayout>
     </androidx.core.widget.NestedScrollView>
@@ -356,11 +437,22 @@
                     android:textStyle="bold" />
 
                 <TextView
+                    android:id="@+id/tv_precio_noche"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/hint_price_night"
                     android:textColor="#757575"
-                    android:textSize="14sp" />
+                    android:textSize="14sp"
+                    android:visibility="visible"/>
+
+                <TextView
+                    android:id="@+id/tv_total_pagado"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/label_total_paid"
+                    android:textColor="#757575"
+                    android:textSize="14sp"
+                    android:visibility="gone" />
             </LinearLayout>
 
             <FrameLayout

@@ -12,6 +12,12 @@ import retrofit2.http.Path
 
 
 interface ArrendamientoApi {
+    // 4. Obtener desglose del último arrendamiento de un usuario en una propiedad
+    @GET("arrendamientos/desglose/{propiedad_id}/{usuario_id}")
+    suspend fun getDesgloseArrendamiento(
+        @Path("propiedad_id") propiedadId: Int,
+        @Path("usuario_id") usuarioId: Int
+    ): Response<com.intelliworks.intellihome.data.model.DesgloseArrendamientoDto>
 
     // 1. Pagar / Reservar
     @FormUrlEncoded

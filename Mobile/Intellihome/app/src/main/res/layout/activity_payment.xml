@@ -111,13 +111,13 @@
                     android:layout_height="1dp"
                     android:background="#BDBDBD" />
 
-                <!-- Desglose de cotización del backend -->
 
+                <!-- Desglose de cotización del backend (localizable) -->
                 <TextView
                     android:id="@+id/tv_backend_precio_noche"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Precio por noche: $0"
+                    android:text="@string/payment_price_per_night_label"
                     android:layout_marginTop="0dp"
                     android:paddingLeft="12dp"
                     android:paddingTop="12dp"
@@ -130,7 +130,7 @@
                     android:id="@+id/tv_backend_noches"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Noches: 0"
+                    android:text="@string/payment_nights_label"
                     android:layout_marginTop="0dp"
                     android:paddingLeft="12dp"
                     android:paddingTop="6dp"
@@ -154,7 +154,7 @@
                     android:paddingTop="12dp"
                     android:background="#F5F5F5"
                     android:textColor="@android:color/holo_red_dark"
-                    android:text="Subtotal: $0"
+                    android:text="@string/payment_subtotal_label"
                     android:textSize="14sp"
                     android:visibility="gone" />
 
@@ -162,7 +162,7 @@
                     android:id="@+id/tv_backend_iva"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="IVA: $0"
+                    android:text="@string/payment_iva_label"
                     android:layout_marginTop="0dp"
                     android:paddingLeft="12dp"
                     android:paddingTop="6dp"
@@ -175,7 +175,7 @@
                     android:id="@+id/tv_backend_comision"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Comisión: $0"
+                    android:text="@string/payment_commission_label"
                     android:layout_marginTop="0dp"
                     android:paddingLeft="12dp"
                     android:paddingTop="6dp"
@@ -193,7 +193,7 @@
                     android:background="#E8F5E9"
                     android:paddingLeft="12dp"
                     android:paddingTop="12dp"
-                    android:text="Total a pagar: $0"
+                    android:text="@string/payment_total_label"
                     android:textColor="#2E7D32"
                     android:textSize="16sp"
                     android:textStyle="bold"

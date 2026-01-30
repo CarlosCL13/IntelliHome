@@ -8,6 +8,7 @@ import android.graphics.Color
 import android.os.Bundle
 import android.view.View
 import android.view.ViewGroup
+import android.view.WindowManager
 import android.widget.FrameLayout
 import android.widget.ImageButton
 import android.widget.PopupMenu
@@ -36,6 +37,9 @@ abstract class BaseActivity : AppCompatActivity() {
         )
 
         super.onCreate(savedInstanceState)
+        
+        // Configurar comportamiento del teclado para todas las actividades
+        window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN)
     }
 
     /**
