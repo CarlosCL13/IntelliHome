@@ -20,7 +20,6 @@ import com.intelliworks.intellihome.data.repository.ArrendamientoRepository
 import com.intelliworks.intellihome.data.repository.UsuarioRepository
 import com.intelliworks.intellihome.databinding.ActivityPaymentBinding
 import com.intelliworks.intellihome.utils.BaseActivity
-import com.intelliworks.intellihome.utils.Property
 import com.intelliworks.intellihome.utils.RegisterHelper
 import com.intelliworks.intellihome.utils.SessionManager
 import kotlinx.coroutines.launch
@@ -33,6 +32,8 @@ import java.util.*
 data class ArrendamientoFechaSimple(val fecha_inicio: String, val fecha_fin: String)
 
 class PaymentActivity : BaseActivity() {
+    // Cotización actual para enviar al backend
+    private var cotizacionActual: com.intelliworks.intellihome.data.model.CotizacionArrendamientoDto? = null
 
     private lateinit var binding: ActivityPaymentBinding
     private var usarTarjetaGuardada = true
@@ -41,7 +42,6 @@ class PaymentActivity : BaseActivity() {
     private lateinit var sharedPreferences: SharedPreferences
     private var fechaInicioSeleccionada: Long? = null
     private var fechaFinSeleccionada: Long? = null
-    private var precioPorNoche: Double = 0.0
     private var propiedadId: Int = 0
 
     // Lista donde guardaremos los rangos ocupados en milisegundos UTC
@@ -63,7 +63,6 @@ class PaymentActivity : BaseActivity() {
         usuarioRepository = UsuarioRepository(RetrofitInstance.retrofit.create(com.intelliworks.intellihome.data.api.UsuarioApi::class.java))
         sharedPreferences = getSharedPreferences("user_session", MODE_PRIVATE)
 
-        precioPorNoche = intent.getDoubleExtra("PROPERTY_PRICE", 0.0)
         propiedadId = intent.getIntExtra("PROPERTY_ID", 0)
 
         // 1. PROCESAR FECHAS ANTES DE MOSTRAR NADA
@@ -74,6 +73,11 @@ class PaymentActivity : BaseActivity() {
         configurarSelectorFecha()
         configurarSelectorFechasAlquiler()
         cargarDatosTarjetaGuardada()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        applyAppAppearance(binding.root)
     }
 
     private fun procesarFechasBloqueadas() {
@@ -101,11 +105,6 @@ class PaymentActivity : BaseActivity() {
         }
     }
 
-    override fun onResume() {
-        super.onResume()
-        applyAppAppearance(binding.root)
-    }
-
     private fun configurarSelectorFechasAlquiler() {
         binding.btnSeleccionarFechas.setOnClickListener {
             mostrarSelectorRangoFechas()
@@ -120,12 +119,12 @@ class PaymentActivity : BaseActivity() {
         val constraintsBuilder = CalendarConstraints.Builder()
             .setValidator(compositeValidator)
 
-        // Nota: Asegúrate de tener 'selectDates' en tu strings.xml también
         val dateRangePicker = MaterialDatePicker.Builder.dateRangePicker()
             .setTitleText(getString(R.string.selectDates))
             .setInputMode(MaterialDatePicker.INPUT_MODE_CALENDAR)
             .setCalendarConstraints(constraintsBuilder.build())
             .build()
+
 
         dateRangePicker.addOnPositiveButtonClickListener { selection ->
             val startDate = selection.first
@@ -144,6 +143,28 @@ class PaymentActivity : BaseActivity() {
             fechaInicioSeleccionada = startDate
             fechaFinSeleccionada = endDate
             mostrarFechasSeleccionadas()
+
+            val fechaInicioStr = backendDateFormat.format(Date(startDate))
+            val fechaFinStr = backendDateFormat.format(Date(endDate))
+            lifecycleScope.launch {
+                try {
+                    val response = arrendamientoRepository.cotizarArrendamiento(
+                        propiedadId = propiedadId,
+                        fechaInicio = fechaInicioStr,
+                        fechaFin = fechaFinStr
+                    )
+                    if (response.isSuccessful) {
+                        val cotizacion = response.body()
+                        if (cotizacion != null) {
+                            mostrarCotizacionBackend(cotizacion)
+                        }
+                    } else {
+                        Toast.makeText(this@PaymentActivity, getString(R.string.payment_generic_error_fmt, response.errorBody()?.string()), Toast.LENGTH_LONG).show()
+                    }
+                } catch (e: Exception) {
+                    Toast.makeText(this@PaymentActivity, getString(R.string.payment_connection_error_fmt, e.message), Toast.LENGTH_LONG).show()
+                }
+            }
         }
 
         dateRangePicker.show(supportFragmentManager, "DATE_RANGE_PICKER")
@@ -167,25 +188,39 @@ class PaymentActivity : BaseActivity() {
             binding.tvFechasSeleccionadas.text = getString(R.string.payment_dates_selected, fechaInicio, fechaFin)
             binding.tvFechasSeleccionadas.visibility = View.VISIBLE
 
-            val noches = calcularNoches(fechaInicioSeleccionada!!, fechaFinSeleccionada!!)
-            binding.tvTotalNoches.text = getString(R.string.payment_total_nights, noches)
-            binding.tvTotalNoches.visibility = View.VISIBLE
-
-            val totalPagar = precioPorNoche * noches
-            val symbols = DecimalFormatSymbols(Locale.US)
-            symbols.groupingSeparator = ' '
-            symbols.decimalSeparator = ','
-            val formatter = DecimalFormat("#,###.00", symbols)
-
-            // CORREGIDO: Uso de String Resource con formato (%1$s)
-            binding.tvTotalPagar.text = getString(R.string.payment_total_pay_fmt, formatter.format(totalPagar))
-            binding.tvTotalPagar.visibility = View.VISIBLE
+            binding.tvBackendSubtotal.visibility = View.GONE
+            binding.tvBackendIva.visibility = View.GONE
+            binding.tvBackendComision.visibility = View.GONE
+            binding.tvBackendPrecioNoche.visibility = View.GONE
+            binding.tvBackendNoches.visibility = View.GONE
+            binding.tvTotalPagar.visibility = View.GONE
         }
     }
 
-    private fun calcularNoches(inicio: Long, fin: Long): Int {
-        val diferenciaMs = fin - inicio
-        return (diferenciaMs / (1000 * 60 * 60 * 24)).toInt()
+    private fun mostrarCotizacionBackend(cotizacion: com.intelliworks.intellihome.data.model.CotizacionArrendamientoDto) {
+            cotizacionActual = cotizacion
+        val symbols = DecimalFormatSymbols(Locale.US).apply {
+            groupingSeparator = ' '
+            decimalSeparator = ','
+        }
+        val formatter = DecimalFormat("#,###.00", symbols)
+
+        binding.tvBackendSubtotal.text = getString(R.string.payment_subtotal_fmt, formatter.format(cotizacion.subtotal))
+        binding.tvBackendIva.text = getString(R.string.payment_iva_fmt, formatter.format(cotizacion.iva))
+        binding.tvBackendComision.text = getString(R.string.payment_commission_fmt, formatter.format(cotizacion.comision))
+        binding.tvBackendPrecioNoche.text = getString(R.string.payment_price_per_night_fmt, formatter.format(cotizacion.precio_noche))
+        binding.tvBackendNoches.text = getString(R.string.payment_nights_fmt, cotizacion.noches)
+
+        // Sumar subtotal + iva + comisión para mostrar el total calculado
+        val totalCalculado = cotizacion.subtotal + cotizacion.iva + cotizacion.comision
+        binding.tvTotalPagar.text = getString(R.string.payment_total_pay_fmt, formatter.format(totalCalculado))
+
+        binding.tvBackendSubtotal.visibility = View.VISIBLE
+        binding.tvBackendIva.visibility = View.VISIBLE
+        binding.tvBackendComision.visibility = View.VISIBLE
+        binding.tvBackendPrecioNoche.visibility = View.VISIBLE
+        binding.tvBackendNoches.visibility = View.VISIBLE
+        binding.tvTotalPagar.visibility = View.VISIBLE
     }
 
     private fun configurarCheckbox() {
@@ -264,31 +299,34 @@ class PaymentActivity : BaseActivity() {
             Toast.makeText(this, getString(R.string.payment_error_no_dates), Toast.LENGTH_SHORT).show()
             return false
         }
-        // Validaciones básicas de campos...
         if (usarTarjetaGuardada) {
             if (binding.etCvv.text.isNullOrEmpty()) {
-                // CORREGIDO: String Resource
                 binding.contenedorCvv.error = getString(R.string.payment_cvv_req)
                 return false
             }
         } else {
             if (binding.etNumeroNuevaTarjeta.text.isNullOrEmpty()) {
-                // CORREGIDO: String Resource
                 binding.contenedorNumeroNuevaTarjeta.error = getString(R.string.payment_card_num_req)
                 return false
             }
-            // ... más validaciones si gustas
         }
         return true
     }
 
+    // Enviar el total para el historial
     private fun procesarPago() {
         val idString = SessionManager.obtenerUserId(this)
         val inquilinoId = idString.toIntOrNull() ?: 0
 
         if (inquilinoId == 0 || propiedadId == 0) {
-            // CORREGIDO: String Resource
             Toast.makeText(this, getString(R.string.payment_session_error), Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        // Validar que exista cotización previa
+        val cotizacion = cotizacionActual
+        if (cotizacion == null) {
+            Toast.makeText(this, getString(R.string.payment_error_no_dates), Toast.LENGTH_SHORT).show()
             return
         }
 
@@ -296,7 +334,6 @@ class PaymentActivity : BaseActivity() {
         val fechaFin = backendDateFormat.format(Date(fechaFinSeleccionada!!))
 
         binding.btnProcesarPago.isEnabled = false
-        // CORREGIDO: String Resource
         binding.btnProcesarPago.text = getString(R.string.payment_processing_btn)
 
         lifecycleScope.launch {
@@ -305,33 +342,30 @@ class PaymentActivity : BaseActivity() {
                     propiedadId = propiedadId,
                     inquilinoId = inquilinoId,
                     fechaInicio = fechaInicio,
-                    fechaFin = fechaFin
+                    fechaFin = fechaFin,
+                    subtotal = cotizacion.subtotal,
+                    iva = cotizacion.iva,
+                    comision = cotizacion.comision
                 )
 
                 if (response.isSuccessful) {
                     val resultado = response.body()
-                    // Usamos el mensaje del backend si existe, sino el default del recurso
                     val msg = resultado?.mensaje ?: getString(R.string.payment_success_msg)
                     Toast.makeText(this@PaymentActivity, msg, Toast.LENGTH_LONG).show()
 
-                    // --- REDIRECCIÓN A MIS RENTAS (MainActivity) ---
+                    // REDIRECCIÓN A MAIN ACTIVITY, PESTAÑA DE MIS ARRENDAMIENTOS
                     val intent = Intent(this@PaymentActivity, MainActivity::class.java)
                     intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
                     intent.putExtra("NAVIGATE_TO", "RENTALS")
                     startActivity(intent)
                     finish()
-                    // -----------------------------------------------
-
                 } else {
                     val errorBody = response.errorBody()?.string()
-                    // CORREGIDO: String Resource con formato
                     Toast.makeText(this@PaymentActivity, getString(R.string.payment_generic_error_fmt, errorBody), Toast.LENGTH_LONG).show()
                     binding.btnProcesarPago.isEnabled = true
-                    // CORREGIDO: String Resource
                     binding.btnProcesarPago.text = getString(R.string.payment_process_btn_default)
                 }
             } catch (e: Exception) {
-                // CORREGIDO: String Resource con formato
                 Toast.makeText(this@PaymentActivity, getString(R.string.payment_connection_error_fmt, e.message), Toast.LENGTH_LONG).show()
                 binding.btnProcesarPago.isEnabled = true
                 binding.btnProcesarPago.text = getString(R.string.payment_process_btn_default)

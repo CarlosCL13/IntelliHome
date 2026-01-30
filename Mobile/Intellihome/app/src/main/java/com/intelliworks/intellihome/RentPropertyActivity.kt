@@ -51,7 +51,7 @@ class RentPropertyActivity : BaseActivity(), OnMapReadyCallback {
                 .findFragmentById(R.id.mapFragment) as SupportMapFragment
             mapFragment.getMapAsync(this)
 
-            configurarVista(currentProperty)
+            configurarVista(currentProperty, isRentalActive)
             cargarDetallesCompletos(currentProperty.id.toIntOrNull() ?: 0)
             determinarRolYConfigurarBotones(currentProperty, isRentalActive, null)
             binding.clickOverlay.setOnClickListener {
@@ -232,7 +232,7 @@ class RentPropertyActivity : BaseActivity(), OnMapReadyCallback {
         applyAppAppearance(binding.root)
     }
 
-    private fun configurarVista(prop: Property) {
+    private fun configurarVista(prop: Property, isRentalActive: Boolean) {
         binding.tvTituloPropiedad.text = prop.titulo
         binding.tvCapacidadPropiedad.text = PropertyUtils.getFormattedCapacity(this, prop.capacidad)
         binding.tvDireccionTexto.text = prop.direccion
@@ -240,11 +240,56 @@ class RentPropertyActivity : BaseActivity(), OnMapReadyCallback {
         binding.tvDescripcionPropiedad.text = "Cargando..."
         val precioDouble = prop.precio.replace(",", "").toDoubleOrNull() ?: 0.0
         val formatoMoneda = NumberFormat.getCurrencyInstance(Locale("es", "CR"))
-        binding.tvPrecioPropiedad.text = formatoMoneda.format(precioDouble)
+
+        if (!isRentalActive) {
+            // Mostrar desglose y total pagado
+            binding.seccionDesglosePago.visibility = View.VISIBLE
+            binding.tvTotalPagado.visibility = View.VISIBLE
+            binding.tvPrecioNoche.visibility = View.GONE
+
+            // Obtener usuario actual
+            val usuarioId = SessionManager.obtenerUserId(this).toIntOrNull() ?: 0
+            val propiedadId = prop.id.toIntOrNull() ?: 0
+            if (usuarioId != 0 && propiedadId != 0) {
+                obtenerYMostrarDesglose(propiedadId, usuarioId, formatoMoneda)
+            }
+        } else {
+            // Ocultar desglose y mostrar precio por noche
+            binding.seccionDesglosePago.visibility = View.GONE
+            binding.tvTotalPagado.visibility = View.GONE
+            binding.tvPrecioPropiedad.text = formatoMoneda.format(precioDouble)
+            binding.tvPrecioNoche.visibility = View.VISIBLE
+        }
+
         if (prop.imagenes.isNotEmpty()) {
             actualizarSliderFotos(prop.imagenes)
         } else {
             binding.tvImageCounter.visibility = View.GONE
+        }
+    }
+
+    private fun obtenerYMostrarDesglose(propiedadId: Int, usuarioId: Int, formatoMoneda: NumberFormat) {
+        val api = RetrofitInstance.retrofit.create(com.intelliworks.intellihome.data.api.ArrendamientoApi::class.java)
+        lifecycleScope.launch {
+            try {
+                val response = api.getDesgloseArrendamiento(propiedadId, usuarioId)
+                if (response.isSuccessful && response.body() != null) {
+                    val desglose = response.body()!!
+                    binding.tvSubtotal.text = getString(R.string.label_subtotal) + ": ${formatoMoneda.format(desglose.subtotal)}"
+                    binding.tvIva.text = getString(R.string.label_iva) + ": ${formatoMoneda.format(desglose.iva)}"
+                    binding.tvComision.text = getString(R.string.label_comision) + ": ${formatoMoneda.format(desglose.comision)}"
+                    binding.tvDesgloseTotalPagado.text = getString(R.string.label_total_paid) + ": ${formatoMoneda.format(desglose.total)}"
+                    binding.tvPrecioPropiedad.text = formatoMoneda.format(desglose.total)
+                    
+                    // Ocultar campos de precio por noche y noches ya que no están en el DTO
+                    binding.tvDesglosePrecioNoche.visibility = View.GONE
+                    binding.tvNoches.visibility = View.GONE
+                } else {
+                    binding.seccionDesglosePago.visibility = View.GONE
+                }
+            } catch (e: Exception) {
+                binding.seccionDesglosePago.visibility = View.GONE
+            }
         }
     }
 
@@ -300,7 +345,6 @@ class RentPropertyActivity : BaseActivity(), OnMapReadyCallback {
 
         intent.putExtra("BLOCKED_DATES", blockedDatesJson)
         startActivity(intent)
-
     }
 
     private fun irADomotica() {
