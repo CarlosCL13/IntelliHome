@@ -19,7 +19,6 @@ from Modelos.Hobby import Hobby, PropiedadHobby
 from Modelos.Arrendamiento import Arrendamiento
 from datetime import date
 from typing import Optional
-from Base_de_Datos.db_session import get_db
 import os
 import socket
 
@@ -279,7 +278,6 @@ def get_propiedad_por_id(propiedad_id: int, request: Request, db: Session = Depe
         "futuros_arrendamientos": futuros_arrendamientos
     }
     return resultado
-
 
 
 # -----------------------------------------------------------------------------

@@ -2,14 +2,101 @@ from fastapi import APIRouter, Depends, UploadFile, File, Form, HTTPException, R
 from sqlalchemy.orm import Session
 from Servicios.Usuario_Servicio import Usuario_Servicio
 from typing import Optional
-from Base_de_Datos.db_session import get_db
+from Base_de_Datos.db import get_db
 from Modelos.Usuario import Usuario
 from Modelos.Hobby import Hobby, UsuarioHobby
-from Modelos.TipoCasa import TipoCasa, UsuarioPreferencia
+from Modelos.TipoCasa import TipoCasa
+from Modelos.UsuarioTipoCasa import UsuarioTipoCasa
+from pydantic import BaseModel
 import os
 import socket
+from Modelos.UsuarioDispositivo import UsuarioDispositivo 
+
 
 router = APIRouter(prefix="/usuarios", tags=["usuarios"])
+
+
+class DispositivoToken(BaseModel):
+    fcm_token: str
+
+# DTO simple para recibir el token
+class TokenUpdateDto(BaseModel):
+    fcm_token: str
+
+@router.put("/usuarios/{usuario_id}/dispositivos")
+def registrar_dispositivo(
+    usuario_id: int, 
+    datos: DispositivoToken, 
+    db: Session = Depends(get_db)
+):
+    # 1. Verificar si el token ya existe (para no duplicarlo)
+    dispositivo_existente = db.query(UsuarioDispositivo).filter(
+        UsuarioDispositivo.fcm_token == datos.fcm_token
+    ).first()
+
+    if dispositivo_existente:
+        # Si ya existe, solo actualizamos el dueño (por si cambió de usuario)
+        dispositivo_existente.usuario_id = usuario_id
+        db.commit()
+        return {"mensaje": "Dispositivo actualizado correctamente"}
+
+    # 2. Si es nuevo, lo creamos
+    nuevo_dispositivo = UsuarioDispositivo(
+        usuario_id=usuario_id,
+        fcm_token=datos.fcm_token,
+        tipo_dispositivo="android_postman" # Valor por defecto
+    )
+    
+    db.add(nuevo_dispositivo)
+    db.commit()
+    db.refresh(nuevo_dispositivo)
+    
+    return {"mensaje": "Nuevo dispositivo agregado exitosamente"}
+
+@router.delete("/usuarios/{usuario_id}/dispositivos/{token}")
+def eliminar_dispositivo(usuario_id: int, token: str, db: Session = Depends(get_db)):
+    """
+    Endpoint para el LOGOUT. Deja de enviar notificaciones a este celular específico.
+    """
+    db.query(UsuarioDispositivo).filter(
+        UsuarioDispositivo.usuario_id == usuario_id,
+        UsuarioDispositivo.fcm_token == token
+    ).delete()
+    db.commit()
+    return {"mensaje": "Dispositivo desvinculado"}
+
+
+@router.put("/usuarios/{usuario_id}/fcm-token")
+def actualizar_token_fcm(usuario_id: int, token_data: TokenUpdateDto, db: Session = Depends(get_db)):
+    """
+    Registra el token del dispositivo actual para el usuario logueado.
+    IMPLEMENTA SEGURIDAD: Desvincula este mismo token de cualquier otro usuario previo.
+    """
+    
+    # --- PASO 1: LIMPIEZA DE SEGURIDAD ---
+    # Buscamos si este celular (token) estaba asignado a otra persona (ej. hermano, anterior dueño)
+    usuarios_anteriores = db.query(Usuario).filter(
+        Usuario.fcm_token == token_data.fcm_token,
+        Usuario.id != usuario_id # Que no sea yo mismo
+    ).all()
+
+    if usuarios_anteriores:
+        for u_viejo in usuarios_anteriores:
+            u_viejo.fcm_token = None # Le quitamos el token
+            print(f"[SEGURIDAD] Token desvinculado del usuario ID {u_viejo.id} por conflicto de dispositivo.")
+
+    # --- PASO 2: ASIGNACIÓN ---
+    usuario_actual = db.query(Usuario).filter(Usuario.id == usuario_id).first()
+    
+    if not usuario_actual:
+        raise HTTPException(status_code=404, detail="Usuario no encontrado")
+
+    usuario_actual.fcm_token = token_data.fcm_token
+    db.commit()
+    
+    return {"mensaje": "Dispositivo registrado exitosamente para notificaciones"}
+
+
 
 # -----------------------------------------------------------------------------
 # Endpoint: Registro de Nuevo Usuario
@@ -141,7 +228,7 @@ def get_perfil_usuario(user_id: int, request: Request, db: Session = Depends(get
     hobbies_ids = [h.hobby_id for h in hobbies_rel] 
 
     # Obtener IDs de Preferencias (TipoCasa)
-    prefs_rel = db.query(UsuarioPreferencia).filter(UsuarioPreferencia.usuario_id == user_id).all()
+    prefs_rel = db.query(UsuarioTipoCasa).filter(UsuarioTipoCasa.usuario_id == user_id).all()
     preferencias_ids = [p.tipo_casa_id for p in prefs_rel]
     
     imagen_url = None

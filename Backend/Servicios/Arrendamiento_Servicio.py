@@ -24,6 +24,9 @@ class Arrendamiento_Servicio:
             iva: float,
             comision: float
         ):
+        """
+        Registra un nuevo arrendamiento en la base de datos.
+        """
         errores = {}
         nuevo_arrendamiento = None
 
@@ -144,7 +147,6 @@ class Arrendamiento_Servicio:
         if media_armonica_ajustada > limite_maximo:
             media_armonica_ajustada = limite_maximo
         return media_armonica_ajustada
-    
 
     #================================= VALIDACIONES ================================= #
 
