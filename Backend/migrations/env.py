@@ -18,19 +18,20 @@ if config.config_file_name is not None:
 import sys
 import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-from Modelos import db
+from Base_de_Datos.db import Base
 from Modelos.Usuario import Usuario
 from Modelos.Roles import Rol
-from Modelos.Hobby import Hobby, UsuarioHobby
+from Modelos.Hobby import Hobby, UsuarioHobby, PropiedadHobby
 from Modelos.TipoCasa import TipoCasa
 from Modelos.PreguntaRecuperacion import PreguntaRecuperacion
 from Modelos.UsuarioTipoCasa import UsuarioTipoCasa
 from Modelos.Propiedad import Propiedad
 from Modelos.FotoPropiedad import FotoPropiedad
-from Modelos.Amenidad import Amenidad
+from Modelos.Amenidad import Amenidad, PropiedadAmenidad
 from Modelos.Arrendamiento import Arrendamiento
 from Modelos.Dispositivo import Dispositivo, EstadoDispositivo
-target_metadata = db.Model.metadata
+from Modelos.UsuarioDispositivo import UsuarioDispositivo
+target_metadata = Base.metadata
 
 # other values from the config, defined by the needs of env.py,
 # can be acquired:

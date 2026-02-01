@@ -2,7 +2,6 @@ from fastapi import APIRouter, Depends, Form, HTTPException, Request
 from sqlalchemy.orm import Session
 from sqlalchemy import desc
 import os
-import socket
 
 # Importaciones del Proyecto
 from Base_de_Datos.db_session import get_db
@@ -12,7 +11,6 @@ from Modelos.Propiedad import Propiedad
 from Modelos.FotoPropiedad import FotoPropiedad
 
 # Importamos la utilidad get_local_ip desde Propiedad_Controlador
-# (Esto funciona bien ahora que eliminamos la importación circular en el otro archivo)
 from Controladores.Propiedad_Controlador import get_local_ip
 
 # Configuración del Router
@@ -23,7 +21,6 @@ Módulo: Arrendamiento_Controlador
 Descripción: Gestiona los endpoints HTTP relacionados con el ciclo de vida de los alquileres.
 Incluye registro de nuevos contratos y consulta de historial para inquilinos.
 """
-
 
 @router.post("/arrendamiento")
 def registrar_arrendamiento(
@@ -147,6 +144,7 @@ def get_propiedades_alquiladas(user_id: int, request: Request, db: Session = Dep
             
     return propiedades_rentadas
 
+
 @router.post("/cotizar", summary="Cotizar arrendamiento sin guardar")
 def cotizar_arrendamiento(
     propiedad_id: int = Form(...),
@@ -190,16 +188,3 @@ def get_desglose_ultimo_arrendamiento(propiedad_id: int, usuario_id: int, db: Se
         "total": float(ultimo_arrendamiento.subtotal) + float(ultimo_arrendamiento.iva) + float(ultimo_arrendamiento.comision)
     }
     return desglose_arrendamiento
-
-# Función para obtener la IP local de la máquina
-def get_local_ip():
-    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    try:
-        # No importa si no hay internet, solo queremos la IP local
-        s.connect(('10.255.255.255', 1))
-        ip = s.getsockname()[0]
-    except Exception:
-        ip = '127.0.0.1'
-    finally:
-        s.close()
-    return ip

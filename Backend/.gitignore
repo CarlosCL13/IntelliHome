@@ -25,3 +25,6 @@ instance/
 
 # Archivos de credenciales (privadas)
 credenciales_Twilio.py
+
+# Archivo de clave de firebase
+llaveServicio.json

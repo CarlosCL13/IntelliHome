@@ -5,11 +5,13 @@ from sqlalchemy.orm import Session
 
 router = APIRouter(prefix="/casa", tags=["casa"])
 
+
 @router.post("/led")
 def cambiar_led(propiedad_id: int, habitacion: str = None, accion: str = None, db: Session = Depends(get_db)):
     """
-    Cambia el estado de un LED de una habitación o todos.
-    accion: "encender", "apagar", "todos_encender", "todos_apagar"
+    Cambia el estado de un LED de una habitación o todos, o controla la puerta.
+    Para LEDs - accion: "encender", "apagar", "todos_encender", "todos_apagar"
+    Para puerta - accion: "abrir", "cerrar" (habitacion debe ser "Garaje" o None)
     """
     resultado = CasaServicio.cambiar_led(db, propiedad_id, habitacion, accion)
     if "error" in resultado:
@@ -22,6 +24,6 @@ def cambiar_led(propiedad_id: int, habitacion: str = None, accion: str = None, d
 @router.get("/estado_leds")
 def obtener_estado_leds(propiedad_id: int, db: Session = Depends(get_db)):
     """
-    Devuelve el estado actual de todos los LEDs por habitación.
+    Devuelve el estado actual de todos los LEDs por habitación y el estado de la puerta.
     """
     return CasaServicio.obtener_estado_leds(db, propiedad_id)

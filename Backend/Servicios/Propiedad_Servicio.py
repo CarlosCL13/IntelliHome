@@ -232,7 +232,7 @@ class Propiedad_Servicio:
     @staticmethod
     def crear_luces_predeterminadas(db, propiedad_id):
         """
-        Crea luces LED predeterminadas (Lista original completa).
+        Crea luces LED predeterminadas (Lista original completa) y una puerta.
         """
         habitaciones = [
             "Sala",
@@ -258,4 +258,19 @@ class Propiedad_Servicio:
                 estado="apagado"
             )
             db.add(estado)
+        
+        # Crear puerta
+        puerta = Dispositivo(
+            nombre="Puerta Principal",
+            tipo="puerta",
+            propiedad_id=propiedad_id,
+            habitacion="Garaje"
+        )
+        db.add(puerta)
+        db.flush()
+        estado_puerta = EstadoDispositivo(
+            dispositivo_id=puerta.id,
+            estado="cerrado"
+        )
+        db.add(estado_puerta)
         # El commit lo hace registrar_propiedad
