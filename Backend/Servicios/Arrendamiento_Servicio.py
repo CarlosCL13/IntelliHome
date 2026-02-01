@@ -198,9 +198,11 @@ class Arrendamiento_Servicio:
             fecha_fin = arrendamiento.fecha_fin
 
             # Precio del arrendamiento
-            precio_noche = propiedad_arrendar.precio_noche
             noches_arrendamiento = (fecha_fin - fecha_inicio).days  # Se obtiene las NOCHES totales del arrendamiento
-            total_precio = precio_noche * noches_arrendamiento
+            subtotal = arrendamiento.subtotal
+            iva = arrendamiento.iva
+            comision = arrendamiento.comision
+            total_precio = subtotal + iva + comision
 
             # Número de teléfono del inquilino
             inquilino = db.query(Usuario).filter(Usuario.id == inquilino_id).first()
@@ -213,6 +215,7 @@ class Arrendamiento_Servicio:
             fecha_inicio_str = fecha_inicio.strftime('%d/%m/%Y')
             fecha_fin_str = fecha_fin.strftime('%d/%m/%Y')
 
+
             # Texto del mensaje a enviar con la información anterior
             mensaje_texto = (
                 "IntelliHome 🏡\n\n"
@@ -220,6 +223,9 @@ class Arrendamiento_Servicio:
                 f"Confirmamos que tu reserva de la propiedad \"{titulo_propiedad}\" ha sido registrada exitosamente.\n\n"
                 f"Detalles de tu reserva:\n"
                 f"• Fechas: {fecha_inicio_str} al {fecha_fin_str} ({noches_arrendamiento} noches)\n"
+                f"• Subtotal: ₡{subtotal:.2f}\n"
+                f"• IVA: ₡{iva:.2f}\n"
+                f"• Comisión: ₡{comision:.2f}\n"
                 f"• Monto total: ₡{total_precio:.2f}\n\n"
                 "¡Gracias por confiar en nosotros! Te deseamos una excelente estadía.\n"
             )
@@ -238,6 +244,3 @@ class Arrendamiento_Servicio:
             return False
         finally:
             db.close()
-
-        
-
