@@ -11,6 +11,7 @@ data class PropiedadDetalleDto(
     @SerializedName("titulo_publicacion") val titulo: String,
     @SerializedName("descripcion_publicacion") val descripcion: String?,
     @SerializedName("precio_noche") val precio: Double,
+    @SerializedName("dias_disponibles") val diasDisponibles: List<String>,
     val huespedes: Int,
     val habitaciones: Int,
     val camas: Int,

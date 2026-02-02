@@ -1,6 +1,8 @@
 from passlib.context import CryptContext
 import os
 import re
+import uuid
+import shutil
 from cryptography.fernet import Fernet
 
 from fastapi import UploadFile
@@ -481,16 +483,36 @@ class Usuario_Servicio:
     @staticmethod
     def _guardar_imagen(imagen_perfil):
         """
-        Guarda la imagen de perfil en el sistema de archivos y devuelve la ruta.
+        Guarda la imagen con un nombre único UUID y devuelve SOLO el nombre del archivo.
         """
-        if imagen_perfil:
+        if not imagen_perfil:
+            return None
+
+        try:
+            # 1. Definir directorio de subidas
             uploads_dir = os.path.join(os.getcwd(), 'uploads')
             os.makedirs(uploads_dir, exist_ok=True)
-            imagen_path = os.path.join(uploads_dir, imagen_perfil.filename)
-            with open(imagen_path, "wb") as buffer:
-                buffer.write(imagen_perfil.file.read())
-            return imagen_path
-        return None
+
+            # 2. Generar un nombre único para el archivo (UUID)
+            # Obtenemos la extensión original (jpg, png, etc.)
+            ext = imagen_perfil.filename.rsplit('.', 1)[-1].lower()
+            nombre_unico = f"{uuid.uuid4()}.{ext}"
+
+            # 3. Crear la ruta completa SOLO para guardar el archivo
+            ruta_destino = os.path.join(uploads_dir, nombre_unico)
+
+            # 4. Guardar el archivo físicamente
+            with open(ruta_destino, "wb") as buffer:
+                # Usamos shutil para copiar el flujo de datos de manera eficiente
+                shutil.copyfileobj(imagen_perfil.file, buffer)
+
+            # 5. RETORNO CRÍTICO: Devolvemos solo el nombre, NO la ruta completa C://...
+            return nombre_unico
+
+        except Exception as e:
+            print(f"Error al guardar la imagen: {e}")
+            return None
+            
 # Buscar usuario por token público
     @staticmethod
     def buscar_por_token_publico(db: Session, token_publico: str):
