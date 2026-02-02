@@ -97,6 +97,7 @@ def registrar_propiedad(
     tipo_casa_id: int = Form(...),
     hobbies_ids: str = Form(""),
     amenidades_ids: str = Form(""),
+    dias_disponibles: str = Form(...),
     latitud: float = Form(...),
     longitud: float = Form(...),
     titulo_publicacion: str = Form(...),
@@ -118,6 +119,7 @@ def registrar_propiedad(
     # Conversión de strings CSV a listas de enteros
     hobbies_ids_list = [int(i) for i in hobbies_ids.split(",")] if hobbies_ids else []
     amenidades_ids_list = [int(i) for i in amenidades_ids.split(",")] if amenidades_ids else []
+    dias_list = [d.strip() for d in dias_disponibles.split(",")] if dias_disponibles else []
     
     # Delegación de la lógica de negocio al servicio
     resultado = Propiedad_Servicio.registrar_propiedad(
@@ -136,6 +138,7 @@ def registrar_propiedad(
         banos=banos,
         hobbies_ids=hobbies_ids_list,
         amenidades_ids=amenidades_ids_list,
+        dias_disponibles=dias_list,
         reglas_uso=reglas_uso,
         estado=estado
     )
@@ -248,6 +251,15 @@ def get_propiedad_por_id(propiedad_id: int, request: Request, db: Session = Depe
 
     # Se obtiene los arrendamientos futuros de la propiedad para bloquear el calendario
     futuros_arrendamientos = obtener_arrendamientos_futuros(propiedad_id, db)
+    
+    # --- Procesar días disponibles ---
+    dias_disponibles_list = []
+    if prop.dias_disponibles:
+        # Convertimos "Lunes,Martes" a ["Lunes", "Martes"]
+        dias_disponibles_list = prop.dias_disponibles.split(",")
+    else:
+        # Si es nulo (propiedades viejas), asumimos todos los días
+        dias_disponibles_list = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"]
 
     resultado = {
         "id": prop.id,
@@ -271,6 +283,7 @@ def get_propiedad_por_id(propiedad_id: int, request: Request, db: Session = Depe
         "fotos": fotos_urls,
         "amenidades": amenidades_list,
         "hobbies": hobbies_list,
+        "dias_disponibles": dias_disponibles_list,
         "inquilino_actual_id": inquilino_actual_id,
         "futuros_arrendamientos": futuros_arrendamientos
     }
@@ -369,19 +382,4 @@ def obtener_arrendamientos_futuros(propiedad_id: int, db: Session):
                 "fecha_fin": arrendamientos_aux.fecha_fin
             })
     
-    # Se obtiene los dias no disponibles de la propiedad como si fuesen arrendamientos futuros
-    no_disponibilidades = db.query(NoDisponibilidadPropiedad).filter(
-        NoDisponibilidadPropiedad.propiedad_id == propiedad_id
-    ).all()
-
-    for no_disp in no_disponibilidades:
-        # Se omiten las fechas no disponibles que ya hayan pasado
-        if no_disp.fecha_noDisponible >= hoy:
-            # Se agregan como arrendamientos futuros (aunque no lo sean realmente)
-            futuros_arrendamientos.append({
-                "arrendamiento_id": 0,  # ID 0 indica que no es un arrendamiento real
-                "fecha_inicio": no_disp.fecha_noDisponible,
-                "fecha_fin": no_disp.fecha_noDisponible
-            })
-
     return futuros_arrendamientos
