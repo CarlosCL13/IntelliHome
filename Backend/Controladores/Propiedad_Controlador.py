@@ -17,10 +17,7 @@ from Modelos.TipoCasa import TipoCasa
 from Modelos.Usuario import Usuario
 from Modelos.Hobby import Hobby, PropiedadHobby
 from Modelos.Arrendamiento import Arrendamiento
-from datetime import date
-from typing import Optional
-import os
-import socket
+from Modelos.NoDisponibilidadPropiedad import NoDisponibilidadPropiedad
 
 # Configuración del router para los endpoints de propiedades
 router = APIRouter(prefix="/propiedades", tags=["propiedades"])
@@ -372,4 +369,19 @@ def obtener_arrendamientos_futuros(propiedad_id: int, db: Session):
                 "fecha_fin": arrendamientos_aux.fecha_fin
             })
     
+    # Se obtiene los dias no disponibles de la propiedad como si fuesen arrendamientos futuros
+    no_disponibilidades = db.query(NoDisponibilidadPropiedad).filter(
+        NoDisponibilidadPropiedad.propiedad_id == propiedad_id
+    ).all()
+
+    for no_disp in no_disponibilidades:
+        # Se omiten las fechas no disponibles que ya hayan pasado
+        if no_disp.fecha_noDisponible >= hoy:
+            # Se agregan como arrendamientos futuros (aunque no lo sean realmente)
+            futuros_arrendamientos.append({
+                "arrendamiento_id": 0,  # ID 0 indica que no es un arrendamiento real
+                "fecha_inicio": no_disp.fecha_noDisponible,
+                "fecha_fin": no_disp.fecha_noDisponible
+            })
+
     return futuros_arrendamientos

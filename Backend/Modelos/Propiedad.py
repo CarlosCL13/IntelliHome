@@ -41,6 +41,6 @@ class Propiedad(Base):
     tipo_casa = relationship("TipoCasa", backref="propiedades")
 
     # Relaciones Muchos a Muchos (Hobbies y Amenidades)
-    # Es importante que las tablas intermedias 'propiedad_hobbies' y 'propiedad_amenidades' existan en tu BD.
+    # Tablas intermedias 'propiedad_hobbies' y 'propiedad_amenidades'
     hobbies = relationship('Hobby', secondary='propiedad_hobbies', backref='propiedades')
     amenidades = relationship('Amenidad', secondary='propiedad_amenidades', backref='propiedades')

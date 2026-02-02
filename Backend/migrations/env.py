@@ -31,6 +31,7 @@ from Modelos.Amenidad import Amenidad, PropiedadAmenidad
 from Modelos.Arrendamiento import Arrendamiento
 from Modelos.Dispositivo import Dispositivo, EstadoDispositivo
 from Modelos.UsuarioDispositivo import UsuarioDispositivo
+from Modelos.NoDisponibilidadPropiedad import NoDisponibilidadPropiedad
 target_metadata = Base.metadata
 
 # other values from the config, defined by the needs of env.py,

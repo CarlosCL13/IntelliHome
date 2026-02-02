@@ -13,6 +13,7 @@ from Controladores.Casa_Controlador import router as casa_router
 from Controladores.Arrendamiento_Controlador import router as arrendamiento_router
 from Controladores.NotificacionEvento_Controlador import router as notificacionEvento_router
 from Controladores.UsuarioDispositivo_Controlador import router as usuarioDispositivo_router
+from Controladores.NoDisponibilidadPropiedad_Controlador import router as noDisponibilidadPropiedad_router
 
 
 from fastapi.middleware.cors import CORSMiddleware
@@ -54,6 +55,7 @@ app.include_router(casa_router)
 app.include_router(arrendamiento_router)
 app.include_router(notificacionEvento_router)
 app.include_router(usuarioDispositivo_router)
+app.include_router(noDisponibilidadPropiedad_router)
 # Para correr: uvicorn app:app --reload
 if __name__ == "__main__":
     uvicorn.run("app:app", host="0.0.0.0", port=8000, reload=True)
