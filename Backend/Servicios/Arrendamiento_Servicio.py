@@ -170,6 +170,7 @@ class Arrendamiento_Servicio:
                 return fecha_inicio_aux, fecha_fin_aux
             except Exception:
                 errores['fechas'] = 'El formato de las fechas debe ser YYYY-MM-DD.'
+                return None, None
         else:
             errores['fechas'] = 'Las fechas de inicio y fin son obligatorias.'
             return None, None

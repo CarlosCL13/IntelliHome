@@ -1,8 +1,8 @@
-"""Migración Inicial
+"""Migración inicial
 
-Revision ID: 7d3ec6e05a4b
-Revises: 77e40fe5e4bf
-Create Date: 2026-01-31 14:56:56.897069
+Revision ID: e12805f136ba
+Revises: 
+Create Date: 2026-02-01 16:50:34.605943
 
 """
 from typing import Sequence, Union
@@ -12,8 +12,8 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = '7d3ec6e05a4b'
-down_revision: Union[str, Sequence[str], None] = '77e40fe5e4bf'
+revision: str = 'e12805f136ba'
+down_revision: Union[str, Sequence[str], None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 
@@ -151,6 +151,13 @@ def upgrade() -> None:
     sa.ForeignKeyConstraint(['propiedad_id'], ['propiedad.id'], ),
     sa.PrimaryKeyConstraint('id')
     )
+    op.create_table('no_disponibilidad_propiedad',
+    sa.Column('id', sa.Integer(), nullable=False),
+    sa.Column('propiedad_id', sa.Integer(), nullable=False),
+    sa.Column('fecha_noDisponible', sa.Date(), nullable=False),
+    sa.ForeignKeyConstraint(['propiedad_id'], ['propiedad.id'], ),
+    sa.PrimaryKeyConstraint('id')
+    )
     op.create_table('propiedad_amenidades',
     sa.Column('propiedad_id', sa.Integer(), nullable=False),
     sa.Column('amenidad_id', sa.Integer(), nullable=False),
@@ -181,6 +188,7 @@ def downgrade() -> None:
     op.drop_table('estado_dispositivo')
     op.drop_table('propiedad_hobbies')
     op.drop_table('propiedad_amenidades')
+    op.drop_table('no_disponibilidad_propiedad')
     op.drop_table('fotos_propiedades')
     op.drop_table('dispositivo')
     op.drop_table('arrendamientos')

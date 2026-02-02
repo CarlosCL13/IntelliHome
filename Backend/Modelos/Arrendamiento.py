@@ -7,7 +7,7 @@ class Arrendamiento(Base):
     Tabla para los arrendamientos o alquileres.
     """
     __tablename__ = 'arrendamientos'
-
+    
     id = Column(Integer, primary_key=True)
     
     # Claves foráneas
