@@ -22,11 +22,16 @@ class PropiedadRepository(private val api: PropiedadApi) {
      * Convierte los datos primitivos a RequestBody y procesa las imágenes.
      */
     suspend fun registrarPropiedad(
-        context: Context, // Necesario para procesar las URIs de las fotos
+        context: Context,
         usuarioId: Int,
         tipoCasaId: Int,
         hobbiesIds: List<Int>,
         amenidadesIds: List<Int>,
+
+        // --- NUEVO PARAMETRO ---
+        diasDisponibles: List<String>,
+        // -----------------------
+
         latitud: Double,
         longitud: Double,
         titulo: String,
@@ -43,9 +48,9 @@ class PropiedadRepository(private val api: PropiedadApi) {
     ) = api.registrarPropiedad(
         usuarioId = toRequestBody(usuarioId.toString()),
         tipoCasaId = toRequestBody(tipoCasaId.toString()),
-        // Convertimos las listas [1, 2] a String "1,2" para enviarlas
         hobbiesIds = toRequestBody(hobbiesIds.joinToString(",")),
         amenidadesIds = toRequestBody(amenidadesIds.joinToString(",")),
+        diasDisponibles = toRequestBody(diasDisponibles.joinToString(",")),
         latitud = toRequestBody(latitud.toString()),
         longitud = toRequestBody(longitud.toString()),
         titulo = toRequestBody(titulo),
@@ -58,7 +63,7 @@ class PropiedadRepository(private val api: PropiedadApi) {
         cocina = toRequestBody(if (cocina) "1" else "0"),
         reglas = toRequestBody(reglas),
         vehiculos = toRequestBody(vehiculos.toString()),
-        estado = toRequestBody("Disponible"), // Estado por defecto
+        estado = toRequestBody("Disponible"),
         fotos_propiedad = prepararFotos(context, fotosUris)
     )
 

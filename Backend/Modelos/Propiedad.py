@@ -20,6 +20,7 @@ class Propiedad(Base):
     titulo_publicacion = Column(String(150), nullable=False)
     descripcion_publicacion = Column(Text, nullable=True)
     precio_noche = Column(Float, nullable=False)
+    dias_disponibles = Column(String(255), nullable=True)
     
     # Capacidad
     huespedes = Column(Integer, nullable=False)

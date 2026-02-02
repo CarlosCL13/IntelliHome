@@ -32,6 +32,7 @@ interface PropiedadApi {
         @Part("tipo_casa_id") tipoCasaId: RequestBody,
         @Part("hobbies_ids") hobbiesIds: RequestBody,
         @Part("amenidades_ids") amenidadesIds: RequestBody,
+        @Part("dias_disponibles") diasDisponibles: RequestBody,
         @Part("latitud") latitud: RequestBody,
         @Part("longitud") longitud: RequestBody,
         @Part("titulo_publicacion") titulo: RequestBody,

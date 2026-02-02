@@ -1,6 +1,5 @@
 package com.intelliworks.intellihome
 
-import android.content.Context
 import android.net.Uri
 import android.os.Bundle
 import android.provider.OpenableColumns
@@ -12,7 +11,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
-import androidx.lifecycle.lifecycleScope // Importante para corrutinas
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.button.MaterialButton
@@ -24,8 +23,10 @@ import com.intelliworks.intellihome.utils.PhotosAdapter
 import com.intelliworks.intellihome.utils.SessionManager
 import kotlinx.coroutines.launch
 import java.io.File
-import java.io.FileOutputStream
-import java.util.UUID
+import androidx.core.content.FileProvider
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import java.io.ByteArrayOutputStream
 
 class PropertyPhotosFragment : Fragment(R.layout.fragment_property_photos) {
 
@@ -37,13 +38,94 @@ class PropertyPhotosFragment : Fragment(R.layout.fragment_property_photos) {
     private val MAX_PHOTOS = 10
     private val MAX_FILE_SIZE_MB = 1
     private val ALLOWED_TYPES = listOf(
-        "image/jpeg", "image/png", "image/gif", "image/svg+xml"
+        "image/jpeg", "image/png", "image/gif"
     )
+
+    // Variable para guardar la URI de la foto que se está tomando
+    private var latestPhotoUri: Uri? = null
 
     private val pickMultipleMedia = registerForActivityResult(
         ActivityResultContracts.PickMultipleVisualMedia(MAX_PHOTOS)
     ) { uris ->
         if (uris.isNotEmpty()) validarYAgregarFotos(uris)
+    }
+
+    private val takePhotoLauncher = registerForActivityResult(
+        ActivityResultContracts.TakePicture()
+    ) { isSuccess ->
+        if (isSuccess && latestPhotoUri != null) {
+            lifecycleScope.launch(kotlinx.coroutines.Dispatchers.IO) {
+
+                // Llamamos a la nueva función
+                val uriComprimida = comprimirYGuardarNuevoArchivo(latestPhotoUri!!)
+
+                kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Main) {
+                    if (uriComprimida != null) {
+                        // IMPORTANTE: Pasamos la uriComprimida, NO la latestPhotoUri
+                        validarYAgregarFotos(listOf(uriComprimida))
+                    } else {
+                        Toast.makeText(requireContext(), "Error al procesar la imagen", Toast.LENGTH_SHORT).show()
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Lee la imagen original, la comprime y la guarda en un NUEVO archivo.
+     * Retorna la URI del nuevo archivo comprimido.
+     */
+    private fun comprimirYGuardarNuevoArchivo(uriOriginal: Uri): Uri? {
+        return try {
+            val contentResolver = requireContext().contentResolver
+
+            // 1. Decodificar
+            val inputStream = contentResolver.openInputStream(uriOriginal)
+            val originalBitmap = android.graphics.BitmapFactory.decodeStream(inputStream)
+            inputStream?.close()
+
+            if (originalBitmap == null) return null
+
+            // 2. Redimensionar si es gigante (prevención de OOM)
+            var workingBitmap = originalBitmap
+            val maxDimension = 2048
+            if (originalBitmap.width > maxDimension || originalBitmap.height > maxDimension) {
+                val ratio = originalBitmap.width.toFloat() / originalBitmap.height.toFloat()
+                val newWidth = if (ratio > 1) maxDimension else (maxDimension * ratio).toInt()
+                val newHeight = if (ratio > 1) (maxDimension / ratio).toInt() else maxDimension
+                workingBitmap = android.graphics.Bitmap.createScaledBitmap(originalBitmap, newWidth, newHeight, true)
+            }
+
+            // 3. Comprimir en memoria
+            val stream = java.io.ByteArrayOutputStream()
+            var quality = 100
+            workingBitmap.compress(android.graphics.Bitmap.CompressFormat.JPEG, quality, stream)
+
+            // Bajar calidad hasta que pese menos de 1MB (1000 KB aprox de margen)
+            while (stream.toByteArray().size > 1000 * 1024 && quality > 10) {
+                stream.reset()
+                quality -= 10
+                workingBitmap.compress(android.graphics.Bitmap.CompressFormat.JPEG, quality, stream)
+            }
+
+            // 4. GUARDAR EN UN ARCHIVO NUEVO (Clave del arreglo)
+            val nuevoArchivo = java.io.File(requireContext().cacheDir, "compressed_${System.currentTimeMillis()}.jpg")
+            val fileOutputStream = java.io.FileOutputStream(nuevoArchivo)
+            fileOutputStream.write(stream.toByteArray())
+            fileOutputStream.flush()
+            fileOutputStream.close()
+
+            // Limpieza
+            if (workingBitmap != originalBitmap) workingBitmap.recycle()
+            originalBitmap.recycle()
+
+            // Retornamos la URI del archivo nuevo (file://...)
+            android.net.Uri.fromFile(nuevoArchivo)
+
+        } catch (e: Exception) {
+            e.printStackTrace()
+            null
+        }
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -58,6 +140,13 @@ class PropertyPhotosFragment : Fragment(R.layout.fragment_property_photos) {
         recycler.layoutManager = GridLayoutManager(requireContext(), 3)
         recycler.adapter = adapter
 
+        if (savedInstanceState != null) {
+            val uriString = savedInstanceState.getString("pending_photo_uri")
+            if (uriString != null) {
+                latestPhotoUri = Uri.parse(uriString)
+            }
+        }
+
         viewModel.fotosSeleccionadas.observe(viewLifecycleOwner) { lista ->
             adapter.submitList(lista)
             val hayFotos = lista.isNotEmpty()
@@ -70,11 +159,56 @@ class PropertyPhotosFragment : Fragment(R.layout.fragment_property_photos) {
             if ((viewModel.fotosSeleccionadas.value?.size ?: 0) >= MAX_PHOTOS) {
                 Toast.makeText(requireContext(), getString(R.string.error_limit_reached), Toast.LENGTH_SHORT).show()
             } else {
-                pickMultipleMedia.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
+                mostrarOpcionesDeImagen()
             }
         }
 
         btnTerminar.setOnClickListener { finalizarPublicacion() }
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        if (latestPhotoUri != null) {
+            outState.putString("pending_photo_uri", latestPhotoUri.toString())
+        }
+    }
+
+    private fun mostrarOpcionesDeImagen() {
+        val opciones = arrayOf("Tomar foto", "Elegir de galería")
+        AlertDialog.Builder(requireContext())
+            .setTitle("Agregar fotos")
+            .setItems(opciones) { _, which ->
+                when (which) {
+                    0 -> abrirCamara()
+                    1 -> abrirGaleria()
+                }
+            }
+            .show()
+    }
+    private fun abrirGaleria() {
+        pickMultipleMedia.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
+    }
+
+    private fun abrirCamara() {
+        // Crear un archivo temporal para guardar la foto
+        try {
+            latestPhotoUri = getTmpFileUri()
+            takePhotoLauncher.launch(latestPhotoUri)
+        } catch (e: Exception) {
+            Toast.makeText(requireContext(), "Error al iniciar cámara: ${e.message}", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    private fun getTmpFileUri(): Uri {
+        val tmpFile = File.createTempFile("tmp_image_file", ".png", requireContext().cacheDir).apply {
+            createNewFile()
+            deleteOnExit()
+        }
+        return FileProvider.getUriForFile(
+            requireContext(),
+            "${requireContext().packageName}.fileprovider",
+            tmpFile
+        )
     }
 
     private fun validarYAgregarFotos(uris: List<Uri>) {
@@ -88,7 +222,7 @@ class PropertyPhotosFragment : Fragment(R.layout.fragment_property_photos) {
         var mensajeError = ""
 
         for (uri in uris) {
-            if (spaceAvailable <= 0) break // Respetar límite de cantidad
+            if (spaceAvailable <= 0) break
 
             val resultado = verificarArchivo(uri)
             if (resultado.esValido) {
@@ -96,13 +230,13 @@ class PropertyPhotosFragment : Fragment(R.layout.fragment_property_photos) {
                 spaceAvailable--
             } else {
                 errores++
-                mensajeError = resultado.mensajeError // Guardamos el último error para mostrar
+                mensajeError = resultado.mensajeError
             }
         }
 
         if (errores > 0) {
             val msg = if (errores == 1) "Una foto fue rechazada: $mensajeError"
-            else "$errores fotos fueron rechazadas (Formato incorrecto o >${MAX_FILE_SIZE_MB}MB)"
+            else "$errores fotos rechazadas (Formato o peso)"
             Toast.makeText(requireContext(), msg, Toast.LENGTH_LONG).show()
         }
 
@@ -116,23 +250,41 @@ class PropertyPhotosFragment : Fragment(R.layout.fragment_property_photos) {
 
         // 1. Validar Tipo MIME
         val type = contentResolver.getType(uri)
-        if (type == null || !ALLOWED_TYPES.contains(type)) {
-            return ResultadoValidacion(false, "Formato no permitido (solo JPG/PNG)")
+        // Nota: A veces las fotos de cámara recién creadas pueden devolver null en type al principio,
+        // pero FileProvider suele manejarlo bien. Si da problemas, puedes inferir por extensión.
+        if (type != null && !ALLOWED_TYPES.contains(type)) {
+            return ResultadoValidacion(false, "Formato no permitido")
         }
 
-        // 2. Validar Tamaño (Consultando los metadatos del archivo)
+        // 2. Validar Tamaño
         var sizeInBytes: Long = 0
         val cursor = contentResolver.query(uri, null, null, null, null)
-        cursor?.use {
-            if (it.moveToFirst()) {
-                val sizeIndex = it.getColumnIndex(OpenableColumns.SIZE)
-                if (sizeIndex != -1) {
-                    sizeInBytes = it.getLong(sizeIndex)
+
+        // Si el cursor es nulo (pasa a veces con FileProvider interno), intentamos leer el archivo directo
+        if (cursor != null) {
+            cursor.use {
+                if (it.moveToFirst()) {
+                    val sizeIndex = it.getColumnIndex(OpenableColumns.SIZE)
+                    if (sizeIndex != -1) {
+                        sizeInBytes = it.getLong(sizeIndex)
+                    }
                 }
+            }
+        } else {
+            // Fallback para calcular tamaño si el cursor falla (común en URIs de FileProvider)
+            try {
+                val fileDescriptor = contentResolver.openFileDescriptor(uri, "r")
+                sizeInBytes = fileDescriptor?.statSize ?: 0
+                fileDescriptor?.close()
+            } catch (e: Exception) {
+                // Ignorar error de lectura
             }
         }
 
         val sizeInMb = sizeInBytes / (1024.0 * 1024.0)
+
+        // IMPORTANTE: Ajusta MAX_FILE_SIZE_MB si las fotos de tu cámara son grandes (ej. 5MB)
+        // Las cámaras modernas sacan fotos de 3 a 10MB fácilmente.
         if (sizeInMb > MAX_FILE_SIZE_MB) {
             return ResultadoValidacion(false, "La imagen es muy pesada (> ${MAX_FILE_SIZE_MB}MB)")
         }
@@ -221,6 +373,7 @@ class PropertyPhotosFragment : Fragment(R.layout.fragment_property_photos) {
                     tipoCasaId = tipoCasaId,
                     hobbiesIds = hobbiesIds,
                     amenidadesIds = amenidadesIds,
+                    diasDisponibles = viewModel.diasSeleccionados.value?.toList() ?: emptyList(),
                     latitud = latitud,
                     longitud = longitud,
                     titulo = titulo,

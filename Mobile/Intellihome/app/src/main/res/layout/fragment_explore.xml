@@ -39,7 +39,7 @@
         android:layout_marginTop="16dp"
         android:hint="@string/hint_search_destination"
         app:startIconDrawable="@android:drawable/ic_menu_search"
-        app:endIconDrawable="@android:drawable/ic_menu_preferences"
+        app:endIconDrawable="@drawable/filtro"
         app:endIconMode="custom"
         app:endIconTint="@android:color/black"
         app:boxCornerRadiusTopStart="12dp"
