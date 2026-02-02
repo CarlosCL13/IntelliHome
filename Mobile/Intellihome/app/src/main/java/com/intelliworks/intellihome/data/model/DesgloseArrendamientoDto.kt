@@ -1,11 +1,12 @@
 package com.intelliworks.intellihome.data.model
-
+import com.google.gson.annotations.SerializedName
 /**
  * DTO para el desglose del último arrendamiento de un usuario en una propiedad.
  */
 data class DesgloseArrendamientoDto(
-    val subtotal: Double,
-    val iva: Double,
-    val comision: Double,
-    val total: Double
+    @SerializedName("subtotal") val subtotal: Double,
+    @SerializedName("iva") val iva: Double,
+    @SerializedName("comision") val comision: Double,
+    @SerializedName("total") val total: Double,
+    @SerializedName("noches") val noches: Int
 )

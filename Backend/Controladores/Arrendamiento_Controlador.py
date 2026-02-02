@@ -188,3 +188,28 @@ def get_desglose_ultimo_arrendamiento(propiedad_id: int, usuario_id: int, db: Se
         "total": float(ultimo_arrendamiento.subtotal) + float(ultimo_arrendamiento.iva) + float(ultimo_arrendamiento.comision)
     }
     return desglose_arrendamiento
+    
+# Endpoint para obtener el desglose del arrendamiento por medio arrendamiento_id
+@router.get("/desglose/{arrendamiento_id}", summary="Obtener desglose de un arrendamiento por ID")
+def get_desglose_por_arrendamiento_id(arrendamiento_id: int, db: Session = Depends(get_db)):
+    """
+    Devuelve el desglose del arrendamiento indicado por su ID único.
+    """
+    arrendamiento = db.query(Arrendamiento).filter(
+        Arrendamiento.id == arrendamiento_id
+    ).first()
+
+    if not arrendamiento:
+        raise HTTPException(status_code=404, detail="No existe arrendamiento para ese ID especificado")
+
+    delta = arrendamiento.fecha_fin - arrendamiento.fecha_inicio
+    noches = delta.days if delta.days > 0 else 1 # Mínimo 1 noche por seguridad
+
+    desglose_arrendamiento = {
+        "subtotal": float(arrendamiento.subtotal),
+        "iva": float(arrendamiento.iva),
+        "comision": float(arrendamiento.comision),
+        "total": float(arrendamiento.subtotal) + float(arrendamiento.iva) + float(arrendamiento.comision),
+        "noches": noches  # <--- AGREGAR ESTO
+    }
+    return desglose_arrendamiento

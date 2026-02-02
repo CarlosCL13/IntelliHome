@@ -297,25 +297,38 @@ class RentPropertyActivity : BaseActivity(), OnMapReadyCallback {
         binding.tvDireccionTexto.text = prop.direccion
         binding.tvPropietario.text = "Cargando..."
         binding.tvDescripcionPropiedad.text = "Cargando..."
+
         val precioDouble = prop.precio.replace(",", "").toDoubleOrNull() ?: 0.0
         val formatoMoneda = NumberFormat.getCurrencyInstance(Locale("es", "CR"))
 
-        if (!isRentalActive) {
-            // Mostrar desglose y total pagado
+        // 1. CAPTURAR LA NUEVA BANDERA
+        val isExploreMode = intent.getBooleanExtra("IS_EXPLORE_MODE", false)
+
+        // 2. MODIFICAR LA CONDICIÓN
+        // Solo mostramos el desglose histórico si NO es activa Y NO es modo exploración
+        if (!isRentalActive && !isExploreMode) {
+
+            // --- MODO HISTORIAL / DETALLE DE RENTA ---
             binding.seccionDesglosePago.visibility = View.VISIBLE
             binding.tvTotalPagado.visibility = View.VISIBLE
             binding.tvPrecioNoche.visibility = View.GONE
 
-            // Obtener desglose si ya es una renta activa/pasada
+            val specificRentalId = intent.getIntExtra("RENTAL_ID_SPECIFIC", 0)
             val usuarioId = SessionManager.obtenerUserId(this).toIntOrNull() ?: 0
             val propiedadId = prop.id.toIntOrNull() ?: 0
-            if (usuarioId != 0 && propiedadId != 0) {
-                obtenerYMostrarDesglose(propiedadId, usuarioId, formatoMoneda)
+
+            if (specificRentalId > 0) {
+                obtenerDesglosePorArrendamientoId(specificRentalId, formatoMoneda)
+            } else if (usuarioId != 0 && propiedadId != 0) {
+                obtenerYMostrarDesgloseGenerico(propiedadId, usuarioId, formatoMoneda)
             }
         } else {
-            // Modo "Para Alquilar": Mostrar precio por noche
+            // --- MODO EXPLORACIÓN O RENTA ACTIVA ---
+            // Ocultar desglose y mostrar precio por noche limpio
             binding.seccionDesglosePago.visibility = View.GONE
             binding.tvTotalPagado.visibility = View.GONE
+
+            // Mostrar precio original de la propiedad
             binding.tvPrecioPropiedad.text = formatoMoneda.format(precioDouble)
             binding.tvPrecioNoche.visibility = View.VISIBLE
         }
@@ -327,10 +340,46 @@ class RentPropertyActivity : BaseActivity(), OnMapReadyCallback {
         }
     }
 
+    private fun obtenerDesglosePorArrendamientoId(arrendamientoId: Int, formatoMoneda: NumberFormat) {
+        // Instanciamos la API de Arrendamientos
+        val api = RetrofitInstance.retrofit.create(com.intelliworks.intellihome.data.api.ArrendamientoApi::class.java)
+
+        lifecycleScope.launch {
+            try {
+                // Llamamos al NUEVO endpoint
+                val response = api.obtenerDesglosePorId(arrendamientoId)
+
+                if (response.isSuccessful && response.body() != null) {
+                    val desglose = response.body()!!
+
+                    // Llenamos la UI con los datos históricos
+                    val textoSubtotal = "${getString(R.string.label_subtotal)}: ${formatoMoneda.format(desglose.subtotal)} por ${desglose.noches} noches"
+                    binding.tvSubtotal.text = textoSubtotal
+                    binding.tvIva.text = getString(R.string.label_iva) + ": ${formatoMoneda.format(desglose.iva)}"
+                    binding.tvComision.text = getString(R.string.label_comision) + ": ${formatoMoneda.format(desglose.comision)}"
+                    binding.tvDesgloseTotalPagado.text = getString(R.string.label_total_paid) + ": ${formatoMoneda.format(desglose.total)}"
+                    binding.tvPrecioPropiedad.text = formatoMoneda.format(desglose.total)
+
+                    // Ocultamos campos irrelevantes para historial
+                    binding.tvDesglosePrecioNoche.visibility = View.GONE
+                    binding.tvNoches.visibility = View.GONE
+
+                    binding.seccionDesglosePago.visibility = View.VISIBLE
+                } else {
+                    Toast.makeText(this@RentPropertyActivity, "No se pudo cargar el desglose histórico", Toast.LENGTH_SHORT).show()
+                    binding.seccionDesglosePago.visibility = View.GONE
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+                binding.seccionDesglosePago.visibility = View.GONE
+            }
+        }
+    }
+
     /**
      * Obtiene el desglose financiero de un arrendamiento existente.
      */
-    private fun obtenerYMostrarDesglose(propiedadId: Int, usuarioId: Int, formatoMoneda: NumberFormat) {
+    private fun obtenerYMostrarDesgloseGenerico(propiedadId: Int, usuarioId: Int, formatoMoneda: NumberFormat) {
         val api = RetrofitInstance.retrofit.create(com.intelliworks.intellihome.data.api.ArrendamientoApi::class.java)
         lifecycleScope.launch {
             try {

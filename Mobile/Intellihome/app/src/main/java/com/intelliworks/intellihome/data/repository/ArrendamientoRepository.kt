@@ -57,4 +57,5 @@ class ArrendamientoRepository {
         fechaInicio = fechaInicio,
         fechaFin = fechaFin
     )
-}
+
+    suspend fun obtenerDesglosePorId(id: Int) = arrendamientoApi.obtenerDesglosePorId(id)}
