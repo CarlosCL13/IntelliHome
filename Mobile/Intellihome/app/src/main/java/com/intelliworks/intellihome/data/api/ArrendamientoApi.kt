@@ -3,6 +3,7 @@ package com.intelliworks.intellihome.data.api
 import com.intelliworks.intellihome.data.model.ArrendamientoResponseDto
 import com.intelliworks.intellihome.data.model.PropiedadAlquiladaDto
 import com.intelliworks.intellihome.data.model.CotizacionArrendamientoDto
+import com.intelliworks.intellihome.data.model.DesgloseArrendamientoDto
 import retrofit2.Response
 import retrofit2.http.Field
 import retrofit2.http.FormUrlEncoded
@@ -41,9 +42,14 @@ interface ArrendamientoApi {
         @Field("fecha_fin") fechaFin: String
     ): Response<CotizacionArrendamientoDto>
 
-    // 2. Ver mis alquileres (ESTE SE QUEDA AQUÍ porque la URL es /arrendamientos/...)
+    // 2. Ver mis alquileres
     @GET("arrendamientos/alquiladas/{user_id}")
     suspend fun obtenerAlquiladasPorUsuario(
         @Path("user_id") userId: Int
     ): Response<List<PropiedadAlquiladaDto>>
+
+    @GET("arrendamientos/desglose/{arrendamiento_id}")
+    suspend fun obtenerDesglosePorId(
+        @Path("arrendamiento_id") arrendamientoId: Int
+    ): Response<DesgloseArrendamientoDto>
 }

@@ -152,13 +152,16 @@ class ExploreFragment : Fragment(R.layout.fragment_explore) {
 
     /**
      * Navega a la actividad de detalle de propiedad.
-     * @param property Objeto UI completo con la información de la propiedad.
      */
     private fun navigateToPropertyDetails(property: Property) {
         val intent = Intent(requireContext(), RentPropertyActivity::class.java)
         val gson = Gson()
         intent.putExtra("property_data", gson.toJson(property))
-        intent.putExtra("is_rental_active", false) // Modo exploración: permite iniciar renta
+
+        // --- CAMBIOS AQUÍ ---
+        intent.putExtra("is_rental_active", false) // Sigue siendo false porque no es una renta activa
+        intent.putExtra("IS_EXPLORE_MODE", true)   // NUEVO: Indicamos que venimos de explorar
+        // --------------------
         startActivity(intent)
     }
 
