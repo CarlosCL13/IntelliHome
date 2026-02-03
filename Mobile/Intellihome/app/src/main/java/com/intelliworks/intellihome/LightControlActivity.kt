@@ -1,248 +1,403 @@
 package com.intelliworks.intellihome
 
+import android.animation.ObjectAnimator
+import android.animation.PropertyValuesHolder
+import android.animation.ValueAnimator
+import android.app.NotificationManager
+import android.content.BroadcastReceiver
+import android.content.Context
+import android.content.Intent
+import android.content.IntentFilter
+import android.media.AudioAttributes
 import android.os.Bundle
-import android.content.res.ColorStateList
-import androidx.core.content.ContextCompat
-import android.widget.Button
+import android.os.VibrationEffect
+import android.view.View
+import android.view.animation.AccelerateDecelerateInterpolator
 import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.lifecycleScope
+import androidx.localbroadcastmanager.content.LocalBroadcastManager
+import com.intelliworks.intellihome.data.repository.CasaRepository
 import com.intelliworks.intellihome.databinding.ActivityLightControlBinding
 import com.intelliworks.intellihome.utils.BaseActivity
-import com.intelliworks.intellihome.data.repository.CasaRepository
 import kotlinx.coroutines.launch
 
+/**
+ * Actividad principal de control domótico y centro de gestión de emergencias.
+ *
+ * Características principales:
+ * 1. UI Optimista para control de luces y garaje (feedback instantáneo).
+ * 2. Sistema de renderizado de emergencias (Incendio/Sismo) basado en persistencia y broadcasts.
+ * 3. Gestión del ciclo de vida para recuperación de estado ante reinicios.
+ */
 class LightControlActivity : BaseActivity() {
 
     private lateinit var binding: ActivityLightControlBinding
     private val casaRepository = CasaRepository()
 
-    // Variable para guardar el ID dinámico de la propiedad
+    // Identificador de la propiedad actual
     private var currentPropertyId: Int = 0
 
-    // Mapeo de habitaciones al formato del backend
+    // Estado local del garaje
+    private var garageAbierto = false
+
+    // Cache local de estados de iluminación
+    private var luzBanio1 = false; private var luzBanio2 = false; private var luzCocina = false
+    private var luzSala = false; private var luzGaraje = false; private var luzHabitacion1 = false
+    private var luzHabitacion2 = false; private var luzHabitacion3 = false
+
+    // Controladores de animación
+    private var animadorSismo: ObjectAnimator? = null
+    private var animadorFuego: ObjectAnimator? = null
+
+    // Mapa de traducción UI <-> Backend
     private val habitacionesMap = mapOf(
-        "banio1" to "Bano 1",
-        "banio2" to "Bano 2",
-        "cocina" to "Cocina",
-        "sala" to "Sala",
-        "garaje" to "Garaje",
-        "habitacion1" to "Habitacion 1",
-        "habitacion2" to "Habitacion 2",
-        "habitacion3" to "Habitacion 3"
+        "banio1" to "Bano 1", "banio2" to "Bano 2", "cocina" to "Cocina",
+        "sala" to "Sala", "garaje" to "Garaje", "habitacion1" to "Habitacion 1",
+        "habitacion2" to "Habitacion 2", "habitacion3" to "Habitacion 3"
     )
 
-    // Estado de cada luz (false = apagada, true = encendida)
-    private var luzBanio1 = false
-    private var luzBanio2 = false
-    private var luzCocina = false
-    private var luzSala = false
-    private var luzGaraje = false
-    private var luzHabitacion1 = false
-    private var luzHabitacion2 = false
-    private var luzHabitacion3 = false
+    // Receptor para eventos en tiempo real (cuando la app está abierta)
+    private val alertaReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context?, intent: Intent?) {
+            val evento = intent?.getStringExtra("tipo_evento") ?: ""
+            if (evento.isNotEmpty()) {
+                manejarEmergencia(evento)
+            }
+        }
+    }
 
+    // ==========================================
+    // CICLO DE VIDA
+    // ==========================================
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityLightControlBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        showSettingsButton(false)
 
-        // 1. OBTENER EL ID DEL INTENT
+        showSettingsButton(false)
         currentPropertyId = intent.getIntExtra("PROPERTY_ID", 0)
 
-        // 2. VALIDAR QUE EL ID SEA VÁLIDO
-        if (currentPropertyId == 0) {
-            Toast.makeText(this, "Error: No se identificó la propiedad", Toast.LENGTH_LONG).show()
-            finish() // Cierra la actividad si no hay ID
-            return
+        // Inicialización de componentes
+        configurarOverlays()
+        configurarBotonGaraje()
+
+        // Configuración inicial del botón de alerta (inactivo por defecto)
+        binding.imgFuegoAlerta.setOnClickListener {
+            mostrarDialogoResolverEmergencia()
         }
-        configurarBotones()
+        binding.imgFuegoAlerta.isClickable = false
+
+        // Verificación de apertura via Notificación
+        checkIntentForEmergency(intent)
+
+        // Sincronización con backend
         cargarEstadoInicial()
+    }
+
+    /**
+     * Maneja el intent cuando la actividad ya existe en segundo plano y es traída al frente.
+     */
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        checkIntentForEmergency(intent)
     }
 
     override fun onResume() {
         super.onResume()
         applyAppAppearance(binding.root)
 
-        // Mantener el color del contenedor del plano independientemente de las preferencias
-        binding.housePlanContainer.setBackgroundColor(
-            ContextCompat.getColor(this, R.color.light_off_darker)
-        )
+        // 1. Escuchar eventos en vivo
+        LocalBroadcastManager.getInstance(this)
+            .registerReceiver(alertaReceiver, IntentFilter("EVENTO_EMERGENCIA_IOT"))
+
+        // 2. Revisar persistencia (por si ocurrió un evento con la app cerrada)
+        verificarEstadoPersistente()
     }
 
-    // Carga el estado inicial de todas las luces desde el backend
-    private fun cargarEstadoInicial() {
+    override fun onPause() {
+        super.onPause()
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(alertaReceiver)
+    }
+
+    // ==========================================
+    // LÓGICA DE EMERGENCIAS
+    // ==========================================
+
+    private fun checkIntentForEmergency(intent: Intent?) {
+        if (intent == null || intent.extras == null) return
+
+        val eventoAutomatico = intent.getStringExtra("auto_event")
+
+        if (!eventoAutomatico.isNullOrEmpty()) {
+            manejarEmergencia(eventoAutomatico)
+            intent.removeExtra("auto_event")
+        }
+    }
+
+    private fun verificarEstadoPersistente() {
+        val prefs = getSharedPreferences("IntelliHome_Emergencia", Context.MODE_PRIVATE)
+        val eventoPendiente = prefs.getString("evento_activo", null)
+
+        if (!eventoPendiente.isNullOrEmpty()) {
+            manejarEmergencia(eventoPendiente)
+        }
+    }
+
+    private fun manejarEmergencia(evento: String) {
+        when (evento.lowercase()) {
+            "sismo" -> activarModoSismo()
+            "incendio" -> activarModoIncendio()
+        }
+    }
+
+    private fun activarModoSismo() {
+        runOnUiThread {
+            if (animadorSismo?.isRunning == true) return@runOnUiThread
+
+            val pvhX = PropertyValuesHolder.ofFloat(View.TRANSLATION_X, 0f, 25f, -25f, 25f, -25f, 15f, -15f, 6f, -6f, 0f)
+            val pvhY = PropertyValuesHolder.ofFloat(View.TRANSLATION_Y, 0f, 10f, -10f, 10f, -10f, 5f, -5f, 0f)
+
+            animadorSismo = ObjectAnimator.ofPropertyValuesHolder(binding.housePlanContainer, pvhX, pvhY).apply {
+                duration = 1000
+                repeatCount = 10
+                interpolator = AccelerateDecelerateInterpolator()
+                start()
+            }
+            Toast.makeText(this, "⚠️ ALERTA DE SISMO DETECTADA", Toast.LENGTH_LONG).show()
+        }
+    }
+
+    private fun activarModoIncendio() {
+        runOnUiThread {
+            // Verificación de estado para evitar reinicio de animaciones
+            if (binding.imgFuegoAlerta.visibility == View.VISIBLE && binding.imgFuegoAlerta.isClickable) {
+                return@runOnUiThread
+            }
+
+            binding.imgFuegoAlerta.setImageResource(R.drawable.ic_fire_on)
+            binding.imgFuegoAlerta.isClickable = true
+            binding.imgFuegoAlerta.visibility = View.VISIBLE
+
+            animadorFuego = ObjectAnimator.ofFloat(binding.imgFuegoAlerta, "alpha", 1f, 0.2f, 1f).apply {
+                duration = 500
+                repeatCount = ValueAnimator.INFINITE
+                repeatMode = ValueAnimator.REVERSE
+                start()
+            }
+            Toast.makeText(this, "🔥 INCENDIO DETECTADO - Toque para resolver", Toast.LENGTH_LONG).show()
+        }
+    }
+
+    private fun mostrarDialogoResolverEmergencia() {
+        AlertDialog.Builder(this)
+            .setTitle("Resolver Emergencia")
+            .setMessage("¿La situación ha sido controlada? Esto detendrá las alertas visuales.")
+            .setPositiveButton("Sí, resuelto") { _, _ -> resolverProblema() }
+            .setNegativeButton("Cancelar", null)
+            .show()
+    }
+
+    /**
+     * Resuelve la emergencia: Limpia persistencia, detiene animaciones y resetea UI.
+     */
+    private fun resolverProblema() {
+        // DETENER VIBRACIÓN (Técnica de sobrescritura)
+        detenerVibracionForzada()
+
+        // Cancelar la notificación de la barra de estado
+        val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        notificationManager.cancel(999)
+
+        // Limpiar persistencia
+        val prefs = getSharedPreferences("IntelliHome_Emergencia", Context.MODE_PRIVATE)
+        prefs.edit().clear().apply()
+
+        // Resetear UI
+        animadorFuego?.cancel()
+        binding.imgFuegoAlerta.alpha = 1f
+        binding.imgFuegoAlerta.setImageResource(R.drawable.ic_fire_off)
+        binding.imgFuegoAlerta.isClickable = false
+
+        animadorSismo?.cancel()
+        binding.housePlanContainer.translationX = 0f
+        binding.housePlanContainer.translationY = 0f
+
+        Toast.makeText(this, "Emergencia resuelta. Vibración detenida.", Toast.LENGTH_SHORT).show()
+    }
+
+    /**
+     * Detiene la vibración usando técnica de sobrescritura de ALARMA.
+     * Esto es necesario porque el servicio inició la vibración con USAGE_ALARM,
+     * y un cancel() simple no tiene autoridad para detenerla.
+     */
+    private fun detenerVibracionForzada() {
+        try {
+            val vibrator = if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S) {
+                (getSystemService(Context.VIBRATOR_MANAGER_SERVICE) as android.os.VibratorManager).defaultVibrator
+            } else {
+                @Suppress("DEPRECATION")
+                getSystemService(Context.VIBRATOR_SERVICE) as android.os.Vibrator
+            }
+
+            // 1. Intento estándar
+            vibrator.cancel()
+
+            // 2. Sobrescritura de Prioridad (Android 8+)
+            // Enviamos una vibración "vacía" con prioridad ALARMA para matar la anterior
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+
+                val stopAttributes = AudioAttributes.Builder()
+                    .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
+                    .setUsage(AudioAttributes.USAGE_ALARM) // CLAVE: Misma prioridad que el servicio
+                    .build()
+
+                // Vibrar 1ms con amplitud mínima
+                val silentEffect = VibrationEffect.createOneShot(1L, 1)
+
+                vibrator.vibrate(silentEffect, stopAttributes)
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
+
+    // ==========================================
+    // CONTROL DOMÓTICO (Luces y Garaje)
+    // ==========================================
+
+    private fun configurarBotonGaraje() {
+        binding.btnGarageDoor.setOnClickListener {
+            garageAbierto = !garageAbierto
+            actualizarVisualGaraje(garageAbierto)
+            enviarComandoGaraje(garageAbierto)
+        }
+    }
+
+    private fun enviarComandoGaraje(abrir: Boolean) {
         lifecycleScope.launch {
             try {
-                val response = casaRepository.obtenerEstadoLeds(currentPropertyId)
-                if (response.isSuccessful) {
-                    response.body()?.let { estadoDto ->
-                        actualizarEstadoLuces(estadoDto.toBoolean())
-                    }
-                } else {
-                    Toast.makeText(this@LightControlActivity, "Error al cargar estado", Toast.LENGTH_SHORT).show()
-                }
+                val response = casaRepository.cambiarEstadoGaraje(currentPropertyId, abrir)
+                if (!response.isSuccessful) revertirEstadoGaraje()
             } catch (e: Exception) {
-                Toast.makeText(this@LightControlActivity, "Error de conexión: ${e.message}", Toast.LENGTH_SHORT).show()
+                revertirEstadoGaraje()
             }
         }
     }
 
-    // Actualiza el estado de las luces en la UI
-    private fun actualizarEstadoLuces(estados: Map<String, Boolean>) {
-        // Mapea del nombre del backend a la key local
+    private fun revertirEstadoGaraje() {
+        garageAbierto = !garageAbierto
+        actualizarVisualGaraje(garageAbierto)
+    }
+
+    private fun actualizarVisualGaraje(abierto: Boolean) {
+        if (abierto) {
+            binding.housePlanContainer.setBackgroundResource(R.drawable.casa_open)
+            binding.btnGarageDoor.setIconResource(R.drawable.ic_garage_open)
+            binding.btnGarageDoor.backgroundTintList = ContextCompat.getColorStateList(this, R.color.light_on)
+
+        } else {
+            binding.housePlanContainer.setBackgroundResource(R.drawable.casa_closed)
+            binding.btnGarageDoor.setIconResource(R.drawable.ic_garage_closed)
+            binding.btnGarageDoor.backgroundTintList = ContextCompat.getColorStateList(this, R.color.light_off_darker)
+        }
+
+        // Quitamos el texto para que sea solo icono
+        binding.btnGarageDoor.text = ""
+    }
+
+    private fun cargarEstadoInicial() {
+        lifecycleScope.launch {
+            try {
+                val response = casaRepository.obtenerEstadoLeds(currentPropertyId)
+                response.body()?.let { estadoDto -> actualizarEstadoLucesUI(estadoDto.toBoolean()) }
+            } catch (e: Exception) {
+            }
+        }
+    }
+
+    private fun actualizarEstadoLucesUI(estados: Map<String, Boolean>) {
         val mapaInverso = habitacionesMap.entries.associate { (key, value) -> value to key }
 
-        estados.forEach { (habitacion, encendida) ->
-            when (mapaInverso[habitacion]) {
-                "banio1" -> actualizarBotonLuz(binding.btnBanio1, encendida).also { luzBanio1 = encendida }
-                "banio2" -> actualizarBotonLuz(binding.btnBanio2, encendida).also { luzBanio2 = encendida }
-                "cocina" -> actualizarBotonLuz(binding.btnCocina, encendida).also { luzCocina = encendida }
-                "sala" -> actualizarBotonLuz(binding.btnSala, encendida).also { luzSala = encendida }
-                "garaje" -> actualizarBotonLuz(binding.btnGaraje, encendida).also { luzGaraje = encendida }
-                "habitacion1" -> actualizarBotonLuz(binding.btnHabita1, encendida).also { luzHabitacion1 = encendida }
-                "habitacion2" -> actualizarBotonLuz(binding.btnHabita2, encendida).also { luzHabitacion2 = encendida }
-                "habitacion3" -> actualizarBotonLuz(binding.btnHabita3, encendida).also { luzHabitacion3 = encendida }
+        estados.forEach { (habitacionBackend, encendida) ->
+            when (mapaInverso[habitacionBackend]) {
+                "banio1" -> { luzBanio1 = encendida; actualizarOverlayHabitacion(binding.overlayBanio1, encendida) }
+                "banio2" -> { luzBanio2 = encendida; actualizarOverlayHabitacion(binding.overlayBanio2, encendida) }
+                "cocina" -> { luzCocina = encendida; actualizarOverlayHabitacion(binding.overlayCocina, encendida) }
+                "sala" -> { luzSala = encendida; actualizarOverlayHabitacion(binding.overlaySala, encendida) }
+                "garaje" -> { luzGaraje = encendida; actualizarOverlayHabitacion(binding.overlayGaraje, encendida) }
+                "habitacion1" -> { luzHabitacion1 = encendida; actualizarOverlayHabitacion(binding.overlayHabita1, encendida) }
+                "habitacion2" -> { luzHabitacion2 = encendida; actualizarOverlayHabitacion(binding.overlayHabita2, encendida) }
+                "habitacion3" -> { luzHabitacion3 = encendida; actualizarOverlayHabitacion(binding.overlayHabita3, encendida) }
             }
         }
         actualizarBotonTodasLasLuces()
     }
 
-    // Actualiza el color de un botón según su estado
-    private fun actualizarBotonLuz(boton: Button, encendida: Boolean) {
-        val color = if (encendida) {
-            ContextCompat.getColor(this, R.color.light_on)
-        } else {
-            ContextCompat.getColor(this, R.color.light_off_darker)
-        }
-        boton.backgroundTintList = ColorStateList.valueOf(color)
-    }
+    private fun actualizarOverlayHabitacion(overlay: View, encendida: Boolean) {
+        overlay.setBackgroundResource(
+            if (encendida) R.drawable.luz_radial
+            else R.drawable.luz_apagada
+        )    }
 
-    // Actualiza el botón de todas las luces según el estado actual
     private fun actualizarBotonTodasLasLuces() {
         val todasEncendidas = luzBanio1 && luzBanio2 && luzCocina && luzSala && luzGaraje && luzHabitacion1 && luzHabitacion2 && luzHabitacion3
-        binding.btnLuces.text = if (todasEncendidas) getString(R.string.btn_turn_off_all_lights) else getString(R.string.btn_turn_on_all_lights)
+
+        // Siempre dice "Todas"
+        binding.btnLuces.text = "Todas"
+
+        if (todasEncendidas) {
+            binding.btnLuces.setIconResource(R.drawable.ic_bombilla_on)
+            binding.btnLuces.backgroundTintList = ContextCompat.getColorStateList(this, R.color.light_on)
+        } else {
+            binding.btnLuces.setIconResource(R.drawable.ic_bombilla_off)
+            binding.btnLuces.backgroundTintList = ContextCompat.getColorStateList(this, R.color.light_off_darker)
+        }
     }
 
-    // Envia al backend si una luz está encendida o apagada
-    private fun enviarEstadoLuz(habitacionKey: String, encendida: Boolean) {
-        val habitacion = habitacionesMap[habitacionKey] ?: return
-
+    private fun enviarEstadoLuz(key: String, on: Boolean) {
+        val name = habitacionesMap[key] ?: return
         lifecycleScope.launch {
-            try {
-                // USAR EL ID DINÁMICO
-                val response = casaRepository.cambiarLedHabitacion(currentPropertyId, habitacion, encendida)
-                if (!response.isSuccessful) {
-                    Toast.makeText(this@LightControlActivity, "Error al cambiar estado", Toast.LENGTH_SHORT).show()
-                }
-            } catch (e: Exception) {
-                Toast.makeText(this@LightControlActivity, "Error de conexión", Toast.LENGTH_SHORT).show()
-            }
+            try { casaRepository.cambiarLedHabitacion(currentPropertyId, name, on) } catch (_: Exception) {}
         }
     }
 
-    // Envia el estado de todas las luces
-    private fun enviarEstadoTodasLasLuces(encendidas: Boolean) {
+    private fun enviarEstadoTodasLasLuces(on: Boolean) {
         lifecycleScope.launch {
-            try {
-                // USAR EL ID DINÁMICO
-                val response = casaRepository.cambiarTodosLosLeds(currentPropertyId, encendidas)
-                if (!response.isSuccessful) {
-                    Toast.makeText(this@LightControlActivity, "Error global", Toast.LENGTH_SHORT).show()
-                }
-            } catch (e: Exception) {
-                Toast.makeText(this@LightControlActivity, "Error de conexión", Toast.LENGTH_SHORT).show()
-            }
+            try { casaRepository.cambiarTodosLosLeds(currentPropertyId, on) } catch (_: Exception) {}
         }
     }
 
-    //Configura todos los botones de luces con su funcionalidad de toggle
-    private fun configurarBotones() {
-        configurarBotonLuz(binding.btnBanio1, "banio1") { luzBanio1 = !luzBanio1; luzBanio1 }
-        configurarBotonLuz(binding.btnBanio2, "banio2") { luzBanio2 = !luzBanio2; luzBanio2 }
-        configurarBotonLuz(binding.btnCocina, "cocina") { luzCocina = !luzCocina; luzCocina }
-        configurarBotonLuz(binding.btnSala, "sala") { luzSala = !luzSala; luzSala }
-        configurarBotonLuz(binding.btnGaraje, "garaje") { luzGaraje = !luzGaraje; luzGaraje }
-        configurarBotonLuz(binding.btnHabita1, "habitacion1") { luzHabitacion1 = !luzHabitacion1; luzHabitacion1 }
-        configurarBotonLuz(binding.btnHabita2, "habitacion2") { luzHabitacion2 = !luzHabitacion2; luzHabitacion2 }
-        configurarBotonLuz(binding.btnHabita3, "habitacion3") { luzHabitacion3 = !luzHabitacion3; luzHabitacion3 }
-        configurarBotonLuces()
-    }
+    private fun configurarOverlays() {
+        configurarClickOverlay(binding.overlayBanio1, "banio1") { luzBanio1 = !luzBanio1; luzBanio1 }
+        configurarClickOverlay(binding.overlayBanio2, "banio2") { luzBanio2 = !luzBanio2; luzBanio2 }
+        configurarClickOverlay(binding.overlayCocina, "cocina") { luzCocina = !luzCocina; luzCocina }
+        configurarClickOverlay(binding.overlaySala, "sala") { luzSala = !luzSala; luzSala }
+        configurarClickOverlay(binding.overlayGaraje, "garaje") { luzGaraje = !luzGaraje; luzGaraje }
+        configurarClickOverlay(binding.overlayHabita1, "habitacion1") { luzHabitacion1 = !luzHabitacion1; luzHabitacion1 }
+        configurarClickOverlay(binding.overlayHabita2, "habitacion2") { luzHabitacion2 = !luzHabitacion2; luzHabitacion2 }
+        configurarClickOverlay(binding.overlayHabita3, "habitacion3") { luzHabitacion3 = !luzHabitacion3; luzHabitacion3 }
 
-    // Configura un botón de luz para el cambio de la confirmación visual y el estado en el backend
-    private fun configurarBotonLuz(boton: Button, habitacionKey: String, cambiarEstado: () -> Boolean) {
-        boton.setOnClickListener {
-            // Alterna el estado de la luz, hace uso de la lambda
-            val nuevoEstado = cambiarEstado()
-
-            // Cambia el color del botón según el nuevo estado
-            val nuevoColor = if (nuevoEstado) {
-                ContextCompat.getColor(this, R.color.light_on)
-            } else {
-                ContextCompat.getColor(this, R.color.light_off_darker)
-            }
-
-            // Cambia el color del botón
-            boton.backgroundTintList = ColorStateList.valueOf(nuevoColor)
-
-            // Enviar el estado al backend
-            enviarEstadoLuz(habitacionKey, nuevoEstado)
-        }
-    }
-
-    //Configura el botón para encender/apagar todas las luces
-    private fun configurarBotonLuces() {
         binding.btnLuces.setOnClickListener {
-            // Verifica si todas las luces están encendidas
-            val todasEncendidas = luzBanio1 && luzBanio2 && luzCocina && luzSala &&
-                    luzGaraje && luzHabitacion1 && luzHabitacion2 && luzHabitacion3
+            val todas = luzBanio1 && luzBanio2 && luzCocina && luzSala && luzGaraje && luzHabitacion1 && luzHabitacion2 && luzHabitacion3
+            val nuevo = !todas
+            luzBanio1=nuevo; luzBanio2=nuevo; luzCocina=nuevo; luzSala=nuevo; luzGaraje=nuevo; luzHabitacion1=nuevo; luzHabitacion2=nuevo; luzHabitacion3=nuevo
+            val overlays = listOf(binding.overlayBanio1, binding.overlayBanio2, binding.overlayCocina, binding.overlaySala, binding.overlayGaraje, binding.overlayHabita1, binding.overlayHabita2, binding.overlayHabita3)
+            overlays.forEach { actualizarOverlayHabitacion(it, nuevo) }
+            actualizarBotonTodasLasLuces()
+            enviarEstadoTodasLasLuces(nuevo)
+        }
+    }
 
-            // Alterna: si todas están encendidas, apagar; si no, encender todas
-            val nuevoEstado = !todasEncendidas
-
-            // Actualiza estados de todas las luces
-            luzBanio1 = nuevoEstado
-            luzBanio2 = nuevoEstado
-            luzCocina = nuevoEstado
-            luzSala = nuevoEstado
-            luzGaraje = nuevoEstado
-            luzHabitacion1 = nuevoEstado
-            luzHabitacion2 = nuevoEstado
-            luzHabitacion3 = nuevoEstado
-
-            // Determina el color según el nuevo estado
-            val nuevoColor = if (nuevoEstado) {
-                ContextCompat.getColor(this, R.color.light_on)
-            } else {
-                ContextCompat.getColor(this, R.color.light_off_darker)
-            }
-
-            // Actualiza el texto del botón según el nuevo estado
-            binding.btnLuces.text = if (nuevoEstado) {
-                getString(R.string.btn_turn_off_all_lights)
-            } else {
-                getString(R.string.btn_turn_on_all_lights)
-            }
-
-            // Aplica color a todos los botones
-            val botones = listOf(
-                binding.btnBanio1,
-                binding.btnBanio2,
-                binding.btnCocina,
-                binding.btnSala,
-                binding.btnGaraje,
-                binding.btnHabita1,
-                binding.btnHabita2,
-                binding.btnHabita3
-            )
-
-            botones.forEach { boton ->
-                boton.backgroundTintList = ColorStateList.valueOf(nuevoColor)
-            }
-
-            // Envia el estado al backend
-            enviarEstadoTodasLasLuces(nuevoEstado)
+    private fun configurarClickOverlay(overlay: View, key: String, change: () -> Boolean) {
+        overlay.setOnClickListener {
+            val new = change()
+            actualizarOverlayHabitacion(overlay, new)
+            actualizarBotonTodasLasLuces()
+            enviarEstadoLuz(key, new)
         }
     }
 }

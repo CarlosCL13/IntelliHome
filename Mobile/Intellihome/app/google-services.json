@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "976786168946",
+    "project_id": "intellihomemaps-485319",
+    "storage_bucket": "intellihomemaps-485319.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:976786168946:android:ca6ef04a443b220176b6eb",
+        "android_client_info": {
+          "package_name": "com.intelliworks.intellihome"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyApRmXlpaMEkHh1XoLiTjvrcavtUHiiPfg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

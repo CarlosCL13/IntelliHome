@@ -228,7 +228,7 @@
     <string name="text_no_title">No title</string>
     <string name="text_no_address">No address</string>
 
-    <string name="light_control_title">Light Control</string>
+    <string name="light_control_title">Device Control</string>
     <string name="btn_all_lights">All lights</string>
     <string name="btn_turn_on_all_lights">Turn on lights</string>
     <string name="btn_turn_off_all_lights">Turn off lights</string>

@@ -25,7 +25,7 @@ import com.intelliworks.intellihome.utils.PropertyUtils
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-
+import com.google.firebase.messaging.FirebaseMessaging
 /**
  * Fragmento encargado de la gestión y visualización del perfil del usuario.
  *
@@ -113,16 +113,56 @@ class ProfileFragment : Fragment(R.layout.fragment_profile) {
     }
 
     /**
-     * Ejecuta la lógica de cierre de sesión: limpia preferencias y redirige al Login.
+     * Cierre de sesión seguro:
+     * 1. Obtiene el token actual.
+     * 2. Llama a la API para borrarlo del servidor (evita notificaciones fantasma).
+     * 3. Borra datos locales y va al Login.
      */
     private fun performLogout() {
-        SessionManager.cerrarSesion(requireContext())
-        val intent = Intent(requireContext(), Login::class.java).apply {
-            // Limpiar el backstack para evitar que el usuario regrese con el botón "Atrás"
-            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+        val context = requireContext()
+        val userId = SessionManager.obtenerUserId(context)
+
+        // Paso A: Obtener el token FCM actual antes de matar la sesión
+        FirebaseMessaging.getInstance().token.addOnCompleteListener { task ->
+
+            // Si falla obtener el token, igual procedemos a cerrar sesión (null)
+            val tokenToDelete = if (task.isSuccessful) task.result else null
+
+            // Paso B: Ejecutar la limpieza en segundo plano
+            viewLifecycleOwner.lifecycleScope.launch(Dispatchers.IO) {
+                try {
+                    // Solo llamamos a la API si tenemos ID y Token válidos
+                    if (!userId.isEmpty() && !tokenToDelete.isNullOrEmpty()) {
+                        Log.d("Logout", "Desvinculando dispositivo del servidor...")
+
+                        // Llamada a la API (Endpoint DELETE)
+                        val response = apiUsuario.eliminarDispositivo(userId, tokenToDelete)
+
+                        if (response.isSuccessful) {
+                            Log.i("Logout", "Dispositivo desvinculado exitosamente.")
+                        } else {
+                            Log.w("Logout", "El servidor respondió error: ${response.code()}")
+                        }
+                    }
+                } catch (e: Exception) {
+                    // Si no hay internet, solo logueamos. NO bloqueamos la salida del usuario.
+                    Log.e("Logout", "Error de red al desvincular (Ignorado)", e)
+                } finally {
+                    // Paso C: Limpieza Local y Navegación (Siempre se ejecuta)
+                    withContext(Dispatchers.Main) {
+                        // 1. Borrar SharedPreferences
+                        SessionManager.cerrarSesion(context)
+
+                        // 2. Ir al Login
+                        val intent = Intent(context, Login::class.java).apply {
+                            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                        }
+                        startActivity(intent)
+                        requireActivity().finish()
+                    }
+                }
+            }
         }
-        startActivity(intent)
-        requireActivity().finish()
     }
 
     /**
@@ -209,8 +249,8 @@ class ProfileFragment : Fragment(R.layout.fragment_profile) {
             Glide.with(this@ProfileFragment)
                 .load(fullUrl)
                 .circleCrop()
-                .placeholder(R.drawable.ic_launcher_foreground) // Asegúrate de tener un drawable placeholder
-                .error(R.drawable.ic_launcher_foreground)
+                .placeholder(R.mipmap.ic_launcher_foreground)
+                .error(R.mipmap.ic_launcher_foreground)
                 .into(imgPerfil)
         }
     }
