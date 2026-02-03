@@ -26,4 +26,13 @@ interface CasaApi {
     suspend fun obtenerEstadoLeds(
         @Query("propiedad_id") propiedadId: Int
     ): Response<EstadoLedsDto>
+    /**
+     * Controla la puerta del garaje
+     * URL: POST /casa/garaje?propiedad_id=X&accion=abrir
+     */
+    @POST("casa/led")
+    suspend fun controlarGaraje(
+        @Query("propiedad_id") propiedadId: Int,
+        @Query("accion") accion: String
+    ): Response<Void>
 }

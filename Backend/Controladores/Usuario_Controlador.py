@@ -43,8 +43,7 @@ def registrar_dispositivo(
     # 2. Si es nuevo, lo creamos
     nuevo_dispositivo = UsuarioDispositivo(
         usuario_id=usuario_id,
-        fcm_token=datos.fcm_token,
-        tipo_dispositivo="android_postman" # Valor por defecto
+        fcm_token=datos.fcm_token
     )
     
     db.add(nuevo_dispositivo)

@@ -8,78 +8,89 @@ from Modelos.UsuarioDispositivo import UsuarioDispositivo
 from credenciales_Twilio import TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_WHATSAPP_NUMBER_FROM
 from twilio.rest import Client
 from Modelos.Usuario import Usuario
-from datetime import datetime
 
 class Notificacion_Servicio:
     
-    # Incializa la App de Firebase (Solo una vez)
     if not firebase_admin._apps:
         cred = credentials.Certificate("llaveServicio.json") 
         firebase_admin.initialize_app(cred)
 
-    #================================= Lógica Endpoints ================================= #
+    # =========================================================================
+    # LÓGICA PRINCIPAL
+    # =========================================================================
 
-    #Notificación de evento
     @staticmethod
     def notificar_evento(db: Session, propiedad_id: int, evento: str):
-        """
-        Envía una notificación de evento a los dispositivos.
-        """
         errores = {}
 
         try:
-            # Validar si la propiedad existe (prevención)
+            # 1. Validar propiedad
             propiedad_evento = Notificacion_Servicio._validar_propiedad(db, propiedad_id, errores)
-            if errores:
-                return {'errores': errores}
+            if errores: return {'errores': errores}
             
-            # Buscar arrendamiento activo de la propiedad
+            # Guardamos el nombre para usarlo en el título
+            nombre_propiedad = propiedad_evento.titulo_publicacion 
+            
+            # 2. Determinar destinatario
             arrendamiento_activo = Notificacion_Servicio._validar_arrendamiento_activo(db, propiedad_id, errores)
-            inquilino_id = None
-            if arrendamiento_activo is None:
-                inquilino_id = propiedad_evento.propietario_id # Se le notifica al propietario
-                return
-            else:
-                inquilino_id = arrendamiento_activo.inquilino_id
             
-            # Validar token de dispositivo del inquilino
-            dispositivos_inquilino = Notificacion_Servicio._validar_usuario_dispositivo(db, inquilino_id, errores)
-            if errores:
-                return {'errores': errores}
+            destinatario_id = None
+            telefono_destino = None
 
-            # Se extraen los tokens de cada dispositivo
-            tokens = []
-            for dispositivo in dispositivos_inquilino:
-                tokens.append(dispositivo.fcm_token)
+            if arrendamiento_activo is None:
+                # Casa vacía -> Dueño
+                destinatario_id = propiedad_evento.usuario_id
+                dueno = db.query(Usuario).filter(Usuario.id == destinatario_id).first()
+                if dueno: telefono_destino = dueno.telefono
+            else:
+                # Casa rentada -> Inquilino
+                destinatario_id = arrendamiento_activo.inquilino_id
+                inquilino = db.query(Usuario).filter(Usuario.id == destinatario_id).first()
+                if inquilino: telefono_destino = inquilino.telefono
+            
+            # 3. Obtener Tokens
+            dispositivos_destinatario = Notificacion_Servicio._validar_usuario_dispositivo(db, destinatario_id, errores)
+            if errores: return {'errores': errores}
 
-            # Enviar notificación según el evento
+            tokens = [d.fcm_token for d in dispositivos_destinatario]
+
+            # 4. Enviar Notificaciones
+            titulo_alerta = ""
+            
             if evento.lower() == "incendio":   
-                Notificacion_Servicio.enviar_alerta_fuego(tokens, errores)
-                titulo= "🔥 ¡ALERTA DE INCENDIO! 🔥"
-                Notificacion_Servicio._enviar_notificacion_whatsapp(db,propiedad_id, titulo, errores)
+                titulo_alerta = f"🔥 {nombre_propiedad}: ¡INCENDIO! 🔥"
+                Notificacion_Servicio.enviar_alerta_fuego(tokens, errores, nombre_propiedad)
 
             elif evento.lower() == "sismo":
-                Notificacion_Servicio.enviar_alerta_sismo(tokens, errores)
-                titulo= "🌎 ¡ALERTA DE SISMO! 🌎"
-                Notificacion_Servicio._enviar_notificacion_whatsapp(db,propiedad_id, titulo, errores)
+                titulo_alerta = f"🌎 {nombre_propiedad}: ¡SISMO! 🌎"
+                Notificacion_Servicio.enviar_alerta_sismo(tokens, errores, nombre_propiedad)
 
             else:
                 errores['notificacion'] = 'Evento no reconocido.'
-            
-            if errores:
                 return {'errores': errores}
+
+            # 5. Enviar WhatsApp (También incluye el nombre)
+            if telefono_destino:
+                Notificacion_Servicio._enviar_notificacion_whatsapp(
+                    titulo_propiedad=nombre_propiedad,
+                    titulo_alerta=titulo_alerta,
+                    numero_telefono=telefono_destino,
+                    errores=errores
+                )
+
+            if errores: return {'errores': errores}
             
             return {"mensaje": "Notificación enviada exitosamente."}
 
         except Exception as e:
             db.rollback()
+            print(f"[ERROR CRITICO] {str(e)}")
             return {'errores': {'internal': f'Error interno: {str(e)}'}}
-        finally:
-            db.close()
 
-    #================================= VALIDACIONES ================================= #
+    # =========================================================================
+    # MÉTODOS DE VALIDACIÓN
+    # =========================================================================
 
-    # Validar que la propiedad exista
     @staticmethod
     def _validar_propiedad(db: Session, propiedad_id: int, errores: dict):
         propiedad = db.query(Propiedad).filter(Propiedad.id == propiedad_id).first()
@@ -88,156 +99,103 @@ class Notificacion_Servicio:
             return None
         return propiedad
     
-    # Validar si hay un arrendamiento activo de dicha propiedad
     @staticmethod
     def _validar_arrendamiento_activo(db: Session, propiedad_id: int, errores: dict):
         hoy = datetime.now().date()
-        arrendamiento = db.query(Arrendamiento).filter(
+        return db.query(Arrendamiento).filter(
             Arrendamiento.propiedad_id == propiedad_id,
             Arrendamiento.fecha_inicio <= hoy,
             Arrendamiento.fecha_fin >= hoy
         ).first()
-        if not arrendamiento:
-            # Si no hay arrendamiento se retorna None (se le notificará al propietario en este caso)
-            return None
-        return arrendamiento
 
-    # Validar que el usuario (inquilino) tenga un token de dispositivo
     @staticmethod
-    def _validar_usuario_dispositivo(db: Session, inquilino_id: int, errores):
-        # Se obtienen los dispositivos vinculados al usuario
-        dispositivos = db.query(UsuarioDispositivo).filter(UsuarioDispositivo.usuario_id == inquilino_id).all()
+    def _validar_usuario_dispositivo(db: Session, usuario_id: int, errores):
+        dispositivos = db.query(UsuarioDispositivo).filter(UsuarioDispositivo.usuario_id == usuario_id).all()
         if not dispositivos:
-            errores['dispositivo'] = 'El usuario (inquilino) no tiene un dispositivo activo (sesión iniciada) para notificaciones.'
+            errores['dispositivo'] = 'El usuario no tiene dispositivos registrados.'
             return None
         return dispositivos
 
-    #================================= UTILIDADES ================================= #
+    # =========================================================================
+    # UTILIDADES DE ENVÍO
+    # =========================================================================
     
-    # Notificación de alerta de fuego
     @staticmethod
-    def enviar_alerta_fuego(tokens: list, errores: dict):
-        """
-        Envía una notificación (alta prioridad) de fuego a todos los dispositivos.
-        """
+    def enviar_alerta_fuego(tokens: list, errores: dict, nombre_propiedad: str):
         try:
-            # Construcción del mensaje
             mensaje = messaging.MulticastMessage(
-                notification=messaging.Notification(
-                    title="🔥 ¡ALERTA DE INCENDIO! 🔥",
-                    body="Se ha detectado humo en la casa. Revise inmediatamente.",
-                ),
-                tokens = tokens, # Lista de tokens
+                data={
+                    "tipo": "incendio",
+                    "titulo": f"🔥 {nombre_propiedad}", 
+                    "cuerpo": "¡ALERTA DE INCENDIO! Se ha detectado humo. Revise inmediatamente.",
+                    "prioridad": "alta"
+                },
+                tokens=tokens,
                 android=messaging.AndroidConfig(
-                    ttl=0, # Entrega inmediata (Time To Live 0)
-                    priority='high', # Despierta al dispositivo
-                    notification=messaging.AndroidNotification(
-                        icon='stock_ticker_update', # Icono predeterminado
-                        color='#f45342', # Rojo alerta
-                        sound='default',
-                        default_vibrate_timings=True,
-                        channel_id='canal_emergencias_intelli' # Debe coincidir con Android
-                    ),
-                ),
+                    ttl=0, 
+                    priority='high'
+                )
             )
-
-            # Enviar
             response = messaging.send_each_for_multicast(mensaje)
-            print(f"Alerta enviada exitosamente: {response}")
+            print(f"[FIREBASE] Data Message (Fuego) enviado. Éxito: {response.success_count}")
             return True
         except Exception as e:
-            print(f"Error enviando alerta: {e}")
+            print(f"[FIREBASE ERROR] {e}")
             errores['notificacion'] = 'Error enviando alerta de fuego.'
             return False
         
-    
-    # Notificación de alerta de sismo
     @staticmethod
-    def enviar_alerta_sismo(tokens: list, errores: dict):
-        """
-        Envía una notificación (alta prioridad) de sismo a todos los dispositivos.
-        """
+    def enviar_alerta_sismo(tokens: list, errores: dict, nombre_propiedad: str):
         try:
-            # Construcción del mensaje
             mensaje = messaging.MulticastMessage(
-                notification=messaging.Notification(
-                    title="🌎 ¡ALERTA DE SISMO! 🌎",
-                    body="Se ha detectado actividad sísmica. Tome precauciones.",
-                ),
-                tokens = tokens, # lista de tokens
+                data={
+                    "tipo": "sismo",
+                    # AQUÍ INYECTAMOS EL NOMBRE DE LA PROPIEDAD
+                    "titulo": f"🌎 {nombre_propiedad}",
+                    "cuerpo": "¡ALERTA DE SISMO! Movimiento detectado. Tome precauciones.",
+                    "prioridad": "alta"
+                },
+                tokens=tokens,
                 android=messaging.AndroidConfig(
-                    ttl=0, # Entrega inmediata (Time To Live 0)
-                    priority='high', # Despierta al dispositivo
-                    notification=messaging.AndroidNotification(
-                        icon='stock_ticker_update', # Icono predeterminado
-                        color='#f4b842', # Naranja alerta
-                        sound='default',
-                        default_vibrate_timings=True,
-                        channel_id='canal_emergencias_intelli' # Debe coincidir con Android
-                    ),
-                ),
+                    ttl=0,
+                    priority='high'
+                )
             )
-
-            # Enviar
             response = messaging.send_each_for_multicast(mensaje)
-            print(f"Alerta enviada exitosamente: {response}")
+            print(f"[FIREBASE] Data Message (Sismo) enviado. Éxito: {response.success_count}")
             return True
         except Exception as e:
-            print(f"Error enviando alerta: {e}")
+            print(f"[FIREBASE ERROR] {e}")
             errores['notificacion'] = 'Error enviando alerta de sismo.'
             return False
 
-
-     # Enviar mensaje de notificacion de evento via WhatsApp
     @staticmethod
-    def _enviar_notificacion_whatsapp(db, propiedad_id, titulo, errores):
-        """
-        Envía un mensaje de notificación vía WhatsApp al número proporcionado.
-        """
+    def _enviar_notificacion_whatsapp(titulo_propiedad, titulo_alerta, numero_telefono, errores):
         try:
-            # Credenciales de Twilio
-            account_sid = TWILIO_ACCOUNT_SID
-            auth_token = TWILIO_AUTH_TOKEN
-            client = Client(account_sid, auth_token)
+            client = Client(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN)
 
-            # Titulo de la propiedad (asunto del mensaje)
-            propiedad_arrendar = db.query(Propiedad).filter(Propiedad.id == propiedad_id).first()
-            titulo_propiedad = propiedad_arrendar.titulo_publicacion
-
-            # Número de teléfono del inquilino
-            arrendamiento = db.query(Arrendamiento).filter(Arrendamiento.propiedad_id == propiedad_id).first()
-            inquilino_id = arrendamiento.inquilino_id
-            inquilino = db.query(Usuario).filter(Usuario.id == inquilino_id).first()
-            numero_telefono = inquilino.telefono
-
-            # Se formatean las fechas para el mensaje
             fecha_hoy = datetime.now().strftime('%d/%m/%Y')
             hora_hoy = datetime.now().strftime('%H:%M:%S')
 
-            # Texto del mensaje a enviar con la información anterior
             mensaje_texto = (
-                "IntelliHome 🏡\n\n"
-                f"{titulo}.\n"
-                f"Propiedad: {titulo_propiedad}\n"
+                f"IntelliHome 🏡\n\n"
+                f"{titulo_alerta}\n" # Esto ya traerá el nombre gracias a la lógica de arriba
                 f"• Fecha: {fecha_hoy}\n"
                 f"• Hora: {hora_hoy}\n\n"
-                "!Comuniquese con las autoridades de emergencia en caso de ser necesario!\n"
+                f"¡Comuníquese con las autoridades de emergencia en caso de ser necesario!\n"
             )
             
-            # Se envia el mensaje
-            mensaje = client.messages.create(
+            to_number = f'whatsapp:+506{numero_telefono}'
+            
+            client.messages.create(
                 body=mensaje_texto,
                 from_=TWILIO_WHATSAPP_NUMBER_FROM,
-                to=f'whatsapp:+506{numero_telefono}'
+                to=to_number
             )
-
-            print("Numero de telefono:", numero_telefono)
-
+            print(f"[TWILIO] WhatsApp enviado a: {numero_telefono}")
             return True
         
         except Exception as e:
-            db.rollback()
-            errores['notificacion'] = f'No se pudo enviar la notificación WhatsApp: {str(e)}'
+            print(f"[TWILIO ERROR] {e}")
+            errores['whatsapp'] = f'No se pudo enviar WhatsApp: {str(e)}'
             return False
-        finally:
-            db.close()

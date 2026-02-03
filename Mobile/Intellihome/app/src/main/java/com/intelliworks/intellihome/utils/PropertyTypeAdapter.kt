@@ -132,7 +132,7 @@ class PropertyTypeAdapter(
             nombreLimpio.contains("AVENTUR") || nombreLimpio.contains("ADVENTUR") -> R.drawable.aventurero
 
             // Fallback: Icono por defecto
-            else -> R.drawable.ic_launcher_foreground
+            else -> R.mipmap.ic_launcher_foreground
         }
     }
 

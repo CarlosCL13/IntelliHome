@@ -228,7 +228,7 @@
     <string name="text_no_title">Sin título</string>
     <string name="text_no_address">Sin dirección</string>
 
-    <string name="light_control_title">Control de Luces</string>
+    <string name="light_control_title">Control de Dispositivos</string>
     <string name="btn_all_lights">Todas las luces</string>
     <string name="btn_turn_on_all_lights">Encender luces</string>
     <string name="btn_turn_off_all_lights">Apagar luces</string>

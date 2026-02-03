@@ -95,7 +95,7 @@ class ActivitiesAdapter(
             else -> {
                 // TRUCO: Si no encontramos icono, imprimimos en consola qué nombre falló
                 android.util.Log.e("ICONOS_ERROR", "No hay icono para: $nombreLimpio")
-                R.drawable.ic_launcher_foreground
+                R.mipmap.ic_launcher_foreground
             }
         }
     }

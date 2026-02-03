@@ -3,6 +3,7 @@ import java.io.FileInputStream
 
 plugins {
     alias(libs.plugins.android.application)
+    id("com.google.gms.google-services")
 }
 
 android {
@@ -21,21 +22,16 @@ android {
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
-        // --- INICIO CÓDIGO DE SEGURIDAD ---
-        // 1. Cargar el archivo local.properties
         val properties = Properties()
         val localPropertiesFile = project.rootProject.file("local.properties")
         if (localPropertiesFile.exists()) {
             properties.load(FileInputStream(localPropertiesFile))
         }
 
-        // 2. Leer la clave
         val mapsApiKey = properties.getProperty("MAPS_API_KEY") ?: ""
 
-        // 3. Inyectar al Manifest
         manifestPlaceholders["MAPS_API_KEY"] = mapsApiKey
 
-        // 4. Inyectar a Kotlin (BuildConfig)
         buildConfigField("String", "MAPS_API_KEY", "\"$mapsApiKey\"")
         }
 
@@ -70,9 +66,10 @@ dependencies {
     implementation(libs.androidx.navigation.fragment.ktx)
     implementation(libs.androidx.navigation.ui.ktx)
     implementation(libs.colorpickerview)
-
+    implementation(platform("com.google.firebase:firebase-bom:34.8.0"))
+    implementation("com.google.firebase:firebase-analytics")
+    implementation("com.google.firebase:firebase-messaging")
     implementation("androidx.viewpager2:viewpager2:1.0.0")
-
     implementation("com.google.android.gms:play-services-maps:18.2.0")
     implementation("com.google.android.libraries.places:places:3.3.0")
 

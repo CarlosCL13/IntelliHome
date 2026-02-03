@@ -11,6 +11,8 @@ import okhttp3.RequestBody
 import retrofit2.Response
 import retrofit2.http.*
 
+data class TokenDto(val fcm_token: String)
+
 interface UsuarioApi {
 
     @Multipart
@@ -92,4 +94,22 @@ interface UsuarioApi {
     suspend fun obtenerPerfilUsuario(
         @Path("user_id") userId: Int
     ): Response<UserProfileDto>
+
+    /**
+     * Registra un dispositivo al usuario
+     */
+    @PUT("usuarios/usuarios/{id}/dispositivos")
+    suspend fun registrarDispositivo(
+        @Path("id") userId: String,
+        @Body token: TokenDto
+    ): Response<Void>
+
+    /**
+     * Elimina un dispositivo del usuario
+     */
+    @DELETE("usuarios/usuarios/{id}/dispositivos/{token}")
+    suspend fun eliminarDispositivo(
+        @Path("id") userId: String,
+        @Path("token") token: String
+    ): Response<Void>
 }

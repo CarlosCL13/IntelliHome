@@ -39,4 +39,15 @@ class CasaRepository {
     suspend fun obtenerEstadoLeds(propiedadId: Int): Response<EstadoLedsDto> {
         return casaApi.obtenerEstadoLeds(propiedadId)
     }
+
+    /**
+     * Cambia el estado del Garaje (Abrir/Cerrar)
+     */
+    suspend fun cambiarEstadoGaraje(propiedadId: Int, abrir: Boolean): Response<Void> {
+        val accion = if (abrir) "abrir" else "cerrar"
+        return casaApi.controlarGaraje(
+            propiedadId = propiedadId,
+            accion = accion
+        )
+    }
 }

@@ -8,7 +8,24 @@ object SessionManager {
     private const val KEY_IS_LOGGED_IN = "is_logged_in"
     private const val KEY_USER_ID = "user_id"
     private const val KEY_USER_NAME = "user_name"
-    private const val KEY_USER_PHOTO = "user_photo" // Nueva constante para la foto
+    private const val KEY_USER_PHOTO = "user_photo"
+    private const val KEY_CACHED_FCM_TOKEN = "cached_fcm_token"
+
+    /**
+     * Guarda el token que YA enviamos al servidor para no repetir la petición.
+     */
+    fun guardarTokenSincronizado(context: Context, token: String) {
+        val prefs = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
+        prefs.edit().putString(KEY_CACHED_FCM_TOKEN, token).apply()
+    }
+
+    /**
+     * Devuelve el último token sincronizado o null si es instalación nueva.
+     */
+    fun obtenerTokenSincronizado(context: Context): String? {
+        val prefs = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
+        return prefs.getString(KEY_CACHED_FCM_TOKEN, null)
+    }
 
     /**
      * Guarda los datos del usuario al iniciar sesión.
@@ -53,5 +70,12 @@ object SessionManager {
     fun cerrarSesion(context: Context) {
         val prefs = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
         prefs.edit().clear().apply()
+    }
+    /**
+     * Verifica si el usuario ya tiene una sesión activa.
+     */
+    fun estaLogueado(context: Context): Boolean {
+        val prefs = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
+        return prefs.getBoolean(KEY_IS_LOGGED_IN, false)
     }
 }
