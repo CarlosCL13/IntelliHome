@@ -7,16 +7,6 @@
     android:layout_height="match_parent"
     tools:context=".AddPropertyActivity">
 
-    <TextView
-        android:text="@string/title_add_property_flow"
-        android:textSize="22sp"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        tools:layout_editor_absoluteY="27dp" />
-
     <FrameLayout
         android:id="@+id/fragmentContainer"
         android:layout_width="match_parent"

@@ -1,31 +1,47 @@
-from Modelos import db
+from sqlalchemy import Column, Integer, String, Float, Text, ForeignKey
+from sqlalchemy.orm import relationship
+from Base_de_Datos.db import Base
 
-class Propiedad(db.Model):
+class Propiedad(Base):
     """
     Tabla para las propiedades.
     """
     __tablename__ = 'propiedad'
-    id = db.Column(db.Integer, primary_key=True)
-    usuario_id = db.Column(db.Integer, db.ForeignKey('usuario.id'), nullable=False) # propietario id
-    tipo_casa_id = db.Column(db.Integer, db.ForeignKey('tipos_casa.id'), nullable=False)
-    latitud = db.Column(db.Float, nullable=False)
-    longitud = db.Column(db.Float, nullable=False)
-    titulo_publicacion = db.Column(db.String(150), nullable=False)
-    descripcion_publicacion = db.Column(db.Text, nullable=True)
-    precio_noche = db.Column(db.Float, nullable=False)
-    huespedes = db.Column(db.Integer, nullable=False)
-    habitaciones = db.Column(db.Integer, nullable=False)
-    camas = db.Column(db.Integer, nullable=False)
-    banos = db.Column(db.Integer, nullable=False)
-    hobbies = db.relationship('Hobby', secondary='propiedad_hobbies', backref='propiedades')
-    amenidades = db.relationship('Amenidad', secondary='propiedad_amenidades', backref='propiedades')
-    reglas_uso = db.Column(db.Text, nullable=True)
-    estado = db.Column(db.String(20), nullable=False, default='disponible') # puede ser 'disponible' o 'no disponible'
 
-# ANOTACIONES:
-# Columnas de una propiedad: id, TipoCasa_id, Hobbie_id, coordenadas, titulo_publicacion, descripcion_publicacion, precio_noche, 
-#   huespedes, habitaciones, camas, baños, cocina (si,no), reglas de uso, vehiculos (cantidad), estado. LISTO
-# Se necesita una tabla de Hobbies de una propiedad (muchas a muchas) LISTO
-# Se necesita una tabla de fotos de una propiedad (muchas a una) (1 min, 10 max para una propiedad) LISTO
-# Se necesita una tabla extra para las casa alquiladas y los inquilinos (un historial), tiene que tener fecha de inicio y fin de alquiler - LISTO
-# Se necesita una tabla extra para las amenidades de cada propiedad (muchas a muchas) LISTO
+    id = Column(Integer, primary_key=True)
+    
+    # Llaves foráneas
+    usuario_id = Column(Integer, ForeignKey('usuario.id'), nullable=False)
+    tipo_casa_id = Column(Integer, ForeignKey('tipos_casa.id'), nullable=False)
+
+    # Coordenadas y Detalles
+    latitud = Column(Float, nullable=False)
+    longitud = Column(Float, nullable=False)
+    titulo_publicacion = Column(String(150), nullable=False)
+    descripcion_publicacion = Column(Text, nullable=True)
+    precio_noche = Column(Float, nullable=False)
+    dias_disponibles = Column(String(255), nullable=True)
+    
+    # Capacidad
+    huespedes = Column(Integer, nullable=False)
+    habitaciones = Column(Integer, nullable=False)
+    camas = Column(Integer, nullable=False)
+    banos = Column(Integer, nullable=False)
+    
+    # Reglas y Estado
+    reglas_uso = Column(Text, nullable=True)
+    estado = Column(String(20), nullable=False, default='disponible')
+
+    # --- RELACIONES ---
+    
+    # Relación con el Dueño (Usuario)
+    # Esto permite que desde una propiedad puedas acceder a propiedad.propietario.nombre
+    propietario = relationship("Usuario", backref="mis_propiedades")
+
+    # Relación con Tipo de Casa
+    tipo_casa = relationship("TipoCasa", backref="propiedades")
+
+    # Relaciones Muchos a Muchos (Hobbies y Amenidades)
+    # Tablas intermedias 'propiedad_hobbies' y 'propiedad_amenidades'
+    hobbies = relationship('Hobby', secondary='propiedad_hobbies', backref='propiedades')
+    amenidades = relationship('Amenidad', secondary='propiedad_amenidades', backref='propiedades')

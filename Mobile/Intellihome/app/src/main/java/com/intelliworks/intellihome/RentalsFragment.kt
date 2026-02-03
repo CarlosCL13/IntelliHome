@@ -142,9 +142,7 @@ class RentalsFragment : Fragment(R.layout.fragment_rentals) {
             comodidades = "",
             reglas = "",
             rentedByUserId = userId,
-
-            // --- AQUÍ ESTABA EL ERROR: FALTABA ASIGNAR LAS FECHAS ---
-            fechaInicio = dto.fechaInicio,
+            arrendamientoId = dto.arrendamientoId,            fechaInicio = dto.fechaInicio,
             fechaFin = dto.fechaFin
             // --------------------------------------------------------
         )
@@ -154,7 +152,8 @@ class RentalsFragment : Fragment(R.layout.fragment_rentals) {
         val intent = Intent(requireContext(), RentPropertyActivity::class.java)
         val gson = Gson()
         intent.putExtra("property_data", gson.toJson(property))
-        intent.putExtra("is_rental_active", false)
+        intent.putExtra("is_rental_active", false) // Es historial
+        intent.putExtra("RENTAL_ID_SPECIFIC", property.arrendamientoId)
         startActivity(intent)
     }
 

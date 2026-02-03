@@ -31,6 +31,17 @@ class Login : BaseActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enlace = ActivityLoginBinding.inflate(layoutInflater)
+
+        if (SessionManager.estaLogueado(this)) {
+            // 1. El usuario ya existe, vamos directo al Home
+            val intent = Intent(this, MainActivity::class.java)
+            startActivity(intent)
+
+            // 2. IMPORTANTE: Cerramos el Login para que no se pueda volver atrás
+            finish()
+            return // Detenemos la ejecución del resto del onCreate
+        }
+
         setContentView(enlace.root)
 
         val preferenciasLogin = getSharedPreferences("login_prefs", MODE_PRIVATE)

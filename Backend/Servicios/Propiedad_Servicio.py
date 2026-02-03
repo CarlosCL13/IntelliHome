@@ -36,7 +36,7 @@ class Propiedad_Servicio:
 
     #================================= Lógica Endpoints ================================= #
 
-#Registro de una nueva propiedad
+    #Registro de una nueva propiedad
     @staticmethod
     def registrar_propiedad(
         db: Session,
@@ -54,6 +54,7 @@ class Propiedad_Servicio:
         banos: int = 0,
         hobbies_ids: list = None,
         amenidades_ids: list = None,
+        dias_disponibles: list = None,
         reglas_uso: str = None,
         estado: str = 'disponible'
     ):
@@ -73,6 +74,9 @@ class Propiedad_Servicio:
             if errores:
                 return {'errores': errores}
 
+            # Convertir la lista de días a un String CSV para guardarlo en BD (ej: "Lunes,Martes")
+            dias_str = ",".join(dias_disponibles) if dias_disponibles else ""
+
             # Se registra la propiedad
             nueva_propiedad = Propiedad(
                 usuario_id=usuario_id,
@@ -88,6 +92,7 @@ class Propiedad_Servicio:
                 banos=banos,
                 hobbies=hobbies,
                 amenidades=amenidades,
+                dias_disponibles=dias_str,
                 reglas_uso=reglas_uso,
                 estado=estado
             )
@@ -154,7 +159,7 @@ class Propiedad_Servicio:
             if len(hobbies) != len(set(hobbies_ids)):
                 errores["hobbies"] = "Uno o más hobbies no existen."
         return hobbies
-    
+
     # Validar amenidades
     @staticmethod
     def _validar_amenidades(db: Session, amenidades_ids: list, errores: dict):
@@ -170,7 +175,7 @@ class Propiedad_Servicio:
     def _validar_reglas_uso(reglas_uso: str, errores: dict):
         if reglas_uso and any(palabra in reglas_uso.lower() for palabra in Propiedad_Servicio.PALABRAS_OBSCENAS):
             errores["reglas_uso"] = "Las reglas de uso contienen palabras inapropiadas."
-    
+
     # Validar fotos (Implementación V2 Mejorada)
     @staticmethod
     def _validar_fotos_propiedad(fotos_propiedad: list, errores: dict):
@@ -187,7 +192,7 @@ class Propiedad_Servicio:
         for imagen in fotos_propiedad:
             filename = imagen.filename
             extension = filename.rsplit('.', 1)[-1].lower() if '.' in filename else ''
-            
+
             if extension not in Propiedad_Servicio.EXTENSIONES_PERMITIDAS:
                 errores["fotos_propiedad"] = f"Archivo '{filename}' no permitido. Use: PNG, JPG, JPEG, GIF, SVG."
                 return
@@ -196,7 +201,7 @@ class Propiedad_Servicio:
                 imagen.file.seek(0, os.SEEK_END)
                 size = imagen.file.tell()
                 imagen.file.seek(0)
-                
+
                 if size > Propiedad_Servicio.TAM_MAX_IMAGEN:
                     errores["fotos_propiedad"] = f"La foto '{filename}' excede el tamaño máximo (5MB)."
                     return
@@ -213,26 +218,26 @@ class Propiedad_Servicio:
         """
         try:
             os.makedirs(Propiedad_Servicio.UPLOAD_DIR, exist_ok=True)
-            
+
             # Generar UUID
             ext = imagen_propiedad.filename.rsplit('.', 1)[-1].lower()
             nombre_unico = f"{uuid.uuid4()}.{ext}"
-            
+
             ruta_destino = os.path.join(Propiedad_Servicio.UPLOAD_DIR, nombre_unico)
-            
+
             # Guardado eficiente con shutil
             with open(ruta_destino, "wb") as buffer:
                 shutil.copyfileobj(imagen_propiedad.file, buffer)
-            
+
             return nombre_unico
         except Exception as e:
             print(f"Error guardando foto: {e}")
             return None
-    
+
     @staticmethod
     def crear_luces_predeterminadas(db, propiedad_id):
         """
-        Crea luces LED predeterminadas (Lista original completa).
+        Crea luces LED predeterminadas (Lista original completa) y una puerta.
         """
         habitaciones = [
             "Sala",
@@ -258,4 +263,19 @@ class Propiedad_Servicio:
                 estado="apagado"
             )
             db.add(estado)
+
+        # Crear puerta
+        puerta = Dispositivo(
+            nombre="Puerta Principal",
+            tipo="puerta",
+            propiedad_id=propiedad_id,
+            habitacion="Garaje"
+        )
+        db.add(puerta)
+        db.flush()
+        estado_puerta = EstadoDispositivo(
+            dispositivo_id=puerta.id,
+            estado="cerrado"
+        )
+        db.add(estado_puerta)
         # El commit lo hace registrar_propiedad

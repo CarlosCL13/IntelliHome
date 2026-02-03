@@ -228,7 +228,7 @@
     <string name="text_no_title">Sin título</string>
     <string name="text_no_address">Sin dirección</string>
 
-    <string name="light_control_title">Control de Luces</string>
+    <string name="light_control_title">Control de Dispositivos</string>
     <string name="btn_all_lights">Todas las luces</string>
     <string name="btn_turn_on_all_lights">Encender luces</string>
     <string name="btn_turn_off_all_lights">Apagar luces</string>
@@ -344,4 +344,25 @@
     <string name="payment_process_btn_default">Procesar Pago</string>
     <string name="payment_connection_error_fmt">Error de conexión: %1$s</string>
     <string name="payment_unknown_user">Usuario no identificado</string>
+
+    <!-- Desglose de pago -->
+    <string name="label_payment_breakdown">Desglose de pago</string>
+    <string name="payment_breakdown_title">Desglose de pago</string>
+    <string name="label_subtotal">Subtotal</string>
+    <string name="payment_subtotal_label">Subtotal: ₡0</string>
+    <string name="payment_subtotal_fmt">Subtotal: $%1$s</string>
+    <string name="label_iva">IVA</string>
+    <string name="payment_iva_label">IVA: ₡0</string>
+    <string name="payment_iva_fmt">IVA: $%1$s</string>
+    <string name="label_comision">Comisión</string>
+    <string name="payment_commission_label">Comisión: ₡0</string>
+    <string name="payment_commission_fmt">Comisión: $%1$s</string>
+    <string name="label_total_paid">Total pagado</string>
+    <string name="payment_total_label">Total a pagar: ₡0</string>
+    <string name="label_price_per_night">Precio por noche</string>
+    <string name="payment_price_per_night_label">Precio por noche: ₡0</string>
+    <string name="payment_price_per_night_fmt">Precio por noche: $%1$s</string>
+    <string name="label_nights">Noches</string>
+    <string name="payment_nights_label">Noches: 0</string>
+    <string name="payment_nights_fmt">Noches: %1$d</string>
 </resources>

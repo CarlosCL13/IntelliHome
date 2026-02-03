@@ -1,8 +1,8 @@
 """Migración inicial
 
-Revision ID: 16918432d2d0
+Revision ID: e12805f136ba
 Revises: 
-Create Date: 2026-01-26 00:01:08.879552
+Create Date: 2026-02-01 16:50:34.605943
 
 """
 from typing import Sequence, Union
@@ -12,7 +12,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = '16918432d2d0'
+revision: str = 'e12805f136ba'
 down_revision: Union[str, Sequence[str], None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -100,6 +100,14 @@ def upgrade() -> None:
     sa.ForeignKeyConstraint(['usuario_id'], ['usuario.id'], ),
     sa.PrimaryKeyConstraint('id')
     )
+    op.create_table('usuario_dispositivos',
+    sa.Column('id', sa.Integer(), nullable=False),
+    sa.Column('usuario_id', sa.Integer(), nullable=False),
+    sa.Column('fcm_token', sa.String(length=255), nullable=False),
+    sa.ForeignKeyConstraint(['usuario_id'], ['usuario.id'], ),
+    sa.PrimaryKeyConstraint('id'),
+    sa.UniqueConstraint('fcm_token')
+    )
     op.create_table('usuario_hobbies',
     sa.Column('usuario_id', sa.Integer(), nullable=False),
     sa.Column('hobby_id', sa.Integer(), nullable=False),
@@ -120,6 +128,9 @@ def upgrade() -> None:
     sa.Column('inquilino_id', sa.Integer(), nullable=False),
     sa.Column('fecha_inicio', sa.Date(), nullable=False),
     sa.Column('fecha_fin', sa.Date(), nullable=False),
+    sa.Column('subtotal', sa.Numeric(precision=12, scale=2), nullable=False),
+    sa.Column('iva', sa.Numeric(precision=12, scale=2), nullable=False),
+    sa.Column('comision', sa.Numeric(precision=12, scale=2), nullable=False),
     sa.ForeignKeyConstraint(['inquilino_id'], ['usuario.id'], ),
     sa.ForeignKeyConstraint(['propiedad_id'], ['propiedad.id'], ),
     sa.PrimaryKeyConstraint('id')
@@ -137,6 +148,13 @@ def upgrade() -> None:
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('propiedad_id', sa.Integer(), nullable=False),
     sa.Column('url_foto', sa.String(length=255), nullable=False),
+    sa.ForeignKeyConstraint(['propiedad_id'], ['propiedad.id'], ),
+    sa.PrimaryKeyConstraint('id')
+    )
+    op.create_table('no_disponibilidad_propiedad',
+    sa.Column('id', sa.Integer(), nullable=False),
+    sa.Column('propiedad_id', sa.Integer(), nullable=False),
+    sa.Column('fecha_noDisponible', sa.Date(), nullable=False),
     sa.ForeignKeyConstraint(['propiedad_id'], ['propiedad.id'], ),
     sa.PrimaryKeyConstraint('id')
     )
@@ -170,11 +188,13 @@ def downgrade() -> None:
     op.drop_table('estado_dispositivo')
     op.drop_table('propiedad_hobbies')
     op.drop_table('propiedad_amenidades')
+    op.drop_table('no_disponibilidad_propiedad')
     op.drop_table('fotos_propiedades')
     op.drop_table('dispositivo')
     op.drop_table('arrendamientos')
     op.drop_table('usuario_tipos_casa')
     op.drop_table('usuario_hobbies')
+    op.drop_table('usuario_dispositivos')
     op.drop_table('propiedad')
     op.drop_table('usuario')
     op.drop_table('tipos_casa')

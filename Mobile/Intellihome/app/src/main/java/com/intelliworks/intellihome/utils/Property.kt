@@ -20,5 +20,6 @@ data class Property(
     val reglas: String,
     var rentedByUserId: String? = null,
     val fechaInicio: String? = null,
+    var arrendamientoId: Int = 0,
     val fechaFin: String? = null
 ): Serializable

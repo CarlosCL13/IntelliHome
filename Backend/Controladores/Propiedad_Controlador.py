@@ -17,11 +17,7 @@ from Modelos.TipoCasa import TipoCasa
 from Modelos.Usuario import Usuario
 from Modelos.Hobby import Hobby, PropiedadHobby
 from Modelos.Arrendamiento import Arrendamiento
-from datetime import date
-from typing import Optional
-from Base_de_Datos.db_session import get_db
-import os
-import socket
+from Modelos.NoDisponibilidadPropiedad import NoDisponibilidadPropiedad
 
 # Configuración del router para los endpoints de propiedades
 router = APIRouter(prefix="/propiedades", tags=["propiedades"])
@@ -101,6 +97,7 @@ def registrar_propiedad(
     tipo_casa_id: int = Form(...),
     hobbies_ids: str = Form(""),
     amenidades_ids: str = Form(""),
+    dias_disponibles: str = Form(...),
     latitud: float = Form(...),
     longitud: float = Form(...),
     titulo_publicacion: str = Form(...),
@@ -122,6 +119,7 @@ def registrar_propiedad(
     # Conversión de strings CSV a listas de enteros
     hobbies_ids_list = [int(i) for i in hobbies_ids.split(",")] if hobbies_ids else []
     amenidades_ids_list = [int(i) for i in amenidades_ids.split(",")] if amenidades_ids else []
+    dias_list = [d.strip() for d in dias_disponibles.split(",")] if dias_disponibles else []
     
     # Delegación de la lógica de negocio al servicio
     resultado = Propiedad_Servicio.registrar_propiedad(
@@ -140,6 +138,7 @@ def registrar_propiedad(
         banos=banos,
         hobbies_ids=hobbies_ids_list,
         amenidades_ids=amenidades_ids_list,
+        dias_disponibles=dias_list,
         reglas_uso=reglas_uso,
         estado=estado
     )
@@ -199,6 +198,10 @@ def get_todas_propiedades(request: Request, db: Session = Depends(get_db)):
 # -----------------------------------------------------------------------------
 @router.get("/{propiedad_id}", summary="Obtener una propiedad por id con fotos y amenidades")
 def get_propiedad_por_id(propiedad_id: int, request: Request, db: Session = Depends(get_db)):
+    """
+    Devuelve el detalle completo de una propiedad específica por su ID.
+    Incluye fotos, amenidades, hobbies, y datos del propietario.
+    """
     prop = db.query(Propiedad).filter(Propiedad.id == propiedad_id).first()
     if not prop:
         raise HTTPException(status_code=404, detail="Propiedad no encontrada")
@@ -248,6 +251,15 @@ def get_propiedad_por_id(propiedad_id: int, request: Request, db: Session = Depe
 
     # Se obtiene los arrendamientos futuros de la propiedad para bloquear el calendario
     futuros_arrendamientos = obtener_arrendamientos_futuros(propiedad_id, db)
+    
+    # --- Procesar días disponibles ---
+    dias_disponibles_list = []
+    if prop.dias_disponibles:
+        # Convertimos "Lunes,Martes" a ["Lunes", "Martes"]
+        dias_disponibles_list = prop.dias_disponibles.split(",")
+    else:
+        # Si es nulo (propiedades viejas), asumimos todos los días
+        dias_disponibles_list = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"]
 
     resultado = {
         "id": prop.id,
@@ -271,6 +283,7 @@ def get_propiedad_por_id(propiedad_id: int, request: Request, db: Session = Depe
         "fotos": fotos_urls,
         "amenidades": amenidades_list,
         "hobbies": hobbies_list,
+        "dias_disponibles": dias_disponibles_list,
         "inquilino_actual_id": inquilino_actual_id,
         "futuros_arrendamientos": futuros_arrendamientos
     }
@@ -332,6 +345,9 @@ def get_local_ip():
 
 # Función para obtener el inquilino actual (hoy) de una propiedad
 def obtener_inquilino_actual(propiedad_id: int, db: Session) -> Optional[Usuario]:
+    """
+    Determina si la propiedad está ocupada hoy y devuelve al inquilino.
+    """
     hoy = date.today()
     # Se obtiene el arrendamiento actual
     arrendamiento_actual = db.query(Arrendamiento).filter(
@@ -348,6 +364,9 @@ def obtener_inquilino_actual(propiedad_id: int, db: Session) -> Optional[Usuario
 
 # Función para obtener los arrendamientos futuros de una propiedad
 def obtener_arrendamientos_futuros(propiedad_id: int, db: Session):
+    """
+    Obtiene la lista de fechas reservadas a futuro para bloquear el calendario.
+    """
     arrendamientos = db.query(Arrendamiento).filter(
         Arrendamiento.propiedad_id == propiedad_id
     ).all()

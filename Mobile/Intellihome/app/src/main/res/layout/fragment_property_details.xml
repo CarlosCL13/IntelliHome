@@ -124,6 +124,97 @@
                     android:gravity="top"/>
             </com.google.android.material.textfield.TextInputLayout>
 
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="#E0E0E0"
+                android:layout_marginTop="8dp"
+                android:layout_marginBottom="16dp"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Disponibilidad Semanal"
+                android:textStyle="bold"
+                android:textColor="@android:color/black"
+                android:layout_marginBottom="4dp"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Marca los días disponibles"
+                android:textSize="12sp"
+                android:textColor="#757575"
+                android:layout_marginBottom="12dp"/>
+
+            <com.google.android.material.chip.ChipGroup
+                android:id="@+id/chipGroupDias"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:singleSelection="false"
+                app:selectionRequired="false">
+
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/chipLunes"
+                    style="@style/Widget.MaterialComponents.Chip.Filter"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Lun"
+                    android:tag="Lunes"/>
+
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/chipMartes"
+                    style="@style/Widget.MaterialComponents.Chip.Filter"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Mar"
+                    android:tag="Martes"/>
+
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/chipMiercoles"
+                    style="@style/Widget.MaterialComponents.Chip.Filter"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Mié"
+                    android:tag="Miércoles"/>
+
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/chipJueves"
+                    style="@style/Widget.MaterialComponents.Chip.Filter"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Jue"
+                    android:tag="Jueves"/>
+
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/chipViernes"
+                    style="@style/Widget.MaterialComponents.Chip.Filter"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Vie"
+                    android:tag="Viernes"/>
+
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/chipSabado"
+                    style="@style/Widget.MaterialComponents.Chip.Filter"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Sáb"
+                    android:tag="Sábado"/>
+
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/chipDomingo"
+                    style="@style/Widget.MaterialComponents.Chip.Filter"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Dom"
+                    android:tag="Domingo"/>
+
+            </com.google.android.material.chip.ChipGroup>
+            <Space
+                android:layout_width="match_parent"
+                android:layout_height="80dp"/>
+
         </LinearLayout>
     </ScrollView>
 

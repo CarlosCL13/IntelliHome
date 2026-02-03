@@ -11,7 +11,6 @@ from Modelos.Propiedad import Propiedad
 from Modelos.FotoPropiedad import FotoPropiedad
 
 # Importamos la utilidad get_local_ip desde Propiedad_Controlador
-# (Esto funciona bien ahora que eliminamos la importación circular en el otro archivo)
 from Controladores.Propiedad_Controlador import get_local_ip
 
 # Configuración del Router
@@ -29,6 +28,9 @@ def registrar_arrendamiento(
     inquilino_id: int = Form(...),
     fecha_inicio: str = Form(...),
     fecha_fin: str = Form(...),
+    subtotal: float = Form(...),
+    iva: float = Form(...),
+    comision: float = Form(...),
     db: Session = Depends(get_db)
 ):
     """
@@ -41,6 +43,9 @@ def registrar_arrendamiento(
         inquilino_id (int): ID del usuario que realiza la renta.
         fecha_inicio (str): Fecha de inicio en formato YYYY-MM-DD.
         fecha_fin (str): Fecha de fin en formato YYYY-MM-DD.
+        subtotal (float): Subtotal del arrendamiento.
+        iva (float): IVA calculado.
+        comision (float): Comisión calculada.
         db (Session): Sesión de base de datos inyectada.
 
     Returns:
@@ -54,7 +59,10 @@ def registrar_arrendamiento(
         propiedad_id=propiedad_id,
         inquilino_id=inquilino_id,
         fecha_inicio=fecha_inicio,
-        fecha_fin=fecha_fin
+        fecha_fin=fecha_fin,
+        subtotal=subtotal,
+        iva=iva,
+        comision=comision
     )
 
     if 'errores' in resultado:
@@ -135,3 +143,73 @@ def get_propiedades_alquiladas(user_id: int, request: Request, db: Session = Dep
             })
             
     return propiedades_rentadas
+
+
+@router.post("/cotizar", summary="Cotizar arrendamiento sin guardar")
+def cotizar_arrendamiento(
+    propiedad_id: int = Form(...),
+    fecha_inicio: str = Form(...),
+    fecha_fin: str = Form(...),
+    db: Session = Depends(get_db)
+):
+    """
+    Calcula el desglose de un arrendamiento (subtotal, IVA, comisión, total) sin guardar en BD.
+    Usa la fecha de inicio como fecha de reserva para el cálculo de la comisión.
+    """
+    resultado = Arrendamiento_Servicio.calcular_cotizacion(
+        db=db,
+        propiedad_id=propiedad_id,
+        fecha_inicio=fecha_inicio,
+        fecha_fin=fecha_fin,
+        fecha_reserva=fecha_inicio
+    )
+    if 'errores' in resultado:
+        raise HTTPException(status_code=400, detail=resultado["errores"])
+    return resultado
+
+# Endpoint para obtener el desglose del último arrendamiento de un usuario en una propiedad
+@router.get("/desglose/{propiedad_id}/{usuario_id}", summary="Obtener desglose del último arrendamiento de un usuario en una propiedad")
+def get_desglose_ultimo_arrendamiento(propiedad_id: int, usuario_id: int, db: Session = Depends(get_db)):
+    """
+    Devuelve el desglose del último arrendamiento hecho por el usuario a la propiedad indicada.
+    """
+    ultimo_arrendamiento = db.query(Arrendamiento).filter(
+        Arrendamiento.propiedad_id == propiedad_id,
+        Arrendamiento.inquilino_id == usuario_id
+    ).order_by(Arrendamiento.fecha_inicio.desc()).first()
+
+    if not ultimo_arrendamiento:
+        raise HTTPException(status_code=404, detail="No existe arrendamiento para ese usuario y propiedad")
+
+    desglose_arrendamiento = {
+        "subtotal": float(ultimo_arrendamiento.subtotal),
+        "iva": float(ultimo_arrendamiento.iva),
+        "comision": float(ultimo_arrendamiento.comision),
+        "total": float(ultimo_arrendamiento.subtotal) + float(ultimo_arrendamiento.iva) + float(ultimo_arrendamiento.comision)
+    }
+    return desglose_arrendamiento
+    
+# Endpoint para obtener el desglose del arrendamiento por medio arrendamiento_id
+@router.get("/desglose/{arrendamiento_id}", summary="Obtener desglose de un arrendamiento por ID")
+def get_desglose_por_arrendamiento_id(arrendamiento_id: int, db: Session = Depends(get_db)):
+    """
+    Devuelve el desglose del arrendamiento indicado por su ID único.
+    """
+    arrendamiento = db.query(Arrendamiento).filter(
+        Arrendamiento.id == arrendamiento_id
+    ).first()
+
+    if not arrendamiento:
+        raise HTTPException(status_code=404, detail="No existe arrendamiento para ese ID especificado")
+
+    delta = arrendamiento.fecha_fin - arrendamiento.fecha_inicio
+    noches = delta.days if delta.days > 0 else 1 # Mínimo 1 noche por seguridad
+
+    desglose_arrendamiento = {
+        "subtotal": float(arrendamiento.subtotal),
+        "iva": float(arrendamiento.iva),
+        "comision": float(arrendamiento.comision),
+        "total": float(arrendamiento.subtotal) + float(arrendamiento.iva) + float(arrendamiento.comision),
+        "noches": noches  # <--- AGREGAR ESTO
+    }
+    return desglose_arrendamiento

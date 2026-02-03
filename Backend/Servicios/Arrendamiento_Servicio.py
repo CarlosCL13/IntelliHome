@@ -19,8 +19,14 @@ class Arrendamiento_Servicio:
             propiedad_id: int,
             inquilino_id: int,
             fecha_inicio: str,
-            fecha_fin: str
+            fecha_fin: str,
+            subtotal: float,
+            iva: float,
+            comision: float
         ):
+        """
+        Registra un nuevo arrendamiento en la base de datos.
+        """
         errores = {}
         nuevo_arrendamiento = None
 
@@ -36,7 +42,10 @@ class Arrendamiento_Servicio:
                 propiedad_id=propiedad_id,
                 inquilino_id=inquilino_id,
                 fecha_inicio=fecha_inicio_aux,
-                fecha_fin=fecha_fin_aux
+                fecha_fin=fecha_fin_aux,
+                subtotal=subtotal,
+                iva=iva,
+                comision=comision
             )
             db.add(nuevo_arrendamiento)
             db.commit()
@@ -61,6 +70,84 @@ class Arrendamiento_Servicio:
         finally:
             db.close()
 
+    # Cálculo de cotización de un arrendamiento sin guardar en BD
+    @staticmethod
+    def calcular_cotizacion(db: Session, propiedad_id: int, fecha_inicio: str, fecha_fin: str, fecha_reserva: str):
+        """
+        Calcula el desglose de la cotización de un arrendamiento sin guardar en BD.
+        """
+        from datetime import datetime
+        errores = {}
+        try:
+            # Validar fechas
+            fecha_inicio_aux, fecha_fin_aux = Arrendamiento_Servicio._validar_fechas(fecha_inicio, fecha_fin, errores)
+            if errores:
+                return {'errores': errores}
+
+            # Obtener propiedad
+            propiedad = db.query(Propiedad).filter(Propiedad.id == propiedad_id).first()
+            if not propiedad:
+                return {'errores': {'propiedad': 'Propiedad no encontrada.'}}
+
+            # Calcular noches
+            noches = (fecha_fin_aux - fecha_inicio_aux).days
+            if noches <= 0:
+                return {'errores': {'fechas': 'El número de noches debe ser mayor a 0.'}}
+
+            precio_noche = propiedad.precio_noche
+            subtotal = precio_noche * noches
+
+            # IVA fijo 13%
+            porcentaje_iva = 13.0
+            iva = subtotal * (porcentaje_iva / 100)
+
+            # Comisión base 10% (usada en el algoritmo)
+            comision_base = 10.0
+
+
+            # Parsear fecha_reserva (YYYY-MM-DD)
+            try:
+                fecha_reserva_dt = datetime.strptime(fecha_reserva, '%Y-%m-%d')
+                dia = fecha_reserva_dt.day
+                mes = fecha_reserva_dt.month
+            except Exception:
+                return {'errores': {'fecha_reserva': 'Formato de fecha_reserva inválido (YYYY-MM-DD)'}}
+
+            # Calcular comisión ajustada usando el algoritmo
+            comision_ajustada = Arrendamiento_Servicio._calcular_comision_banquero(
+                dia, mes, porcentaje_iva, comision_base, subtotal + iva
+            )
+
+            total = subtotal + iva + comision_ajustada
+
+            return {
+                'subtotal': round(subtotal, 2),
+                'iva': round(iva, 2),
+                'comision': round(comision_ajustada, 2),
+                'total': round(total, 2),
+                'noches': noches,
+                'precio_noche': round(precio_noche, 2)
+            }
+        except Exception as e:
+            return {'errores': {'internal': f'Error interno: {str(e)}'}}
+
+    # Algoritmo de Banquero para cálculo de comisión
+    @staticmethod
+    def _calcular_comision_banquero(dia, mes, porcentaje_impuesto, comision_base, monto_total):
+        """
+        Implementa el algoritmo de Banquero para calcular la comisión ajustada.
+        """
+        limite_maximo = 0.10 * monto_total
+        if porcentaje_impuesto + comision_base > 0:
+            media_armonica = 2 / ((1 / porcentaje_impuesto) + (1 / comision_base))
+        else:
+            media_armonica = 0
+        factor_ajuste = (dia + mes) / 100
+        media_armonica_ajustada = media_armonica * factor_ajuste
+        if media_armonica_ajustada > limite_maximo:
+            media_armonica_ajustada = limite_maximo
+        return media_armonica_ajustada
+
     #================================= VALIDACIONES ================================= #
 
     # Validación de fechas
@@ -83,6 +170,7 @@ class Arrendamiento_Servicio:
                 return fecha_inicio_aux, fecha_fin_aux
             except Exception:
                 errores['fechas'] = 'El formato de las fechas debe ser YYYY-MM-DD.'
+                return None, None
         else:
             errores['fechas'] = 'Las fechas de inicio y fin son obligatorias.'
             return None, None
@@ -111,9 +199,11 @@ class Arrendamiento_Servicio:
             fecha_fin = arrendamiento.fecha_fin
 
             # Precio del arrendamiento
-            precio_noche = propiedad_arrendar.precio_noche
             noches_arrendamiento = (fecha_fin - fecha_inicio).days  # Se obtiene las NOCHES totales del arrendamiento
-            total_precio = precio_noche * noches_arrendamiento
+            subtotal = arrendamiento.subtotal
+            iva = arrendamiento.iva
+            comision = arrendamiento.comision
+            total_precio = subtotal + iva + comision
 
             # Número de teléfono del inquilino
             inquilino = db.query(Usuario).filter(Usuario.id == inquilino_id).first()
@@ -126,6 +216,7 @@ class Arrendamiento_Servicio:
             fecha_inicio_str = fecha_inicio.strftime('%d/%m/%Y')
             fecha_fin_str = fecha_fin.strftime('%d/%m/%Y')
 
+
             # Texto del mensaje a enviar con la información anterior
             mensaje_texto = (
                 "IntelliHome 🏡\n\n"
@@ -133,6 +224,9 @@ class Arrendamiento_Servicio:
                 f"Confirmamos que tu reserva de la propiedad \"{titulo_propiedad}\" ha sido registrada exitosamente.\n\n"
                 f"Detalles de tu reserva:\n"
                 f"• Fechas: {fecha_inicio_str} al {fecha_fin_str} ({noches_arrendamiento} noches)\n"
+                f"• Subtotal: ₡{subtotal:.2f}\n"
+                f"• IVA: ₡{iva:.2f}\n"
+                f"• Comisión: ₡{comision:.2f}\n"
                 f"• Monto total: ₡{total_precio:.2f}\n\n"
                 "¡Gracias por confiar en nosotros! Te deseamos una excelente estadía.\n"
             )
@@ -151,6 +245,3 @@ class Arrendamiento_Servicio:
             return False
         finally:
             db.close()
-
-        
-
